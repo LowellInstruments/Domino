@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>904</width>
+    <height>520</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Lowell Instruments - File Converter</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icons/icons/lid-icon.png</normaloff>:/icons/icons/lid-icon.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="1" column="0">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Output</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="2" column="1" colspan="2">
+        <widget class="QComboBox" name="comboBox_output_format">
+         <item>
+          <property name="text">
+           <string>Comma Separated Value (.csv) - (slow)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Hierarchical Data Format 5 (.hdf5)</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Output format:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_output_type">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+         <item>
+          <property name="text">
+           <string>Discrete Channels</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Current</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Compass Heading</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Output type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_output_options">
+         <property name="text">
+          <string>Options...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2">
+        <widget class="QComboBox" name="comboBox_tilt_tables">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Meter Model:</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Output Path</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0" colspan="3">
+        <widget class="QRadioButton" name="radioButtonOutputSame">
+         <property name="text">
+          <string>Save output to same directory as source files</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QRadioButton" name="radioButtonOutputDirectory">
+         <property name="text">
+          <string>Save output to:</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">buttonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEditOutputFolder">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="pushButton_browse">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>25</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QTableWidget" name="tableWidget">
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <attribute name="horizontalHeaderVisible">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="horizontalHeaderHighlightSections">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderHighlightSections">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Files to Convert</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Containing Folder</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Size</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Start Time</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Stop Time</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="Line" name="line_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>904</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionAdd_File_s"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuConvert">
+    <property name="title">
+     <string>Convert</string>
+    </property>
+    <addaction name="actionConvert_Files"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_Output_Foler"/>
+   </widget>
+   <widget class="QMenu" name="menuHelop">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionOutput_types"/>
+    <addaction name="actionOutput_formats"/>
+    <addaction name="actionTips"/>
+    <addaction name="separator"/>
+    <addaction name="actionCheck_for_update"/>
+    <addaction name="actionVisit_Lowell_Instruments_Website"/>
+    <addaction name="actionReport_a_bug"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuConvert"/>
+   <addaction name="menuHelop"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>36</width>
+     <height>36</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionAdd"/>
+   <addaction name="actionDelete"/>
+   <addaction name="actionClearList"/>
+   <addaction name="separator"/>
+   <addaction name="actionConvert"/>
+  </widget>
+  <action name="actionAdd">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/icons8-Add File-48.png</normaloff>:/icons/icons/icons8-Add File-48.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a file for conversion</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/icons8-Delete File.png</normaloff>
+     <normalon>:/icons/icons/icons8-Add File-48.png</normalon>:/icons/icons/icons8-Delete File.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete a file from the list</string>
+   </property>
+  </action>
+  <action name="actionConvert">
+   <property name="icon">
+    <iconset>
+     <normalon>:/icons/icons/icons8-Circled Play.png</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Convert</string>
+   </property>
+  </action>
+  <action name="actionAdd_File_s">
+   <property name="text">
+    <string>Add File(s)...</string>
+   </property>
+  </action>
+  <action name="actionAdd_Folder">
+   <property name="text">
+    <string>Add Folder...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionConvert_Files">
+   <property name="text">
+    <string>Convert Files</string>
+   </property>
+  </action>
+  <action name="actionOpen_Output_Foler">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open Output Foler</string>
+   </property>
+  </action>
+  <action name="actionOutput_types">
+   <property name="text">
+    <string>Output types</string>
+   </property>
+  </action>
+  <action name="actionOutput_formats">
+   <property name="text">
+    <string>Output formats</string>
+   </property>
+  </action>
+  <action name="actionTips">
+   <property name="text">
+    <string>Tips</string>
+   </property>
+  </action>
+  <action name="actionCheck_for_update">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Check for update</string>
+   </property>
+  </action>
+  <action name="actionVisit_Lowell_Instruments_Website">
+   <property name="text">
+    <string>Visit Lowell Instruments Website</string>
+   </property>
+  </action>
+  <action name="actionReport_a_bug">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Report a bug</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionClearList">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/icons/icons8-delete-document-48.png</normaloff>:/icons/icons/icons8-delete-document-48.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear List</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear all files from list</string>
+   </property>
+  </action>
+ </widget>
+ <tabstops>
+  <tabstop>comboBox_output_type</tabstop>
+  <tabstop>pushButton_output_options</tabstop>
+  <tabstop>comboBox_tilt_tables</tabstop>
+  <tabstop>comboBox_output_format</tabstop>
+  <tabstop>radioButtonOutputSame</tabstop>
+  <tabstop>radioButtonOutputDirectory</tabstop>
+  <tabstop>lineEditOutputFolder</tabstop>
+  <tabstop>pushButton_browse</tabstop>
+  <tabstop>tableWidget</tabstop>
+ </tabstops>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
+</ui>

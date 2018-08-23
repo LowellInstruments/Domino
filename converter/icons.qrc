@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/lid-icon.png</file>
+    <file>icons/icons8-broom-48.png</file>
+    <file>icons/lowell_logo-2.png</file>
+    <file>icons/icons8-delete-document-48.png</file>
+    <file>icons/icons8-Help-48.png</file>
+    <file>icons/icons8-Circled Play.png</file>
+    <file>icons/icons8-Delete File.png</file>
+    <file>icons/icons8-Add File-48.png</file>
+  </qresource>
+</RCC>
