@@ -15,7 +15,7 @@ target_help = \
 
 GIT_HOOKS_TARGET_DIR = .git/hooks/
 GIT_HOOKS_SOURCE_DIR = git-hooks/
-GIT_HOOKS_FILES = prepare-commit-msg
+GIT_HOOKS_FILES = pre-commit
 GIT_HOOKS_TARGETS = $(addprefix $(GIT_HOOKS_TARGET_DIR),$(GIT_HOOKS_FILES))
 GIT_HOOKS_SOURCES = $(addprefix $(GIT_HOOKS_SOURCE_DIR),$(GIT_HOOKS_FILES))
 
@@ -46,7 +46,7 @@ virtualenv:
 	@sudo apt install virtualenv
 
 
-$(VENV): $(NEED_VIRTUALENV) Makefile requirements.txt $(GIT_HOOKS_SOURCE_DIR)
+$(VENV): $(NEED_VIRTUALENV) Makefile requirements.txt $(GIT_HOOKS_TARGETS)
 	@rm -rf $(VENV)
 	@virtualenv -p `which python3` $@
 	@touch $(ACTIVATE_SCRIPT)
