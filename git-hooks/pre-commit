@@ -1,0 +1,8 @@
+#!/bin/sh
+
+FILES_PATTERN='\.py$'
+FORBIDDEN='print('
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | \
+    xargs grep --with-filename -n $FORBIDDEN && echo 'COMMIT REJECTED Found' \"$FORBIDDEN\" 'in the commit. Please remove them before commiting' && exit 1
+exit 0

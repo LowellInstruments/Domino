@@ -13,6 +13,17 @@ target_help = \
   "test - Use pytest to run all tests" \
 
 
+GIT_HOOKS_TARGET_DIR = .git/hooks/
+GIT_HOOKS_SOURCE_DIR = git-hooks/
+GIT_HOOKS_FILES = pre-commit
+GIT_HOOKS_TARGETS = $(addprefix $(GIT_HOOKS_TARGET_DIR),$(GIT_HOOKS_FILES))
+GIT_HOOKS_SOURCES = $(addprefix $(GIT_HOOKS_SOURCE_DIR),$(GIT_HOOKS_FILES))
+
+$(GIT_HOOKS_TARGET_DIR)%: $(GIT_HOOKS_SOURCE_DIR)%
+	@mkdir -p $(GIT_HOOKS_SOURCE_DIR)
+	@cp $< $@
+
+
 help:
 	@echo "Valid targets are:\n"
 	@for t in $(target_help) ; do \
@@ -35,7 +46,7 @@ virtualenv:
 	@sudo apt install virtualenv
 
 
-$(VENV): $(NEED_VIRTUALENV) Makefile requirements.txt
+$(VENV): $(NEED_VIRTUALENV) Makefile requirements.txt $(GIT_HOOKS_TARGETS)
 	@rm -rf $(VENV)
 	@virtualenv -p `which python3` $@
 	@touch $(ACTIVATE_SCRIPT)
