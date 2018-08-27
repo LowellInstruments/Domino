@@ -4,8 +4,12 @@
 from mat import odlfile, converter
 from os import path
 from converter import filewriter
+from converter.logger import log_to_stdout
 import sys
 import numpy as np
+import logging
+
+logger = logging.getLogger(__file__)
 
 
 class ConversionManager:
@@ -146,12 +150,13 @@ def calc_compass(accel, mag, declination=0):
 
 
 if __name__ == '__main__':
+    log_to_stdout()
     if len(sys.argv) > 1:
         try:
             file = ConversionManager(sys.argv[1])
             file.convert()
-            print('File parsed successfully.')
+            logger.info('File parsed successfully.')
         except:
-            print('There was an error while parsing the file.')
+            logger.info('There was an error while parsing the file.')
 
     #input('Press Enter to close this window...')

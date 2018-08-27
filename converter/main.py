@@ -108,8 +108,6 @@ class MyGui(Ui_MainWindow):
             self.tableWidget.removeRow(row)
 
         self.file_list = [row for i, row in enumerate(self.file_list) if i not in rows]
-        print('Deleting: {}'.format(rows))
-        print(self.file_list)
         self.refresh_table()
 
     def delete_table(self):
@@ -139,7 +137,6 @@ class MyGui(Ui_MainWindow):
 
         tilt_tables.sort(key=itemgetter(1))
         tilt_tables.sort(key=itemgetter(0))
-        print('')
         for model, washers, salinity, path in tilt_tables:
             self.comboBox_tilt_tables.addItem('{} - {} washers - {} water'.format(model, washers, salinity), path)
 
@@ -180,7 +177,6 @@ class MyGui(Ui_MainWindow):
         self.tableWidget.selectRow(self.selected_row)
 
     def open_file(self):
-        print('open file')
         application_data = appdata.get_userdata('converter-1.dat')
         last_directory = application_data['last_directory'] if 'last_directory' in application_data else ''
         file_paths = QtWidgets.QFileDialog.getOpenFileNames(
@@ -252,7 +248,6 @@ class MyGui(Ui_MainWindow):
             parameters['declination'] = float(application_data.get('declination', 0))
 
         if self.comboBox_output_type.currentText() == 'Current':
-            print('Using tilt profile: {}'.format(self.comboBox_tilt_tables.currentData()))
             parameters['output_type'] = 'current'
             parameters['tilt_curve'] = tiltcurve.TiltCurve(self.comboBox_tilt_tables.currentData())
 
@@ -323,7 +318,6 @@ class FileConverter(QThread):
                 break
             self.current_file_ind = i
             self.conversion_status_signal.emit(this_table_item.filename, i+1, len(self.table_items))
-            print('Starting conversion of: {}'.format(this_table_item.filename))
             if not os.path.isfile(this_table_item.path):
                 self.table_items[i].conversion_status = 'file_not_found'
                 continue
@@ -334,9 +328,6 @@ class FileConverter(QThread):
                 self.table_items[i].conversion_status = 'converted'
             except:
                 self.table_items[i].conversion_status = 'failed'
-
-            print('Conversion of {} complete'.format(this_table_item.filename))
-
         self.conversion_complete.emit(self.table_items)
 
     def update_progress(self, percent):
@@ -346,7 +337,6 @@ class FileConverter(QThread):
         cumulative_mb += self.table_items[self.current_file_ind].size * (percent/100)
         overall_percent = cumulative_mb / self.total_mb
         overall_percent *= 100
-        print(overall_percent)
         self.progress_signal.emit(percent, overall_percent)
 
     def cancel(self):
@@ -374,7 +364,6 @@ class ProgressDialog(QtWidgets.QDialog):
 
 
     def update_progress(self, percent, overall_percent):
-        print('Percent: {}   Overall: {}'.format(percent, overall_percent))
         self.ui.progressBar_file.setValue(percent)
         self.ui.progressBar_total.setValue(overall_percent)
         if percent == 100:
@@ -433,5 +422,3 @@ if __name__ == '__main__':
     ui = MyGui(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
-

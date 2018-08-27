@@ -177,7 +177,6 @@ class Hdf5:
                          light, pressure_time, pressure, bearing):
 
         with h5py.File(path.join(self.out_path, self.prefix + '.hdf5'), 'w') as hdf_file:
-            print('Creating new hdf5 file')
             if orient_time is not None:
                 hdf_file.create_dataset('orient_time', (0,), maxshape=(None,), dtype='float64', compression='gzip')
 
