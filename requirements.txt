@@ -7,5 +7,5 @@ pytest-cov
 numpy
 h5py
 PyQt5
--e git+git@github.com:LowellInstruments/lowell-mat.git#egg=lowell-mat
+-e git+git@bitbucket.org:jeff_grant/mat#egg=mat
 
