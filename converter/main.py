@@ -1,3 +1,6 @@
+# GPLv3 License
+# Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
+
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import QThread
 from converter.main_ui import Ui_MainWindow

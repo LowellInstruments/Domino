@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# GPLv3 License
+# Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
 
 # Form implementation generated from reading ui file 'progress.ui'
 #

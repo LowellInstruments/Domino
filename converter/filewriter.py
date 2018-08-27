@@ -1,3 +1,6 @@
+# GPLv3 License
+# Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
+
 """
 filewriter facilitates the writing of a data page to a datafile
 The various formats subclass OutFile
