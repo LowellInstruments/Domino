@@ -1,3 +1,6 @@
+# GPLv3 License
+# Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
+
 from mat import odlfile, converter
 from os import path
 from converter import filewriter
