@@ -15,17 +15,18 @@ help:
 
 VENV = venv
 
+PROJECT_PYFILES = \
+  setup.py \
+  converter/conversion_manager.py \
+  converter/filewriter.py \
+  converter/logger.py \
+  converter/main.py \
+
+
 ifeq ($(OS),Windows_NT)
   CP = copy
   GIT_HOOKS_TARGET = .git\hooks\pre-commit
   GIT_HOOKS_SOURCE = git-hooks\pre-commit
-  PROJECT_PYFILES = \
-    setup.py \
-    converter/conversion_manager.py \
-    converter/filewriter.py \
-    converter/logger.py \
-    converter/main.py \
-
   PYTHON = python
   ACTIVATE = $(VENV)\Scripts\activate
   RMDIR_CMD := rmdir /s /q
@@ -34,7 +35,6 @@ else
   CP = cp
   GIT_HOOKS_TARGET = .git/hooks/pre-commit
   GIT_HOOKS_SOURCE = git-hooks/pre-commit
-  PROJECT_PYFILES = *.py */*.py
   PYTHON = python3
   ACTIVATE_SCRIPT = $(VENV)/bin/activate
   ACTIVATE = export PYTHONPATH=.; . $(ACTIVATE_SCRIPT)
