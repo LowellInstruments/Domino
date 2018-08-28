@@ -74,4 +74,4 @@ test: $(VENV)
 
 
 coverage: $(VENV)
-	@$(ACTIVATE) && pytest --cov=log_parser --cov-report=term --cov-report=html
+	@$(ACTIVATE) ; pytest --cov=converter --cov-report=term --cov-report=html
