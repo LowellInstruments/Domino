@@ -46,7 +46,7 @@ virtualenv:
 	@sudo apt install virtualenv
 
 
-$(VENV): $(NEED_VIRTUALENV) Makefile requirements.txt $(GIT_HOOKS_TARGETS)
+$(VENV): $(NEED_VIRTUALENV) requirements.txt $(GIT_HOOKS_TARGETS)
 	@rm -rf $(VENV)
 	@virtualenv -p `which python3` $@
 	@touch $(ACTIVATE_SCRIPT)
