@@ -31,7 +31,7 @@ help:
 	@echo
 
 
-PROJECT_PYFILES = *.py log_parser/*.py tests/*.py
+PROJECT_PYFILES = *.py */*.py
 VENV = venv
 ACTIVATE_SCRIPT = $(VENV)/bin/activate
 ACTIVATE = export PYTHONPATH=.; . $(ACTIVATE_SCRIPT)
@@ -66,4 +66,4 @@ test: $(VENV)
 
 
 coverage: $(VENV)
-	@$(ACTIVATE) ; pytest --cov=log_parser --cov-report=term --cov-report=html
+	@$(ACTIVATE) ; pytest --cov=converter --cov-report=term --cov-report=html
