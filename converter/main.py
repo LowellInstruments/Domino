@@ -19,6 +19,10 @@ from copy import deepcopy
 
 """
 
+COMBOBOX_CURRENT = 'Current'
+COMBOBOX_COMPASS = 'Compass Heading'
+COMBOBOX_HDF5 = 'Hierarchical Data Format 5 (.hdf5)'
+
 
 class MyGui(Ui_MainWindow):
     def __init__(self, window):
@@ -29,13 +33,16 @@ class MyGui(Ui_MainWindow):
         self.actionConvert.triggered.connect(self.convert_files)
         self.actionDelete.triggered.connect(self.delete_row)
         self.actionClearList.triggered.connect(self.delete_table)
-        self.actionVisit_Lowell_Instruments_Website.triggered.connect(self.visit_website)
+        self.actionVisit_Lowell_Instruments_Website.triggered.connect(
+            self.visit_website)
         self.actionAdd_File_s.triggered.connect(self.open_file)
         self.actionConvert_Files.triggered.connect(self.convert_files)
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_output_options.clicked.connect(self.show_options)
-        self.buttonGroup.buttonToggled.connect(self.toggle_output_file_button_group)
-        self.comboBox_output_type.currentIndexChanged.connect(self.change_ouput_type)
+        self.buttonGroup.buttonToggled.connect(
+            self.toggle_output_file_button_group)
+        self.comboBox_output_type.currentIndexChanged.connect(
+            self.change_ouput_type)
         self.actionOpen_Output_Foler.triggered.connect(self.open_output_foler)
         self.actionAbout.triggered.connect(self.about_slot)
         # self.checkBox_output_same_source.stateChanged.connect(self.checkbox_same_source)
@@ -57,19 +64,21 @@ class MyGui(Ui_MainWindow):
         self.actionAbout.setText(self.version)
 
     def about_slot(self):
-        QtWidgets.QMessageBox.about(self.window, 'About Converter', 'Lowell Instruments 2018\n' + self.version)
+        QtWidgets.QMessageBox.about(self.window,
+                                    'About Converter',
+                                    'Lowell Instruments 2018\n' + self.version)
 
     def open_output_foler(self):
         if os.path.isdir(self.lineEditOutputFolder.text()):
-            try:
-                os.system('explorer.exe "{}"'.format(self.lineEditOutputFolder.text().replace('/', '\\')))
-            except:
-                QtWidgets.QMessageBox.warning(self.window, 'Error', 'There was an error opening the selected folder')
+            os.system('explorer.exe "{}"'.format(
+                self.lineEditOutputFolder.text().replace('/', '\\')))
         else:
-            QtWidgets.QMessageBox.warning(self.window, 'Select Folder', 'You must select an output path')
+            QtWidgets.QMessageBox.warning(self.window,
+                                          'Select Folder',
+                                          'You must select an output path')
 
     def change_ouput_type(self):
-        if self.comboBox_output_type.currentText() == 'Current':
+        if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
             self.comboBox_tilt_tables.setEnabled(True)
         else:
             self.comboBox_tilt_tables.setEnabled(False)
@@ -79,11 +88,14 @@ class MyGui(Ui_MainWindow):
             event.accept()
             return
 
-        status = [table_item.conversion_status for table_item in self.file_list]
+        status = [table_item.conversion_status
+                  for table_item in self.file_list]
         if any([True for s in status if s == 'unconverted']):
-            reply = QtWidgets.QMessageBox.question(self.window, 'Confirm Quit',
-                                                   'There are unconverted file in the queue. '
-                                                   'Are you sure you want to quit?')
+            reply = QtWidgets.QMessageBox.question(
+                self.window,
+                'Confirm Quit',
+                'There are unconverted file in the queue. '
+                'Are you sure you want to quit?')
             if reply == QtWidgets.QMessageBox.Yes:
                 event.accept()
             else:
@@ -92,10 +104,11 @@ class MyGui(Ui_MainWindow):
             event.accept()
 
     def visit_website(self):
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl('http://lowellinstruments.com'))
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(
+            'http://lowellinstruments.com'))
 
     def show_options(self):
-        options_dialog = OptionsDialog(self.window).exec_()
+        OptionsDialog(self.window).exec_()
 
     def delete_row(self):
         row_objects = self.tableWidget.selectionModel().selectedRows()
@@ -107,13 +120,16 @@ class MyGui(Ui_MainWindow):
         for row in rows:
             self.tableWidget.removeRow(row)
 
-        self.file_list = [row for i, row in enumerate(self.file_list) if i not in rows]
+        self.file_list = [row for i, row in enumerate(self.file_list)
+                          if i not in rows]
         self.refresh_table()
 
     def delete_table(self):
         if len(self.file_list) > 0:
-            reply = QtWidgets.QMessageBox.question(self.window, 'Confirm',
-                                                   'Are you sure you want to clear the file list?')
+            reply = QtWidgets.QMessageBox.question(
+                self.window,
+                'Confirm',
+                'Are you sure you want to clear the file list?')
             if reply == QtWidgets.QMessageBox.Yes:
                 for i in range(self.tableWidget.rowCount()):
                     self.tableWidget.removeRow(0)
@@ -124,35 +140,54 @@ class MyGui(Ui_MainWindow):
             directory = sys._MEIPASS
         except AttributeError:
             directory = os.path.dirname(__file__)
-        directory = os.path.abspath(os.path.join(directory, 'Calibration Tables', '*.cal'))
+        directory = os.path.abspath(
+            os.path.join(directory, 'Calibration Tables', '*.cal'))
         self.tilt_tables = glob.glob(directory)
         tilt_tables = []
         for table in self.tilt_tables:
             try:
                 tilt_curve = tiltcurve.TiltCurve(table)
-                tilt_tables.append([tilt_curve.model, tilt_curve.washers, tilt_curve.salinity, tilt_curve.path])
+                tilt_tables.append([tilt_curve.model,
+                                    tilt_curve.washers,
+                                    tilt_curve.salinity,
+                                    tilt_curve.path])
             except:
-                QtWidgets.QMessageBox.warning(self.window, 'Error', 'Error loading ' + table)
-
+                QtWidgets.QMessageBox.warning(self.window,
+                                              'Error',
+                                              'Error loading ' + table)
 
         tilt_tables.sort(key=itemgetter(1))
         tilt_tables.sort(key=itemgetter(0))
         for model, washers, salinity, path in tilt_tables:
-            self.comboBox_tilt_tables.addItem('{} - {} washers - {} water'.format(model, washers, salinity), path)
+            self.comboBox_tilt_tables.addItem(
+                '{} - {} washers - {} water'.format(model, washers, salinity),
+                path)
 
     def save_session(self):
-        appdata.set_userdata('converter-1.dat', 'output_type', self.comboBox_output_type.currentText())
-        appdata.set_userdata('converter-1.dat', 'output_format', self.comboBox_output_format.currentText())
-        appdata.set_userdata('converter-1.dat', 'meter_model', self.comboBox_tilt_tables.currentText())
-        appdata.set_userdata('converter-1.dat', 'same_directory', self.radioButtonOutputSame.isChecked())
-        appdata.set_userdata('converter-1.dat', 'output_directory', self.lineEditOutputFolder.text())
+        appdata.set_userdata('converter-1.dat',
+                             'output_type',
+                             self.comboBox_output_type.currentText())
+        appdata.set_userdata('converter-1.dat',
+                             'output_format',
+                             self.comboBox_output_format.currentText())
+        appdata.set_userdata('converter-1.dat',
+                             'meter_model',
+                             self.comboBox_tilt_tables.currentText())
+        appdata.set_userdata('converter-1.dat',
+                             'same_directory',
+                             self.radioButtonOutputSame.isChecked())
+        appdata.set_userdata('converter-1.dat',
+                             'output_directory',
+                             self.lineEditOutputFolder.text())
 
     def restore_last_session(self):
         application_data = appdata.get_userdata('converter-1.dat')
-        self.comboBox_output_type.setCurrentText(application_data.get('output_type', 'Discrete Channels'))
-        self.comboBox_output_format.setCurrentText(application_data.get('output_format',
-                                                                        'Comma Separated Value (.csv) - (slow)'))
-        tilt_curve_ind = self.comboBox_tilt_tables.findText(application_data.get('meter_model', ''))
+        self.comboBox_output_type.setCurrentText(application_data.get(
+            'output_type', 'Discrete Channels'))
+        self.comboBox_output_format.setCurrentText(application_data.get(
+            'output_format', 'Comma Separated Value (.csv) - (slow)'))
+        tilt_curve_ind = self.comboBox_tilt_tables.findText(
+            application_data.get('meter_model', ''))
         tilt_curve_ind = 0 if tilt_curve_ind == -1 else tilt_curve_ind
         self.comboBox_tilt_tables.setCurrentIndex(tilt_curve_ind)
         same_directory = application_data.get('same_directory', True)
@@ -160,10 +195,12 @@ class MyGui(Ui_MainWindow):
             self.radioButtonOutputSame.setChecked(True)
         else:
             self.radioButtonOutputDirectory.setChecked(True)
-        self.lineEditOutputFolder.setText(application_data.get('output_directory', ''))
+        self.lineEditOutputFolder.setText(
+            application_data.get('output_directory', ''))
 
     def choose_output_directory(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(caption='Select output directory')
+        directory = QtWidgets.QFileDialog.getExistingDirectory(
+            caption='Select output directory')
         self.lineEditOutputFolder.setText(directory)
 
     def toggle_output_file_button_group(self):
@@ -178,9 +215,13 @@ class MyGui(Ui_MainWindow):
 
     def open_file(self):
         application_data = appdata.get_userdata('converter-1.dat')
-        last_directory = application_data['last_directory'] if 'last_directory' in application_data else ''
+        last_directory = (application_data['last_directory']
+                          if 'last_directory' in application_data else '')
         file_paths = QtWidgets.QFileDialog.getOpenFileNames(
-            self.window, 'Open Lowell Instruments Data File', last_directory, 'Data Files (*.lid *.lis)')
+            self.window,
+            'Open Lowell Instruments Data File',
+            last_directory,
+            'Data Files (*.lid *.lis)')
 
         if not file_paths[0]:
             return
@@ -189,7 +230,8 @@ class MyGui(Ui_MainWindow):
         appdata.set_userdata('converter-1.dat', 'last_directory', directory)
         existing_file_paths = [this_file.path for this_file in self.file_list]
         self.file_loader = FileLoader(file_paths[0], existing_file_paths)
-        self.file_loader.load_complete_signal.connect(self.extend_file_list_slot)
+        self.file_loader.load_complete_signal.connect(
+            self.extend_file_list_slot)
         self.file_loader.load_error_signal.connect(self.file_warning)
         self.file_loader.start()
 
@@ -205,15 +247,25 @@ class MyGui(Ui_MainWindow):
         self.tableWidget.setRowCount(len(self.file_list))
         for i, table_item in enumerate(self.file_list):
             if table_item.conversion_status == 'unconverted':
-                self.tableWidget.setItem(i, 0, self.make_table_widget(table_item.filename))
+                self.tableWidget.setItem(
+                    i, 0, self.make_table_widget(table_item.filename))
             elif table_item.conversion_status == 'converted':
-                self.tableWidget.setItem(i, 0, self.make_table_widget('\u2714 ' + table_item.filename))
+                self.tableWidget.setItem(
+                    i, 0, self.make_table_widget('\u2714 ' +
+                                                 table_item.filename))
             elif table_item.conversion_status == 'failed':
-                self.tableWidget.setItem(i, 0, self.make_table_widget('\u2718 ' + table_item.filename))
-            self.tableWidget.setItem(i, 1, self.make_table_widget(table_item.folder))
-            self.tableWidget.setItem(i, 2, self.make_table_widget('{:.3f}MB'.format(table_item.size)))
-            self.tableWidget.setItem(i, 3, self.make_table_widget(table_item.start_time))
-            self.tableWidget.setItem(i, 4, self.make_table_widget(table_item.end_time))
+                self.tableWidget.setItem(
+                    i, 0, self.make_table_widget('\u2718 ' +
+                                                 table_item.filename))
+            self.tableWidget.setItem(
+                i, 1, self.make_table_widget(table_item.folder))
+            self.tableWidget.setItem(
+                i, 2, self.make_table_widget(
+                    '{:.3f}MB'.format(table_item.size)))
+            self.tableWidget.setItem(
+                i, 3, self.make_table_widget(table_item.start_time))
+            self.tableWidget.setItem(
+                i, 4, self.make_table_widget(table_item.end_time))
 
     def make_table_widget(self, string):
         item = QtWidgets.QTableWidgetItem(string)
@@ -233,40 +285,58 @@ class MyGui(Ui_MainWindow):
             return
 
         application_data = appdata.get_userdata('converter-1.dat')
-        parameters = {'out_path': None, 'output_format': 'csv', 'output_type': 'discrete', 'average': True,
-                      'tilt_curve': None, 'custom_calibration': None, 'time_format': 'iso8601', 'declination': 0}
+        parameters = {'out_path': None,
+                      'output_format': 'csv',
+                      'output_type': 'discrete',
+                      'average': True,
+                      'tilt_curve': None,
+                      'custom_calibration': None,
+                      'time_format': 'iso8601',
+                      'declination': 0}
 
         if self.radioButtonOutputDirectory.isChecked():
             parameters['out_path'] = self.lineEditOutputFolder.text()
             if not os.path.isdir(self.lineEditOutputFolder.text()):
-                QtWidgets.QMessageBox.warning(self.window, 'Select Folder', 'You must select an output path')
+                QtWidgets.QMessageBox.warning(self.window,
+                                              'Select Folder',
+                                              'You must select an output path')
                 return
 
-        parameters['time_format'] = application_data.get('time_format', 'iso8601')
+        parameters['time_format'] = application_data.get('time_format',
+                                                         'iso8601')
         parameters['average'] = application_data.get('average_bursts', True)
         if application_data.get('is_declination', False):
-            parameters['declination'] = float(application_data.get('declination', 0))
+            parameters['declination'] = float(
+                application_data.get('declination', 0))
 
-        if self.comboBox_output_type.currentText() == 'Current':
+        if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
             parameters['output_type'] = 'current'
-            parameters['tilt_curve'] = tiltcurve.TiltCurve(self.comboBox_tilt_tables.currentData())
+            parameters['tilt_curve'] = tiltcurve.TiltCurve(
+                self.comboBox_tilt_tables.currentData())
 
-        elif self.comboBox_output_type.currentText() == 'Compass Heading':
+        elif self.comboBox_output_type.currentText() == COMBOBOX_COMPASS:
             parameters['output_type'] = 'compass'
 
-        if self.comboBox_output_format.currentText() == 'Hierarchical Data Format 5 (.hdf5)':
+        if self.comboBox_output_format.currentText() == COMBOBOX_HDF5:
             parameters['output_format'] = 'hdf5'
 
-        # pass the files and parameters off to the FileConverter thread for processing
+        # pass the files and parameters off to the FileConverter
+        # thread for processing
         self.conversion = FileConverter(self.file_list, parameters)
         self.progress_dialog = ProgressDialog(self.window)
-        self.progress_dialog.ui.pushButton.clicked.connect(self.conversion.cancel)
-        self.progress_dialog.ui.pushButton.clicked.connect(self.progress_dialog.click_cancel)
+        self.progress_dialog.ui.pushButton.clicked.connect(
+            self.conversion.cancel)
+        self.progress_dialog.ui.pushButton.clicked.connect(
+            self.progress_dialog.click_cancel)
 
-        self.conversion.progress_signal.connect(self.progress_dialog.update_progress)
-        self.conversion.conversion_status_signal.connect(self.progress_dialog.update_status)
-        self.conversion.conversion_complete.connect(self.progress_dialog.conversion_complete)
-        self.conversion.conversion_complete.connect(self.conversion_complete_slot)
+        self.conversion.progress_signal.connect(
+            self.progress_dialog.update_progress)
+        self.conversion.conversion_status_signal.connect(
+            self.progress_dialog.update_status)
+        self.conversion.conversion_complete.connect(
+            self.progress_dialog.conversion_complete)
+        self.conversion.conversion_complete.connect(
+            self.conversion_complete_slot)
 
         self.progress_dialog.show()
         self.conversion.start()
@@ -289,13 +359,11 @@ class FileLoader(QThread):
     def run(self):
         for this_path in self.new_paths:
             if this_path not in self.existing_paths:
-                # if the file isn't already in the list, create a new TableItem object
-                with open(this_path, 'rb') as fid:
-                    try:
-                        table_item = TableItem(this_path)
-                        self.load_complete_signal.emit([table_item])
-                    except:
-                        self.load_error_signal.emit(this_path)
+                try:
+                    table_item = TableItem(this_path)
+                    self.load_complete_signal.emit([table_item])
+                except:
+                    self.load_error_signal.emit(this_path)
 
 
 class FileConverter(QThread):
@@ -317,12 +385,15 @@ class FileConverter(QThread):
             if not self._is_running:
                 break
             self.current_file_ind = i
-            self.conversion_status_signal.emit(this_table_item.filename, i+1, len(self.table_items))
+            self.conversion_status_signal.emit(this_table_item.filename,
+                                               i+1,
+                                               len(self.table_items))
             if not os.path.isfile(this_table_item.path):
                 self.table_items[i].conversion_status = 'file_not_found'
                 continue
             try:
-                self.this_manager = conversion_manager.ConversionManager(this_table_item.path, **self.parameters)
+                self.this_manager = conversion_manager.ConversionManager(
+                    this_table_item.path, **self.parameters)
                 self.this_manager.add_observer(self.update_progress)
                 self.this_manager.convert()
                 self.table_items[i].conversion_status = 'converted'
@@ -331,10 +402,14 @@ class FileConverter(QThread):
         self.conversion_complete.emit(self.table_items)
 
     def update_progress(self, percent):
-        # This is an observer function that gets notified when a data page is parsed
+        # This is an observer function that gets notified when a data
+        # page is parsed
+
         self.this_manager._is_running = self._is_running
-        cumulative_mb = sum([table_item.size for table_item in self.table_items[:self.current_file_ind]])
-        cumulative_mb += self.table_items[self.current_file_ind].size * (percent/100)
+        cumulative_mb = sum([table_item.size for table_item
+                             in self.table_items[:self.current_file_ind]])
+        cumulative_mb += (self.table_items[self.current_file_ind].size *
+                          (percent/100))
         overall_percent = cumulative_mb / self.total_mb
         overall_percent *= 100
         self.progress_signal.emit(percent, overall_percent)
@@ -350,9 +425,11 @@ class TableItem:
             self.path = path
             self.folder, self.filename = os.path.split(os.path.abspath(path))
             self.size = odl_file.file_size / 1024 ** 2
-            self.start_time = datetime.utcfromtimestamp(odl_file.page_start_times[0]).isoformat()
-            self.end_time = datetime.utcfromtimestamp(odl_file.end_time).isoformat()
-        self.conversion_status = 'unconverted'  # other states: converted, failed, file_not_found
+            self.start_time = datetime.utcfromtimestamp(
+                odl_file.page_start_times[0]).isoformat()
+            self.end_time = datetime.utcfromtimestamp(
+                odl_file.end_time).isoformat()
+        self.conversion_status = 'unconverted'
 
 
 class ProgressDialog(QtWidgets.QDialog):
@@ -362,7 +439,6 @@ class ProgressDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('File Conversion Progress')
 
-
     def update_progress(self, percent, overall_percent):
         self.ui.progressBar_file.setValue(percent)
         self.ui.progressBar_total.setValue(overall_percent)
@@ -371,7 +447,8 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def update_status(self, filename, i, total_files):
         self.ui.progressBar_file.setValue(0)
-        self.ui.label_status.setText('Converting {} - File {} of {}'.format(filename, i, total_files))
+        self.ui.label_status.setText(
+            'Converting {} - File {} of {}'.format(filename, i, total_files))
 
     def conversion_complete(self):
         self.close()
@@ -389,10 +466,14 @@ class OptionsDialog(QtWidgets.QDialog):
         self.setWindowTitle('File Output Options')
         self.ui.pushButton_save.clicked.connect(self.save)
         self.ui.pushButton_cancel.clicked.connect(self.cancel)
-        self.button_mapping = {'radioButton_iso8601_time': 'iso8601', 'radioButton_legacy_time': 'legacy',
-                               'radioButton_elapsed_time': 'elapsed', 'radioButton_posix_time': 'posix',
-                               'iso8601': 'radioButton_iso8601_time', 'legacy': 'radioButton_legacy_time',
-                               'elapsed': 'radioButton_elapsed_time', 'posix': 'radioButton_posix_time'}
+        self.button_mapping = {'radioButton_iso8601_time': 'iso8601',
+                               'radioButton_legacy_time': 'legacy',
+                               'radioButton_elapsed_time': 'elapsed',
+                               'radioButton_posix_time': 'posix',
+                               'iso8601': 'radioButton_iso8601_time',
+                               'legacy': 'radioButton_legacy_time',
+                               'elapsed': 'radioButton_elapsed_time',
+                               'posix': 'radioButton_posix_time'}
         self.load_saved()
 
     def load_saved(self):
@@ -400,16 +481,27 @@ class OptionsDialog(QtWidgets.QDialog):
         time_format = application_data.get('time_format', 'iso8601')
         time_format_button_name = self.button_mapping[time_format]
         getattr(self.ui, time_format_button_name).setChecked(True)
-        self.ui.checkBox_average_bursts.setChecked(application_data.get('average_bursts', True))
-        self.ui.checkBox_declination.setChecked(application_data.get('is_declination', True))
-        self.ui.lineEdit_declination.setText(application_data.get('declination', '0'))
+        self.ui.checkBox_average_bursts.setChecked(application_data.get(
+            'average_bursts', True))
+        self.ui.checkBox_declination.setChecked(application_data.get(
+            'is_declination', True))
+        self.ui.lineEdit_declination.setText(application_data.get(
+            'declination', '0'))
 
     def save(self):
-        time_format_button_name = self.ui.buttonGroup.checkedButton().objectName()
-        appdata.set_userdata('converter-1.dat', 'time_format', self.button_mapping[time_format_button_name])
-        appdata.set_userdata('converter-1.dat', 'average_bursts', self.ui.checkBox_average_bursts.isChecked())
-        appdata.set_userdata('converter-1.dat', 'is_declination', self.ui.checkBox_declination.isChecked())
-        appdata.set_userdata('converter-1.dat', 'declination', self.ui.lineEdit_declination.text())
+        button_name = self.ui.buttonGroup.checkedButton().objectName()
+        appdata.set_userdata('converter-1.dat',
+                             'time_format',
+                             self.button_mapping[button_name])
+        appdata.set_userdata('converter-1.dat',
+                             'average_bursts',
+                             self.ui.checkBox_average_bursts.isChecked())
+        appdata.set_userdata('converter-1.dat',
+                             'is_declination',
+                             self.ui.checkBox_declination.isChecked())
+        appdata.set_userdata('converter-1.dat',
+                             'declination',
+                             self.ui.lineEdit_declination.text())
         self.hide()
 
     def cancel(self):

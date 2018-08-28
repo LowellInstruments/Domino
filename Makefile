@@ -31,7 +31,7 @@ help:
 	@echo
 
 
-PROJECT_PYFILES = *.py log_parser/*.py tests/*.py
+PROJECT_PYFILES = *.py */*.py
 VENV = venv
 ACTIVATE_SCRIPT = $(VENV)/bin/activate
 ACTIVATE = export PYTHONPATH=.; . $(ACTIVATE_SCRIPT)
