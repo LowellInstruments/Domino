@@ -37,7 +37,7 @@ else
   GIT_HOOKS_SOURCE = git-hooks/pre-commit
   PYTHON = python3
   VENV_PYTHON = -p $(PYTHON)
-  ACTIVATE = export PYTHONPATH=.; $(VENV)/bin/activate
+  ACTIVATE = export PYTHONPATH=.; . $(VENV)/bin/activate
   RMDIR_CMD = rm -rf
   virtualenv = $(shell which virtualenv)
 endif
