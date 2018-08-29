@@ -4,8 +4,7 @@ flake8
 mock
 pytest
 pytest-cov
-
 numpy
 h5py
-PyQt5
+PyQt5==5.9.2
 -e git+git@github.com:LowellInstruments/lowell-mat.git#egg=lowell-mat

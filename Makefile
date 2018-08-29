@@ -27,6 +27,7 @@ ifeq ($(OS),Windows_NT)
   CP = copy
   GIT_HOOKS_TARGET = .git\hooks\pre-commit
   GIT_HOOKS_SOURCE = git-hooks\pre-commit
+  PYTHON = python
   ACTIVATE = $(VENV)\Scripts\activate && set PYTHONPATH=.
   RMDIR_CMD := rmdir /s /q
   virtualenv = $(shell where virtualenv.exe)
@@ -34,7 +35,8 @@ else
   CP = cp
   GIT_HOOKS_TARGET = .git/hooks/pre-commit
   GIT_HOOKS_SOURCE = git-hooks/pre-commit
-  PYTHON = -p python3
+  PYTHON = python3
+  VENV_PYTHON = -p $(PYTHON)
   ACTIVATE = export PYTHONPATH=.; $(VENV)/bin/activate
   RMDIR_CMD = rm -rf
   virtualenv = $(shell which virtualenv)
@@ -55,7 +57,7 @@ virtualenv:
 
 $(VENV): $(NEED_VIRTUALENV) requirements.txt $(GIT_HOOKS_TARGET)
 	@-$(RMDIR_CMD) $(VENV)
-	@virtualenv $(PYTHON) $@
+	@virtualenv $(VENV_PYTHON) $@
 	@$(ACTIVATE) && pip install -r requirements.txt
 
 
