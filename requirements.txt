@@ -4,6 +4,8 @@ flake8
 mock
 pytest
 pytest-cov
+pyinstaller
+
 numpy
 h5py
 PyQt5==5.9.2

@@ -74,4 +74,10 @@ test: $(VENV)
 
 
 coverage: $(VENV)
-	@$(ACTIVATE) && pytest --cov=converter --cov-report=term --cov-report=html
+	@$(ACTIVATE) && pytest --cov=converter --cov-report=term \
+	  --cov-report=html
+
+package: $(VENV)
+	@$(ACTIVATE) && pyinstaller converter/main.py \
+	  --add-data "converter/Calibration Tables:Calibration Tables" \
+	  --onefile --noconsole
