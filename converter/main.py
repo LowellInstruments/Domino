@@ -147,8 +147,9 @@ class MyGui(Ui_MainWindow):
         for table in self.tilt_tables:
             try:
                 tilt_curve = tiltcurve.TiltCurve(table)
+                tilt_curve.parse()
                 tilt_tables.append([tilt_curve.model,
-                                    tilt_curve.washers,
+                                    tilt_curve.ballast,
                                     tilt_curve.salinity,
                                     tilt_curve.path])
             except:
@@ -158,9 +159,9 @@ class MyGui(Ui_MainWindow):
 
         tilt_tables.sort(key=itemgetter(1))
         tilt_tables.sort(key=itemgetter(0))
-        for model, washers, salinity, path in tilt_tables:
+        for model, ballast, salinity, path in tilt_tables:
             self.comboBox_tilt_tables.addItem(
-                '{} - {} washers - {} water'.format(model, washers, salinity),
+                '{} - {} ballast - {} water'.format(model, ballast, salinity),
                 path)
 
     def save_session(self):

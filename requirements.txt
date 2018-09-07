@@ -9,4 +9,4 @@ pyinstaller
 numpy
 h5py
 PyQt5==5.9.2
--e git+git@github.com:LowellInstruments/lowell-mat.git#egg=lowell-mat
+-e git+http://github.com/LowellInstruments/lowell-mat.git#egg=lowell-mat

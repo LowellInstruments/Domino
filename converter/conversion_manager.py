@@ -16,7 +16,7 @@ class ConversionManager:
     def __init__(self, full_file_path, out_path=None, output_format='csv',
                  output_type='discrete', average=True,
                  tilt_curve=None, custom_calibration=None,
-                 time_format='iso8601', declination=0, host_storage=None):
+                 time_format='iso8601', declination=0, calibration=None):
         """
         If out_path is None, write output file same folder as input
         """
@@ -30,7 +30,7 @@ class ConversionManager:
         self.custom_calibration = custom_calibration
         self.time_format = time_format
         self.declination = declination
-        self.host_storage = host_storage
+        self.calibration = calibration
 
         # Setup the file writer
         if output_format == 'csv':
@@ -56,12 +56,12 @@ class ConversionManager:
 
         with open(self.full_file_path, 'rb') as infile:
             odl = odlfile.load_file(infile)  # type: odlfile.OdlFile
-            if self.host_storage is not None:
+            if self.calibration is not None:
                 # If a host storage file was specified, use it
-                conv = converter.Converter(self.host_storage)
+                conv = converter.Converter(self.calibration)
             else:
                 # Otherwise use the factory host storage
-                conv = converter.Converter(odl.hoststorage)
+                conv = converter.Converter(odl.calibration)
 
             bmn = odl.header.orientation_burst_count
 
