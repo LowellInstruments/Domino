@@ -152,7 +152,7 @@ class MyGui(Ui_MainWindow):
                                     tilt_curve.ballast,
                                     tilt_curve.salinity,
                                     tilt_curve.path])
-            except:
+            except (FileNotFoundError, UnicodeDecodeError, ValueError):
                 QtWidgets.QMessageBox.warning(self.window,
                                               'Error',
                                               'Error loading ' + table)
@@ -363,7 +363,7 @@ class FileLoader(QThread):
                 try:
                     table_item = TableItem(this_path)
                     self.load_complete_signal.emit([table_item])
-                except:
+                except (FileNotFoundError, TypeError, ValueError):
                     self.load_error_signal.emit(this_path)
 
 
@@ -398,7 +398,7 @@ class FileConverter(QThread):
                 self.this_manager.add_observer(self.update_progress)
                 self.this_manager.convert()
                 self.table_items[i].conversion_status = 'converted'
-            except:
+            except (FileNotFoundError, TypeError, ValueError):
                 self.table_items[i].conversion_status = 'failed'
         self.conversion_complete.emit(self.table_items)
 
