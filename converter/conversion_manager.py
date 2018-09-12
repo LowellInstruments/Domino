@@ -5,6 +5,14 @@ from mat import odlfile, converter
 from os import path
 from converter import filewriter
 import numpy as np
+from mat.header import (
+    IS_ACCELEROMETER,
+    IS_MAGNETOMETER,
+    IS_PHOTO_DIODE,
+    IS_PRESSURE,
+    IS_TEMPERATURE,
+    ORIENTATION_BURST_COUNT,
+)
 
 
 MISSING_CONVERSION_ERROR = (
@@ -63,7 +71,7 @@ class ConversionManager:
                 # Otherwise use the factory host storage
                 conv = converter.Converter(odl.calibration)
 
-            bmn = odl.header.orientation_burst_count
+            bmn = odl.header.tag(ORIENTATION_BURST_COUNT)
 
             for i in range(odl.n_pages):
                 if not self._is_running:
@@ -74,7 +82,7 @@ class ConversionManager:
                 # averaging is enabled, average the channels first
                 # here
 
-                if odl.header.is_temperature:
+                if odl.header.tag(IS_TEMPERATURE):
                     temperature_raw = odl.temperature()
                     temperature_raw[temperature_raw == 0] = 1
                     temperature = conv.temperature(temperature_raw)
@@ -83,14 +91,14 @@ class ConversionManager:
                         odl.page_start_times[i] +
                         odl.page_time_offset[odl.is_temp][:shape_end])
 
-                if odl.header.is_photo_diode:
+                if odl.header.tag(IS_PHOTO_DIODE):
                     light_raw = odl.light()
                     light = conv.light(light_raw)
                     temperature_time = (
                         odl.page_start_times[i] +
                         odl.page_time_offset[odl.is_light][:light.shape[0]])
 
-                if odl.header.is_accelerometer:
+                if odl.header.tag(IS_ACCELEROMETER):
                     accelerometer_raw = odl.accelerometer()
                     # make sure the length is n * bmn
                     orient_len = int(np.floor(accelerometer_raw.shape[1] /
@@ -107,7 +115,7 @@ class ConversionManager:
 
                     accelerometer = conv.accelerometer(accelerometer_raw)
 
-                if odl.header.is_magnetometer:
+                if odl.header.tag(IS_MAGNETOMETER):
                     magnetometer_raw = odl.magnetometer()
                     orient_len = int(
                         np.floor(magnetometer_raw.shape[1] / bmn) * bmn)
@@ -122,7 +130,7 @@ class ConversionManager:
 
                     magnetometer = conv.magnetometer(magnetometer_raw)
 
-                if odl.header.is_pressure:
+                if odl.header.tag(IS_PRESSURE):
                     pressure_raw = odl.pressure()
                     pressure = conv.pressure(pressure_raw)
                     pressure_time = (
