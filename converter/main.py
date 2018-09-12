@@ -147,20 +147,21 @@ class MyGui(Ui_MainWindow):
         for table in self.tilt_tables:
             try:
                 tilt_curve = tiltcurve.TiltCurve(table)
+                tilt_curve.parse()
                 tilt_tables.append([tilt_curve.model,
-                                    tilt_curve.washers,
+                                    tilt_curve.ballast,
                                     tilt_curve.salinity,
                                     tilt_curve.path])
-            except:
+            except (FileNotFoundError, UnicodeDecodeError, ValueError):
                 QtWidgets.QMessageBox.warning(self.window,
                                               'Error',
                                               'Error loading ' + table)
 
         tilt_tables.sort(key=itemgetter(1))
         tilt_tables.sort(key=itemgetter(0))
-        for model, washers, salinity, path in tilt_tables:
+        for model, ballast, salinity, path in tilt_tables:
             self.comboBox_tilt_tables.addItem(
-                '{} - {} washers - {} water'.format(model, washers, salinity),
+                '{} - {} ballast - {} water'.format(model, ballast, salinity),
                 path)
 
     def save_session(self):
@@ -362,7 +363,7 @@ class FileLoader(QThread):
                 try:
                     table_item = TableItem(this_path)
                     self.load_complete_signal.emit([table_item])
-                except:
+                except (FileNotFoundError, TypeError, ValueError):
                     self.load_error_signal.emit(this_path)
 
 
@@ -397,7 +398,7 @@ class FileConverter(QThread):
                 self.this_manager.add_observer(self.update_progress)
                 self.this_manager.convert()
                 self.table_items[i].conversion_status = 'converted'
-            except:
+            except (FileNotFoundError, TypeError, ValueError):
                 self.table_items[i].conversion_status = 'failed'
         self.conversion_complete.emit(self.table_items)
 
