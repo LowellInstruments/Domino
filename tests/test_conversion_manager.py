@@ -2,15 +2,16 @@
 # Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
 
 import os
-from converter.conversion_manager import ConversionManager
+from mat.data_converter import DataConverter
+
 
 class TestConversionManager(object):
     def test_creation(self):
-        assert ConversionManager("no file")
+        assert DataConverter("no file")
 
     def test_conversion(self):
         full_file_path = reference_file("test.lid")
-        manager = ConversionManager(full_file_path, average=False)
+        manager = DataConverter(full_file_path, average=False)
         manager.convert()
         assert_compare_expected_file("test_accelmag.csv")
         assert_compare_expected_file("test_temperature.csv")

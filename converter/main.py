@@ -401,7 +401,7 @@ class FileConverter(QThread):
                 self.table_items[i].conversion_status = 'failed'
         self.conversion_complete.emit(self.table_items)
 
-    def update_progress(self, percent):
+    def update_progress(self, percent_done):
         # This is an observer function that gets notified when a data
         # page is parsed
         if not self._is_running:
@@ -409,10 +409,10 @@ class FileConverter(QThread):
         cumulative_mb = sum([table_item.size for table_item
                              in self.table_items[:self.current_file_ind]])
         cumulative_mb += (self.table_items[self.current_file_ind].size *
-                          (percent/100))
+                          (percent_done/100))
         overall_percent = cumulative_mb / self.total_mb
         overall_percent *= 100
-        self.progress_signal.emit(percent, overall_percent)
+        self.progress_signal.emit(percent_done, overall_percent)
 
     def cancel(self):
         self._is_running = False
