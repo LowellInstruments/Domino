@@ -14,7 +14,7 @@ import time
 import glob
 from operator import itemgetter
 from copy import deepcopy
-from mat.data_converter import DataConverter
+from mat.data_converter import DataConverter, ConversionParameters
 from mat.data_file_factory import load_data_file
 
 COMBOBOX_CURRENT = 'Current'
@@ -284,17 +284,16 @@ class MyGui(Ui_MainWindow):
             return
 
         application_data = appdata.get_userdata('converter-1.dat')
-        parameters = {'out_path': None,
+        parameters = {'output_directory': None,
                       'output_format': 'csv',
                       'output_type': 'discrete',
                       'average': True,
                       'tilt_curve': None,
-                      'custom_calibration': None,
                       'time_format': 'iso8601',
                       'declination': 0}
-
+        # 'custom_calibration': None -- temporarily removed from above dict
         if self.radioButtonOutputDirectory.isChecked():
-            parameters['out_path'] = self.lineEditOutputFolder.text()
+            parameters['output_directory'] = self.lineEditOutputFolder.text()
             if not os.path.isdir(self.lineEditOutputFolder.text()):
                 QtWidgets.QMessageBox.warning(self.window,
                                               'Select Folder',
@@ -321,6 +320,7 @@ class MyGui(Ui_MainWindow):
 
         # pass the files and parameters off to the FileConverter
         # thread for processing
+
         self.conversion = FileConverter(self.file_list, parameters)
         self.progress_dialog = ProgressDialog(self.window)
         self.progress_dialog.ui.pushButton.clicked.connect(
@@ -392,8 +392,10 @@ class FileConverter(QThread):
                 self.table_items[i].conversion_status = 'file_not_found'
                 continue
             try:
-                self.converter = DataConverter(this_table_item.path,
-                                               **self.parameters)
+                conversion_parameters = ConversionParameters(
+                                            this_table_item.path,
+                                            **self.parameters)
+                self.converter = DataConverter(conversion_parameters)
                 self.converter.register_observer(self.update_progress)
                 self.converter.convert()
                 self.table_items[i].conversion_status = 'converted'
