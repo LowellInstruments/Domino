@@ -82,7 +82,7 @@ test: $(VENV)
 
 
 coverage: $(VENV)
-	@$(ACTIVATE) && pytest --cov=converter --cov-report=term \
+	@$(ACTIVATE) && pytest --cov=setup_file --cov-report=term \
 	  --cov-report=html
 
 dist: $(VENV)
