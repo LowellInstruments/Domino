@@ -1,0 +1,19 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/icons8-cancel-48.png</file>
+    <file>icons/icons8-private-48.png</file>
+    <file>icons/icons8-timer-48.png</file>
+    <file>icons/icons8-menu-48.png</file>
+    <file>icons/icons8-running-rabbit-48.png</file>
+    <file>icons/convert.png</file>
+    <file>icons/icons8-Add File-48.png</file>
+    <file>icons/icons8-Circled Play.png</file>
+    <file>icons/icons8-Delete File.png</file>
+    <file>icons/icons8-services-48.png</file>
+    <file>icons/icons8-settings-48.png</file>
+    <file>icons/settings.png</file>
+    <file>icons/usb.png</file>
+    <file>icons/icons8-go-48.png</file>
+    <file>icons/icons8-stop-sign-48.png</file>
+  </qresource>
+</RCC>
