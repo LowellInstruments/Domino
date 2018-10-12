@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Start/Stop Device"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Convert Files"))
 
-import icons_rc
+from . import icons_rc
 
 if __name__ == "__main__":
     import sys

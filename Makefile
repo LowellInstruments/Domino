@@ -74,7 +74,7 @@ code-check: $(VENV)
 
 
 run: $(VENV)
-	@$(ACTIVATE) && $(PYTHON) -m converter.main
+	@$(ACTIVATE) && $(PYTHON) -m gui.main
 
 
 test: $(VENV)
