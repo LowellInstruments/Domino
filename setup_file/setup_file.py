@@ -1,33 +1,58 @@
-import numpy as np
-from datetime import datetime
 import os
+from datetime import datetime
 from mat.utils import parse_tags
+from numpy import array, logical_or, logical_and
+from pathlib import Path
+from re import search
+
+
+"""
+Important implementation notes:
+TRI must be >= ORI unless it is disabled
+If the 
+
+"""
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
 TYPE_BOOL = ('ACL', 'LED', 'MGN', 'TMP', 'PRS', 'PHD')
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-PRINT_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
+WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
                'STM', 'ETM', 'LED', 'PRS', 'PHD', 'PRR', 'PRN']
-INTERVALS = np.array([1, 2, 5, 10, 15, 20, 30, 60,
-                      120, 300, 600, 900, 1800, 3600])
-INTERVAL_STRING = np.array(['1 second', '2 seconds', '5 seconds', '10 seconds',
-                            '15 seconds', '20 seconds', '30 seconds',
-                            '1 minute', '2 minutes', '5 minutes', '10 minutes',
-                            '15 minutes', '30 minutes', '1 hour'],
-                           dtype=object)
-BURST_FREQUENCY = np.array([2, 4, 8, 16, 32, 64])
+INTERVALS = array([1, 2, 5, 10, 15, 20, 30, 60,
+                   120, 300, 600, 900, 1800, 3600])
+INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
+                         '15 seconds', '20 seconds', '30 seconds',
+                         '1 minute', '2 minutes', '5 minutes', '10 minutes',
+                         '15 minutes', '30 minutes', '1 hour'],
+                        dtype=object)
+BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
 DEFAULT_SETUP = {'DFN': 'untitled.lid', 'TMP': True, 'ACL': True,
                  'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 2, 'BMN': 1,
                  'STM': '1970-01-01 00:00:00',
                  'ETM': '4096-01-01 00:00:00',
                  'LED': False, 'PRS': False,
                  'PHD': False, 'PRR': 0, 'PRN': 0}
+FILE_NAME = 'DFN'
+TEMPERATURE_ENABLED = 'TMP'
+ACCELEROMETER_ENABLED = 'ACL'
+MAGNETOMETER_ENABLED = 'MGN'
+PRESSURE_ENABLED = 'PRS'
+PHOTO_DIODE_ENABLED = 'PHD'
+TEMPERATURE_INTERVAL = 'TRI'
+ORIENTATION_INTERVAL = 'ORI'
+ORIENTATION_BURST_RATE = 'BMR'
+ORIENTATION_BURST_COUNT = 'BMN'
+START_TIME = 'STM'
+END_TIME = 'ETM'
+LED_ENABLED = 'LED'
+PRESSURE_BURST_RATE = 'PRR'
+PRESSURE_BURST_COUNT = 'PRN'
 
 
 class SetupFile:
     def __init__(self, setup_dict=None):
-        self._setup_dict = setup_dict if setup_dict else DEFAULT_SETUP
+        self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
 
     @classmethod
     def load_from_file(cls, filename):
@@ -35,7 +60,7 @@ class SetupFile:
             setup_file_string = fid.read().decode('IBM437')
         setup_file_string = cls._remove_comments(setup_file_string)
         setup_dict = parse_tags(setup_file_string)
-        cls._convert_to_type(setup_dict)
+        setup_dict = cls._convert_to_type(setup_dict)
         return cls(setup_dict)
 
     @staticmethod
@@ -52,155 +77,139 @@ class SetupFile:
                 setup_dict[tag] = int(value)
             if tag in TYPE_BOOL:
                 setup_dict[tag] = value == '1'
+        return setup_dict
 
-    def available_tri(self):
+    def value(self, tag):
+        return self._setup_dict[tag]
+
+    def available_intervals(self, sensor):
         """
-        Logical array (mask) for self.intervals of available tri intervals
+        Available orientation and temperature intervals must be calculated
+        in coordination with each other.
+        Logical array (mask) of available orientation or temperature intervals
         """
-        if self.orient_interval == 0:
-            return INTERVALS > 0  # all values are available because orient is disabled
+        if sensor not in ['temperature', 'orientation']:
+            raise ValueError('Unknown sensor {}'.format(sensor))
+        opposite_interval = self._opposite_interval(sensor)
+        if sensor is 'temperature':
+            return logical_and(self._factors_and_multiples(opposite_interval),
+                               INTERVALS >= opposite_interval)
+        return self._factors_and_multiples(opposite_interval)
 
-        is_available = np.logical_or(INTERVALS % self._setup_dict['ORI'] == 0,
-                                     self._setup_dict['ORI'] % INTERVALS == 0)
-        return is_available
+    def _opposite_interval(self, sensor):
+        if sensor is 'orientation':
+            return self.value(TEMPERATURE_INTERVAL)
+        return self.value(ORIENTATION_INTERVAL)
 
-    def available_ori(self):
-        """
-        Logical array (mask) for self.intervals of available ori intervals
-        """
-        if self.orient_interval == 0:
-            return INTERVALS > 0  # all values are available because orient is disabled
+    def _factors_and_multiples(self, interval):
+        return logical_or(INTERVALS % interval == 0,
+                          interval % INTERVALS == 0)
 
-        is_available = np.logical_or(INTERVALS % self._setup_dict['TRI'] == 0,
-                                     self._setup_dict['TRI'] % INTERVALS == 0)
-        return is_available
+    def set_filename(self, filename):
+        if not search(r'^[a-zA-Z0-9_\- ]{3,11}\.lid$', filename):
+            raise ValueError('Filename error')
+        self._setup_dict[FILE_NAME] = filename
 
-    @property
-    def filename(self):
-        return self._setup_dict['DFN']
-
-    @filename.setter
-    def filename(self, filename):
-        if len(filename) > 15:
-            raise ValueError('filename must be 15 characters or less')
-        if not filename.endswith('.lid'):
-            raise ValueError('filename must end with .lid')
-        self._setup_dict['DFN'] = filename
-
-    @property
-    def temperature_enabled(self):
-        return self._setup_dict['TMP']
-
-    @temperature_enabled.setter
-    def temperature_enabled(self, state):
-        if type(state) is not bool:
-            raise ValueError('Temperature state must be True or False')
-        self._setup_dict['TMP'] = state
+    def set_temperature_enabled(self, state):
+        self._confirm_bool(state)
+        self._setup_dict[TEMPERATURE_ENABLED] = state
         # if temperature logging is disabled, set the temperature recording
         # interval to 1 second
         if state is False:
-            self._setup_dict['TRI'] = 1
+            self._setup_dict[TEMPERATURE_INTERVAL] = 1
 
-    @property
-    def accelerometer_enabled(self):
-        return self._setup_dict['ACL']
+    def set_accelerometer_enabled(self, state):
+        self._set_accelmag_enabled(ACCELEROMETER_ENABLED, state)
 
-    @accelerometer_enabled.setter
-    def accelerometer_enabled(self, state):
-        if type(state) is not bool:
-            raise ValueError('Accelerometer state must be True or False')
-        self._setup_dict['ACL'] = state
-        if not self.orient_enabled:
-            self.orient_interval = 1
-            self.orient_burst_rate = 2
-            self.orient_burst_count = 1
+    def set_magnetometer_enabled(self, state):
+        self._set_accelmag_enabled(MAGNETOMETER_ENABLED, state)
 
-    @property
-    def magnetometer_enabled(self):
-        return self._setup_dict['MGN']
+    def _set_accelmag_enabled(self, sensor, state):
+        self._confirm_bool(state)
+        self._setup_dict[sensor] = state
+        if not self._orient_enabled():
+            self.set_orient_interval(1)
+            self.set_orient_burst_rate(2)
+            self.set_orient_burst_count(1)
 
-    @magnetometer_enabled.setter
-    def magnetometer_enabled(self, state):
-        if type(state) is not bool:
-            raise ValueError('Magnetometer state must be True or False')
-        self._setup_dict['MGN'] = state
-        if not self.orient_enabled:
-            self.orient_interval = 1
-            self.orient_burst_rate = 2
-            self.orient_burst_count = 1
+    def _orient_enabled(self):
+        return (self.value(ACCELEROMETER_ENABLED) or
+                self.value(MAGNETOMETER_ENABLED))
 
-    @property
-    def orient_enabled(self):
-        return self._setup_dict['ACL'] or self._setup_dict['MGN']
+    def set_orient_interval(self, value):
+        if value not in INTERVALS[self.available_intervals('orientation')]:
+            raise ValueError('Invalid orientation interval value')
+        max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
+        if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
+            self.set_orient_burst_count(max_burst_count)
+        self._setup_dict[ORIENTATION_INTERVAL] = value
 
-    @property
-    def orient_interval(self):
-        return self._setup_dict['ORI']
+    def set_temperature_interval(self, value):
+        if value not in INTERVALS[self.available_intervals('temperature')]:
+            raise ValueError('Invalid temperature interval value')
+        self._setup_dict[TEMPERATURE_INTERVAL] = value
 
-    @orient_interval.setter
-    def orient_interval(self, value):
-        if value not in INTERVALS[self.available_ori()]:
-            raise ValueError('Invalid ORI value')
-        # if self._setup_dict['BMN'] > (value * self._setup_dict['BMR']):
-        #     raise ValueError('orientation burst count may not exceed orientation interval multiplied by orientation'
-        #                      'burst rate')
-        self._setup_dict['ORI'] = value
+    def set_orient_burst_rate(self, value):
+        if value not in BURST_FREQUENCY:
+            raise ValueError('Invalid burst rate')
+        self._setup_dict[ORIENTATION_BURST_RATE] = value
 
-    @property
-    def temperature_interval(self):
-        return self._setup_dict['TRI']
-
-    @temperature_interval.setter
-    def temperature_interval(self, value):
-        if value not in INTERVALS[self.available_tri()]:
-            raise ValueError('Invalid TRI value')
-        self._setup_dict['TRI'] = value
-
-    @property
-    def orient_burst_rate(self):
-        return self._setup_dict['BMR']
-
-    @orient_burst_rate.setter
-    def orient_burst_rate(self, value):
-        if value not in [2, 4, 8, 16, 32, 64]:
-            raise ValueError('Orient burst rate not supported')
-        self._setup_dict['BMR'] = value
-
-    @property
-    def orient_burst_count(self):
-        return self._setup_dict['BMN']
-
-    @orient_burst_count.setter
-    def orient_burst_count(self, value):
-        if value > (self._setup_dict['ORI'] * self._setup_dict['BMR']):
+    def set_orient_burst_count(self, value):
+        max_burst_count = (self.value(ORIENTATION_INTERVAL) *
+                           self.value(ORIENTATION_BURST_RATE))
+        if value > max_burst_count:
             raise ValueError('Burst count must be less than orient interval '
                              'multiplied by orient burst rate.')
-        self._setup_dict['BMN'] = value
+        self._setup_dict[ORIENTATION_BURST_COUNT] = value
 
-    @property
-    def led_enabled(self):
-        return self._setup_dict['LED']
+    def set_led_enabled(self, state):
+        self._confirm_bool(state)
+        self._setup_dict[LED_ENABLED] = state
 
-    @led_enabled.setter
-    def led_enabled(self, state):
+    def set_time(self, position, time):
+        if position not in ['start', 'end']:
+            raise ValueError('position must be start or end')
+        tag = START_TIME if position == 'start' else END_TIME
+        old_value = self.value(tag)
+        self._setup_dict[tag] = time
+        if not self._check_time():
+            self._setup_dict[tag] = old_value
+            raise ValueError('start time and end time must be in '
+                             'correct order')
+
+    def _check_time(self):
+        start_time = self._string_to_posix(self.value(START_TIME))
+        end_time = self._string_to_posix(self.value(END_TIME))
+        if end_time <= start_time:
+            return False
+        return True
+
+    def _string_to_posix(self, date_string):
+        return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+
+    def write_config_file(self, directory=None):
+        directory = Path(directory or '')
+        with open(directory / 'MAT.cfg', 'w') as fid:
+            self._write_header(fid)
+            for line in self._formatted_tag_and_value():
+                fid.write(line)
+
+    def _write_header(self, fid):
+        fid.write('// Lowell Instruments LLC - MAT Data Logger - '
+                  'Configuration File\r\n')
+        time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        fid.write('// This file was generated on {}\n'.format(time_str))
+
+    def _formatted_tag_and_value(self):
+        for tag in WRITE_ORDER:
+            value = self._setup_dict[tag]
+            if tag in TYPE_BOOL:
+                value = 1 if value is True else 0
+            yield '{} {}\n'.format(tag, value)
+
+    def _confirm_bool(self, state):
         if type(state) is not bool:
-            raise ValueError('Magnetometer state must be True or False')
-        self._setup_dict['LED'] = state
-
-    def validate(self):
-        pass
-
-    def generate_config_file(self, path=None):
-        path = '' if path is None else path
-        with open(os.path.join(path, 'MAT.cfg'), 'w', newline='') as out_file:
-            out_file.write('// Lowell Instruments LLC - MAT Data Logger - Configuration File\r\n')
-            out_file.write('// This file was generated on {}\r\n'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-            for tag in self.PRINT_ORDER:
-                if tag in self._setup_dict:
-                    value = self._setup_dict[tag]
-                    if tag in self.TYPE_BOOL:  # Boolean type needs to be 1 or 0
-                        value = 1 if self._setup_dict[tag] is True else 0
-                    out_file.write('{} {}\r\n'.format(tag, value))
+            raise ValueError('State must be True or False')
 
     def reset(self):
-        self.__init__()
+        self.__init__(setup_dict=None)
