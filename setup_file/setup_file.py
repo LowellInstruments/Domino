@@ -1,17 +1,8 @@
-import os
 from datetime import datetime
 from mat.utils import parse_tags
 from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import search
-
-
-"""
-Important implementation notes:
-TRI must be >= ORI unless it is disabled
-If the 
-
-"""
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
