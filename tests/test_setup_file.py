@@ -2,6 +2,7 @@ from numpy import array, array_equal
 from pathlib import Path
 from setup_file.setup_file import (
     SetupFile,
+    load_setup_file,
     INTERVALS,
     DEFAULT_SETUP,
     FILE_NAME,
@@ -45,7 +46,7 @@ class TestSetupFile(TestCase):
                     'STM': '1970-01-01 00:00:00',
                     'ETM': '4096-01-01 00:00:00',
                     'LED': True}
-        setup = SetupFile.load_from_file(reference_file('example_MAT.cfg'))
+        setup = load_setup_file(reference_file('example_MAT.cfg'))
         assert setup._setup_dict == expected
 
     def test_available_temperature_intervals(self):
@@ -134,18 +135,10 @@ class TestSetupFile(TestCase):
         setup.set_led_enabled(True)
         assert setup.value(LED_ENABLED) is True
 
-    def test_reset(self):
-        setup = SetupFile()
-        assert setup._setup_dict == DEFAULT_SETUP
-        setup.set_orient_interval(60)
-        assert setup._setup_dict != DEFAULT_SETUP
-        setup.reset()
-        assert setup._setup_dict == DEFAULT_SETUP
-
     def test_save_default_setup(self):
         setup = SetupFile()
-        setup.write_config_file(files_directory())
-        setup = SetupFile.load_from_file(reference_file('MAT.cfg'))
+        setup.write_file(files_directory())
+        setup = load_setup_file(reference_file('MAT.cfg'))
         assert setup._setup_dict == DEFAULT_SETUP
         reference_file('MAT.cfg').unlink()
 

@@ -3,6 +3,7 @@ from mat.utils import parse_tags
 from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import search
+from setup_file.utils import date_string_to_posix
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
@@ -41,34 +42,37 @@ PRESSURE_BURST_RATE = 'PRR'
 PRESSURE_BURST_COUNT = 'PRN'
 
 
+def load_setup_file(path):
+    """
+    Return a SetupFile object from a MAT.cfg setup file
+    """
+    with open(path, 'rb') as fid:
+        setup_file_string = fid.read().decode('IBM437')
+    setup_file_string = _remove_comments(setup_file_string)
+    setup_dict = parse_tags(setup_file_string)
+    setup_dict = _convert_to_type(setup_dict)
+    return SetupFile(setup_dict)
+
+
+def _remove_comments(setup_file_string):
+    while setup_file_string.startswith('//'):
+        eol = setup_file_string.find('\r\n')
+        setup_file_string = setup_file_string[eol + 2:]
+    return setup_file_string
+
+
+def _convert_to_type(setup_dict):
+    for tag, value in setup_dict.items():
+        if tag in TYPE_INT:
+            setup_dict[tag] = int(value)
+        if tag in TYPE_BOOL:
+            setup_dict[tag] = value == '1'
+    return setup_dict
+
+
 class SetupFile:
     def __init__(self, setup_dict=None):
         self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
-
-    @classmethod
-    def load_from_file(cls, filename):
-        with open(filename, 'rb') as fid:
-            setup_file_string = fid.read().decode('IBM437')
-        setup_file_string = cls._remove_comments(setup_file_string)
-        setup_dict = parse_tags(setup_file_string)
-        setup_dict = cls._convert_to_type(setup_dict)
-        return cls(setup_dict)
-
-    @staticmethod
-    def _remove_comments(setup_file_string):
-        while setup_file_string.startswith('//'):
-            eol = setup_file_string.find('\r\n')
-            setup_file_string = setup_file_string[eol+2:]
-        return setup_file_string
-
-    @staticmethod
-    def _convert_to_type(setup_dict):
-        for tag, value in setup_dict.items():
-            if tag in TYPE_INT:
-                setup_dict[tag] = int(value)
-            if tag in TYPE_BOOL:
-                setup_dict[tag] = value == '1'
-        return setup_dict
 
     def value(self, tag):
         return self._setup_dict[tag]
@@ -169,17 +173,28 @@ class SetupFile:
                              'correct order')
 
     def _check_time(self):
-        start_time = self._string_to_posix(self.value(START_TIME))
-        end_time = self._string_to_posix(self.value(END_TIME))
+        start_time = date_string_to_posix(self.value(START_TIME))
+        end_time = date_string_to_posix(self.value(END_TIME))
         if end_time <= start_time:
             return False
         return True
 
-    def _string_to_posix(self, date_string):
-        return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+    def _confirm_bool(self, state):
+        if type(state) is not bool:
+            raise ValueError('State must be True or False')
 
-    def write_config_file(self, directory=None):
-        directory = Path(directory or '')
+    def write_file(self, directory):
+        file_writer = ConfigFileWriter(directory, self._setup_dict)
+        file_writer.write_file()
+
+
+class ConfigFileWriter:
+    def __init__(self, directory, setup_dict):
+        self.directory = directory
+        self.setup_dict = setup_dict
+
+    def write_file(self):
+        directory = Path(self.directory or '')
         with open(directory / 'MAT.cfg', 'w') as fid:
             self._write_header(fid)
             for line in self._formatted_tag_and_value():
@@ -193,14 +208,11 @@ class SetupFile:
 
     def _formatted_tag_and_value(self):
         for tag in WRITE_ORDER:
-            value = self._setup_dict[tag]
-            if tag in TYPE_BOOL:
-                value = 1 if value is True else 0
+            value = self.setup_dict[tag]
+            value = self._bool_to_string(tag, value)
             yield '{} {}\n'.format(tag, value)
 
-    def _confirm_bool(self, state):
-        if type(state) is not bool:
-            raise ValueError('State must be True or False')
-
-    def reset(self):
-        self.__init__(setup_dict=None)
+    def _bool_to_string(self, tag, value):
+        if tag in TYPE_BOOL:
+            return 1 if value is True else 0
+        return value
