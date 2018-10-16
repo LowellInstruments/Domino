@@ -6,18 +6,16 @@ from PyQt5.QtCore import QThread
 from converter.main_ui import Ui_MainWindow
 import converter.progress
 import converter.options
-from mat import appdata, odlfile, tiltcurve
+from mat import appdata, tiltcurve
 import os
 import sys
 from datetime import datetime
 import time
-from converter import conversion_manager
 import glob
 from operator import itemgetter
 from copy import deepcopy
-"""
-
-"""
+from mat.data_converter import DataConverter, ConversionParameters
+from mat.data_file_factory import load_data_file
 
 COMBOBOX_CURRENT = 'Current'
 COMBOBOX_COMPASS = 'Compass Heading'
@@ -286,17 +284,16 @@ class MyGui(Ui_MainWindow):
             return
 
         application_data = appdata.get_userdata('converter-1.dat')
-        parameters = {'out_path': None,
+        parameters = {'output_directory': None,
                       'output_format': 'csv',
                       'output_type': 'discrete',
                       'average': True,
                       'tilt_curve': None,
-                      'custom_calibration': None,
                       'time_format': 'iso8601',
                       'declination': 0}
-
+        # 'custom_calibration': None -- temporarily removed from above dict
         if self.radioButtonOutputDirectory.isChecked():
-            parameters['out_path'] = self.lineEditOutputFolder.text()
+            parameters['output_directory'] = self.lineEditOutputFolder.text()
             if not os.path.isdir(self.lineEditOutputFolder.text()):
                 QtWidgets.QMessageBox.warning(self.window,
                                               'Select Folder',
@@ -323,6 +320,7 @@ class MyGui(Ui_MainWindow):
 
         # pass the files and parameters off to the FileConverter
         # thread for processing
+
         self.conversion = FileConverter(self.file_list, parameters)
         self.progress_dialog = ProgressDialog(self.window)
         self.progress_dialog.ui.pushButton.clicked.connect(
@@ -348,10 +346,10 @@ class FileLoader(QThread):
     load_error_signal = QtCore.pyqtSignal(str)
 
     def __init__(self, new_paths, existing_paths):
-        '''
+        """
         new_paths are the paths to the files to be added to the list
         existing_paths contains a list of the existing TableItem object paths
-        '''
+        """
         super().__init__()
         self.new_paths = new_paths
         self.existing_paths = existing_paths
@@ -380,6 +378,7 @@ class FileConverter(QThread):
         self.current_file_ind = 0
         self.total_mb = sum([this_item.size for this_item in self.table_items])
         self._is_running = True
+        self.converter = None
 
     def run(self):
         for i, this_table_item in enumerate(self.table_items):
@@ -393,27 +392,29 @@ class FileConverter(QThread):
                 self.table_items[i].conversion_status = 'file_not_found'
                 continue
             try:
-                self.this_manager = conversion_manager.ConversionManager(
-                    this_table_item.path, **self.parameters)
-                self.this_manager.add_observer(self.update_progress)
-                self.this_manager.convert()
+                conversion_parameters = ConversionParameters(
+                                            this_table_item.path,
+                                            **self.parameters)
+                self.converter = DataConverter(conversion_parameters)
+                self.converter.register_observer(self.update_progress)
+                self.converter.convert()
                 self.table_items[i].conversion_status = 'converted'
             except (FileNotFoundError, TypeError, ValueError):
                 self.table_items[i].conversion_status = 'failed'
         self.conversion_complete.emit(self.table_items)
 
-    def update_progress(self, percent):
+    def update_progress(self, percent_done):
         # This is an observer function that gets notified when a data
         # page is parsed
-
-        self.this_manager._is_running = self._is_running
+        if not self._is_running:
+            self.converter.cancel_conversion()
         cumulative_mb = sum([table_item.size for table_item
                              in self.table_items[:self.current_file_ind]])
         cumulative_mb += (self.table_items[self.current_file_ind].size *
-                          (percent/100))
+                          (percent_done/100))
         overall_percent = cumulative_mb / self.total_mb
         overall_percent *= 100
-        self.progress_signal.emit(percent, overall_percent)
+        self.progress_signal.emit(percent_done, overall_percent)
 
     def cancel(self):
         self._is_running = False
@@ -421,15 +422,13 @@ class FileConverter(QThread):
 
 class TableItem:
     def __init__(self, path):
-        with open(path, 'rb') as fid:
-            odl_file = odlfile.load_file(fid)
-            self.path = path
-            self.folder, self.filename = os.path.split(os.path.abspath(path))
-            self.size = odl_file.file_size / 1024 ** 2
-            self.start_time = datetime.utcfromtimestamp(
-                odl_file.page_start_times[0]).isoformat()
-            self.end_time = datetime.utcfromtimestamp(
-                odl_file.end_time).isoformat()
+        data_file = load_data_file(path)
+        self.path = path
+        self.folder, self.filename = os.path.split(os.path.abspath(path))
+        self.size = data_file.file_size() / 1024 ** 2
+        start_time = data_file.page_times()[0]
+        self.start_time = datetime.utcfromtimestamp(start_time).isoformat()
+        self.end_time = datetime.utcfromtimestamp(0).isoformat()
         self.conversion_status = 'unconverted'
 
 
