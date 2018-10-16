@@ -195,7 +195,7 @@ class ConfigFileWriter:
 
     def write_file(self):
         directory = Path(self.directory or '')
-        with open(directory / 'MAT.cfg', 'w') as fid:
+        with open(directory / 'MAT.cfg', 'w', newline='\r\n') as fid:
             self._write_header(fid)
             for line in self._formatted_tag_and_value():
                 fid.write(line)
