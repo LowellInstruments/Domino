@@ -69,8 +69,12 @@ class SensorRefresh(QTimer):
         self.start(1000)
 
     def refresh(self):
-        self.logger_controller.open_port()
-        readings = self.logger_controller.get_sensor_readings()
+        readings = {}
+        try:
+            self.logger_controller.open_port()
+            readings = self.logger_controller.get_sensor_readings()
+        except RuntimeError:
+            pass
         for index, sensor in enumerate(SENSOR_ORDER):
             self._set_item_text(index, 1, enabled_string(sensor, readings))
             self._set_item_text(index, 2, value_string(sensor, readings))
