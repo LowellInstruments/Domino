@@ -101,7 +101,7 @@ class SetupFile:
                           interval % INTERVALS == 0)
 
     def set_filename(self, filename):
-        if not search(r'^[a-zA-Z0-9_\- ]{3,11}\.lid$', filename):
+        if not search(r'^[a-zA-Z0-9_\- ]{1,11}\.lid$', filename):
             raise ValueError('Filename error')
         self._setup_dict[FILE_NAME] = filename
 
@@ -138,6 +138,8 @@ class SetupFile:
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
             self.set_orient_burst_count(max_burst_count)
         self._setup_dict[ORIENTATION_INTERVAL] = value
+        if value > self.value(TEMPERATURE_INTERVAL):
+            self.set_temperature_interval(value)
 
     def set_temperature_interval(self, value):
         if value not in INTERVALS[self.available_intervals('temperature')]:
@@ -202,7 +204,7 @@ class ConfigFileWriter:
 
     def _write_header(self, fid):
         fid.write('// Lowell Instruments LLC - MAT Data Logger - '
-                  'Configuration File\r\n')
+                  'Configuration File\n')
         time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         fid.write('// This file was generated on {}\n'.format(time_str))
 
