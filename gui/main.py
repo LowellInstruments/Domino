@@ -19,7 +19,7 @@ from PyQt5.QtCore import (
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop_ui import Ui_Frame as StartStopFrame
 from gui.converter_ui import Ui_Frame as ConverterFrame
-from gui.setup_screen_ui import Ui_Frame as SetupFrame
+from gui.setup import SetupFrame
 from mat.logger_controller import LoggerController
 import sys
 
