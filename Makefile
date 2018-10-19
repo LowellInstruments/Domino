@@ -19,13 +19,12 @@ help:
 
 VENV = venv
 
-PROJECT_PYFILES = \
-  setup.py \
-  converter/conversion_manager.py \
-  converter/filewriter.py \
-  converter/logger.py \
-  converter/main.py \
+ALL_FILES := $(wildcard *.py */*.py)
+EXCLUDE_FILES := $(wildcard */*_ui.py */*_rc.py) \
+  converter/progress.py \
+  converter/options.py
 
+CHECK_FILES := $(filter-out $(EXCLUDE_FILES),$(ALL_FILES))
 
 ifeq ($(OS),Windows_NT)
   CP = copy
@@ -47,6 +46,9 @@ else
   virtualenv = $(shell which virtualenv)
   SEPARATOR = :
 endif
+
+tmp:
+	echo $(CHECK_FILES)
 
 DATA_DIR = "converter/Calibration Tables$(SEPARATOR)Calibration Tables"
 
@@ -70,7 +72,7 @@ $(VENV): $(NEED_VIRTUALENV) requirements.txt $(GIT_HOOKS_TARGET)
 
 
 code-check: $(VENV)
-	@$(ACTIVATE) && flake8 $(PROJECT_PYFILES)
+	@$(ACTIVATE) && flake8 $(CHECK_FILES)
 
 
 run: $(VENV)

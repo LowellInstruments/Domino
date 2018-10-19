@@ -1,4 +1,3 @@
-import time
 from numpy import ndarray
 from PyQt5.QtGui import (
     QIcon,
@@ -13,7 +12,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import (
     QRect,
     QSize,
-    QThread,
     QTimer,
 )
 from gui.container_ui import Ui_MainWindow
@@ -79,7 +77,7 @@ class SensorRefresh(QTimer):
             self._set_item_text(index, 1, enabled_string(sensor, readings))
             self._set_item_text(index, 2, value_string(sensor, readings))
         self.logger_controller.close()
-        
+
     def _set_item_text(self, row, col, value):
         item = self.widget.item(row, col)
         item.setText(self._translate("Frame", value))
