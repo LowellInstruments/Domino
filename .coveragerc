@@ -1,0 +1,2 @@
+[run]
+omit = */*_ui.py,*/*_rc.py,*/main.py
