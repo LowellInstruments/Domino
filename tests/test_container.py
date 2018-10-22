@@ -1,6 +1,7 @@
 import sys
 from unittest import TestCase
 from unittest.mock import patch
+from contextlib import contextmanager
 
 from numpy import array
 from PyQt5.QtWidgets import (
@@ -39,24 +40,21 @@ EMPTY_READINGS = {}
 
 class TestContainer(TestCase):
     def test_refresh(self):
-        with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
-                   lambda self: EXAMPLE_READINGS):
+        with _get_sensor_readings_patch(return_value=EXAMPLE_READINGS):
             container = Container(QMainWindow())
             container.refresher.refresh()
             assert (str(EXAMPLE_READINGS['ax'][0]) ==
                     container.start_stop_frame.tableWidget.item(0, 2).text())
 
     def test_empty_refresh(self):
-        with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
-                   lambda self: {}):
+        with _get_sensor_readings_patch(return_value={}):
             container = Container(QMainWindow())
             container.refresher.refresh()
             assert ('No' ==
                     container.start_stop_frame.tableWidget.item(0, 1).text())
 
     def test_temp_interval_changed(self):
-        with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
-                   lambda self: {}):
+        with _get_sensor_readings_patch(return_value={}):
             container = Container(QMainWindow())
             frame = container.setup_frame
             initial_tri = frame.setup_file._setup_dict['TRI']
@@ -66,8 +64,7 @@ class TestContainer(TestCase):
             assert initial_tri != frame.setup_file._setup_dict['TRI']
 
     def test_orient_interval_changed(self):
-        with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
-                   lambda self: {}):
+        with _get_sensor_readings_patch(return_value={}):
             container = Container(QMainWindow())
             frame = container.setup_frame
             initial_tri = frame.setup_file._setup_dict['ORI']
@@ -77,8 +74,7 @@ class TestContainer(TestCase):
             assert initial_tri != frame.setup_file._setup_dict['ORI']
 
     def test_refresh_error(self):
-        with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
-                   _raise_runtime_error):
+        with _get_sensor_readings_patch(new=_raise_runtime_error):
             container = Container(QMainWindow())
             container.refresher.refresh()
             assert ('No' ==
@@ -87,3 +83,12 @@ class TestContainer(TestCase):
 
 def _raise_runtime_error(unused):
     raise RuntimeError
+
+
+@contextmanager
+def _get_sensor_readings_patch(**kwargs):
+    with patch("gui.sensor_refresher.LoggerController.open_port",
+               return_value=True):
+        with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
+                   **kwargs):
+            yield
