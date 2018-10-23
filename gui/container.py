@@ -16,7 +16,7 @@ from gui.sensor_refresher import (
 )
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop_ui import Ui_Frame as StartStopFrame
-from gui.converter_ui import Ui_Frame as ConverterFrame
+from gui.converter import ConverterFrame
 from gui.setup import SetupFrame
 
 

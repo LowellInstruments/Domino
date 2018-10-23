@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './designer_files/setup.ui'
+# Form implementation generated from reading ui file 'designer_files/setup.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -115,6 +115,7 @@ class Ui_Frame(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.groupBox_7)
         self.verticalLayout.setObjectName("verticalLayout")
         self.checkBox_led = QtWidgets.QCheckBox(self.groupBox_7)
+        self.checkBox_led.setChecked(True)
         self.checkBox_led.setObjectName("checkBox_led")
         self.verticalLayout.addWidget(self.checkBox_led)
         self.gridLayout.addWidget(self.groupBox_7, 2, 0, 1, 1)

@@ -148,10 +148,13 @@
        </widget>
       </item>
       <item row="1" column="4">
-       <widget class="QRadioButton" name="radioButtonOutputDirectory">
+       <widget class="QRadioButton" name="radioButton_output_directory">
         <property name="text">
          <string>Save output to:</string>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
        </widget>
       </item>
       <item row="2" column="1" colspan="2">
@@ -169,7 +172,7 @@
        </widget>
       </item>
       <item row="1" column="5">
-       <widget class="QLineEdit" name="lineEditOutputFolder">
+       <widget class="QLineEdit" name="lineEdit_output_folder">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -195,13 +198,16 @@
        </widget>
       </item>
       <item row="0" column="4" colspan="3">
-       <widget class="QRadioButton" name="radioButtonOutputSame">
+       <widget class="QRadioButton" name="radioButton_output_same">
         <property name="text">
          <string>Save output to same directory as source files</string>
         </property>
         <property name="checked">
          <bool>true</bool>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup</string>
+        </attribute>
        </widget>
       </item>
      </layout>
@@ -241,7 +247,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_add">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -273,7 +279,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="pushButton_remove">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -305,7 +311,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="pushButton_convert">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -361,4 +367,7 @@
   <include location="icons.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>
