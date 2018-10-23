@@ -39,7 +39,7 @@ EXAMPLE_READINGS = {
 EMPTY_READINGS = {}
 
 
-class TestContainer(TestCase):
+class TestWoof(TestCase):
     def test_refresh(self):
         with patch("gui.sensor_refresher.LoggerController.get_sensor_readings",
                    lambda self: EXAMPLE_READINGS):
