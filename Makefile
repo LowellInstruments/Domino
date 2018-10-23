@@ -84,8 +84,8 @@ test: $(VENV)
 
 
 coverage: $(VENV)
-	@$(ACTIVATE) && pytest --cov-config .coveragerc \
-	  --cov=setup_file --cov=gui --cov-report=term --cov-report=html
+	@$(ACTIVATE) && pytest --cov=setup_file --cov-report=term \
+	  --cov-report=html
 
 
 dist: $(VENV)
