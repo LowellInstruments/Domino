@@ -6,6 +6,5 @@ env:
 install:
   - pip install -r requirements.txt
 script:
-  - ls -a
-  - ls -l /home/travis/build/LowellInstruments/Logger/tests
-  - pytest -v tests/*.py
+  - make test
+  - make code-check
