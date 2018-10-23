@@ -2,7 +2,7 @@ ipython
 pycodestyle<2.4.0
 flake8
 mock
-pytest
+pytest>=3.9.0
 pytest-cov
 pyinstaller
 
