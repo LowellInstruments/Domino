@@ -5,6 +5,7 @@ from mat.logger_controller import LoggerController
 
 
 SENSOR_ORDER = ['ax', 'ay', 'az', 'mx', 'my', 'mz', 'temp', 'batt']
+INT_SENSORS = ['mx', 'my', 'mz']
 
 
 class SensorRefresher(QTimer):
@@ -42,5 +43,13 @@ def enabled_string(sensor, readings):
 def value_string(sensor, readings):
     reading = readings.get(sensor, '')
     if isinstance(reading, ndarray):
-        return str(reading[0])
-    return str(reading)
+        return _format_value(sensor, reading[0])
+    return _format_value(sensor, reading)
+
+
+def _format_value(sensor, value):
+    if value == '':
+        return value
+    if sensor in INT_SENSORS:
+        return str(int(value))
+    return "%.3f" % value
