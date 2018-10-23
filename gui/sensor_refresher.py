@@ -1,12 +1,25 @@
 from numpy import ndarray
+from collections import OrderedDict
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QTimer
 from mat.logger_controller import LoggerController
+from gui.sensor_formats import (
+    hundredths_format,
+    int_format,
+    thousands_format,
+)
 
-
-SENSOR_ORDER = ['ax', 'ay', 'az', 'mx', 'my', 'mz', 'temp', 'batt']
 INT_SENSORS = ['mx', 'my', 'mz']
-
+GUI_SENSOR_INFO = OrderedDict(
+    [('ax', thousands_format),
+     ('ay', thousands_format),
+     ('az', thousands_format),
+     ('mx', int_format),
+     ('my', int_format),
+     ('mz', int_format),
+     ('temp', thousands_format),
+     ('batt', hundredths_format),
+])
 
 class SensorRefresher(QTimer):
     def __init__(self, widget):
@@ -24,7 +37,7 @@ class SensorRefresher(QTimer):
             readings = self.logger_controller.get_sensor_readings()
         except RuntimeError:
             pass
-        for index, sensor in enumerate(SENSOR_ORDER):
+        for index, sensor in enumerate(GUI_SENSOR_INFO.keys()):
             self._set_item_text(index, 1, enabled_string(sensor, readings))
             self._set_item_text(index, 2, value_string(sensor, readings))
         self.logger_controller.close()
@@ -43,13 +56,11 @@ def enabled_string(sensor, readings):
 def value_string(sensor, readings):
     reading = readings.get(sensor, '')
     if isinstance(reading, ndarray):
-        return _format_value(sensor, reading[0])
-    return _format_value(sensor, reading)
+        return _format_sensor_value(sensor, reading[0])
+    return _format_sensor_value(sensor, reading)
 
 
-def _format_value(sensor, value):
+def _format_sensor_value(sensor, value):
     if value == '':
         return value
-    if sensor in INT_SENSORS:
-        return str(int(value))
-    return "%.3f" % value
+    return GUI_SENSOR_INFO[sensor](value)
