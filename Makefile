@@ -90,6 +90,6 @@ coverage: $(VENV)
 
 dist: $(VENV)
 	@-$(RMDIR_CMD) dist
-	@$(ACTIVATE) && pyinstaller converter/main.py \
+	@$(ACTIVATE) && pyinstaller gui/main.py \
 	  --add-data $(DATA_DIR) \
 	  --onefile --noconsole
