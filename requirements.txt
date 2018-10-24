@@ -4,6 +4,7 @@ flake8
 mock
 pytest
 pytest-cov
+pytest-xvfb
 pyinstaller
 
 numpy

@@ -4,6 +4,7 @@
 import logging
 from converter.logger import log_to_stdout
 
+
 class TestLogger(object):
     def test_log_to_stdout(self):
         handler_count = len(logging.getLogger().handlers)
