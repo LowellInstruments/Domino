@@ -4,16 +4,14 @@ from gui.converter_ui import Ui_Frame
 from gui.progress_dialog import ProgressDialog
 from gui.options_dialog import OptionsDialog
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import QThread
 from mat import appdata, tiltcurve
 import os
 import sys
-from datetime import datetime
 import glob
 from operator import itemgetter
-from copy import deepcopy
-from mat.data_converter import DataConverter, ConversionParameters
-from mat.data_file_factory import load_data_file
+from gui.file_loader_thread import FileLoader
+from gui.file_converter_thread import FileConverter
+
 
 COMBOBOX_CURRENT = 'Current'
 COMBOBOX_COMPASS = 'Compass Heading'
@@ -24,6 +22,11 @@ class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.version = 'Converter 0.9.3'
         self.frame = None
+        self.file_list = []
+        self.file_queue = []
+        self.active_conversion_ind = 0
+        self.selected_row = None
+        self.file_loader = None
 
     def setupUi(self, frame):
         super().setupUi(frame)
@@ -45,14 +48,9 @@ class ConverterFrame(Ui_Frame):
         self.tableWidget.setColumnWidth(2, 100)
         self.tableWidget.setColumnWidth(3, 140)
         self.tableWidget.setColumnWidth(4, 140)
-        self.file_list = []
-        self.file_queue = []
-        self.active_conversion_ind = 0
         self.populate_tilt_curves()
-        self.selected_row = None
         self.restore_last_session()
         # self.frame.closeEvent = self.closeEvent
-        self.file_loader = None
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
@@ -313,102 +311,3 @@ class ConverterFrame(Ui_Frame):
 
         self.progress_dialog.show()
         self.conversion.start()
-
-
-class FileLoader(QThread):
-    load_complete_signal = QtCore.pyqtSignal(list)
-    load_error_signal = QtCore.pyqtSignal(str)
-
-    def __init__(self, new_paths, existing_paths):
-        """
-        new_paths are the paths to the files to be added to the list
-        existing_paths contains a list of the existing TableItem object paths
-        """
-        super().__init__()
-        self.new_paths = new_paths
-        self.existing_paths = existing_paths
-        self.new_files = []
-
-    def run(self):
-        for this_path in self.new_paths:
-            if this_path not in self.existing_paths:
-                try:
-                    table_item = TableItem(this_path)
-                    self.load_complete_signal.emit([table_item])
-                except (FileNotFoundError, TypeError, ValueError):
-                    self.load_error_signal.emit(this_path)
-
-
-class FileConverter(QThread):
-    progress_signal = QtCore.pyqtSignal(int, int)
-    conversion_status_signal = QtCore.pyqtSignal(str, int, int)
-    conversion_complete = QtCore.pyqtSignal(list)
-
-    def __init__(self, table_items, parameters):
-        # parameters is a dict of parameters required by FileConverter
-        super().__init__()
-        self.table_items = deepcopy(table_items)
-        self.parameters = parameters
-        self.current_file_ind = 0
-        self.total_mb = sum([this_item.size for this_item in self.table_items])
-        self._is_running = True
-        self.converter = None
-
-    def run(self):
-        for i, this_table_item in enumerate(self.table_items):
-            if not self._is_running:
-                break
-            self.current_file_ind = i
-            self.conversion_status_signal.emit(this_table_item.filename,
-                                               i+1,
-                                               len(self.table_items))
-            if not os.path.isfile(this_table_item.path):
-                self.table_items[i].conversion_status = 'file_not_found'
-                continue
-            try:
-                conversion_parameters = ConversionParameters(
-                                            this_table_item.path,
-                                            **self.parameters)
-                self.converter = DataConverter(conversion_parameters)
-                self.converter.register_observer(self.update_progress)
-                self.converter.convert()
-                self.table_items[i].conversion_status = 'converted'
-            except (FileNotFoundError, TypeError, ValueError):
-                self.table_items[i].conversion_status = 'failed'
-        self.conversion_complete.emit(self.table_items)
-
-    def update_progress(self, percent_done):
-        # This is an observer function that gets notified when a data
-        # page is parsed
-        if not self._is_running:
-            self.converter.cancel_conversion()
-        cumulative_mb = sum([table_item.size for table_item
-                             in self.table_items[:self.current_file_ind]])
-        cumulative_mb += (self.table_items[self.current_file_ind].size *
-                          (percent_done/100))
-        overall_percent = cumulative_mb / self.total_mb
-        overall_percent *= 100
-        self.progress_signal.emit(percent_done, overall_percent)
-
-    def cancel(self):
-        self._is_running = False
-
-
-class TableItem:
-    def __init__(self, path):
-        data_file = load_data_file(path)
-        self.path = path
-        self.folder, self.filename = os.path.split(os.path.abspath(path))
-        self.size = data_file.file_size() / 1024 ** 2
-        start_time = data_file.page_times()[0]
-        self.start_time = datetime.utcfromtimestamp(start_time).isoformat()
-        self.end_time = datetime.utcfromtimestamp(0).isoformat()
-        self.conversion_status = 'unconverted'
-
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()  # create a main window
-    ui = MyGui(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
