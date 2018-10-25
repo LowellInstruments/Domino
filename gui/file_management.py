@@ -1,57 +1,75 @@
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.data_converter import DataConverter, ConversionParameters
-from copy import deepcopy
+from gui.data_file import DataFileContainer
 import os
+
+
+class FileLoader(QThread):
+    load_complete_signal = pyqtSignal(DataFileContainer)
+
+    def __init__(self, data_file_container):
+        super().__init__()
+        self.paths = None
+        self.data_file_container = data_file_container
+
+    def load_files(self, paths):
+        self.paths = paths
+        self.run()
+
+    def run(self):
+        self.data_file_container.add_files(self.paths)
+        self.load_complete_signal.emit(self.data_file_container)
 
 
 class FileConverter(QThread):
     progress_signal = pyqtSignal(int, int)
     conversion_status_signal = pyqtSignal(str, int, int)
-    conversion_complete = pyqtSignal(list)
+    conversion_complete = pyqtSignal()
 
-    def __init__(self, table_items, parameters):
+    def __init__(self, data_file_container, parameters):
         # parameters is a dict of parameters required by FileConverter
         super().__init__()
-        self.table_items = deepcopy(table_items)
+        self.data_file_container = data_file_container
         self.parameters = parameters
         self.current_file_ind = 0
-        self.total_mb = sum([this_item.size for this_item in self.table_items])
+        self.file_sizes = [file.size for file in data_file_container]
+        self.total_mb = sum(self.file_sizes)
         self._is_running = True
         self.converter = None
 
     def run(self):
-        for i, this_table_item in enumerate(self.table_items):
+        for i, file in enumerate(self.data_file_container):
             if not self._is_running:
                 break
             self.current_file_ind = i
-            self.conversion_status_signal.emit(this_table_item.filename,
+            self.conversion_status_signal.emit(file.filename,
                                                i+1,
-                                               len(self.table_items))
-            if not os.path.isfile(this_table_item.path):
-                self.table_items[i].conversion_status = 'file_not_found'
+                                               len(self.data_file_container))
+            if not os.path.isfile(file.path):
+                file.status = 'file_not_found'
                 continue
             try:
                 conversion_parameters = ConversionParameters(
-                                            this_table_item.path,
+                                            file.path,
                                             **self.parameters)
                 self.converter = DataConverter(conversion_parameters)
                 self.converter.register_observer(self.update_progress)
                 self.converter.convert()
-                self.table_items[i].conversion_status = 'converted'
+                file.status = 'converted'
             except (FileNotFoundError, TypeError, ValueError):
-                self.table_items[i].conversion_status = 'failed'
-        self.conversion_complete.emit(self.table_items)
+                file.status = 'failed'
+        self.conversion_complete.emit()
 
     def update_progress(self, percent_done):
         # This is an observer function that gets notified when a data
         # page is parsed
         if not self._is_running:
             self.converter.cancel_conversion()
-        cumulative_mb = sum([table_item.size for table_item
-                             in self.table_items[:self.current_file_ind]])
-        cumulative_mb += (self.table_items[self.current_file_ind].size *
-                          (percent_done/100))
+        cumulative_mb = sum([size for size
+                             in self.file_sizes[:self.current_file_ind]])
+        cumulative_mb += (self.data_file_container[self.current_file_ind].size
+                          * (percent_done/100))
         overall_percent = cumulative_mb / self.total_mb
         overall_percent *= 100
         self.progress_signal.emit(percent_done, overall_percent)
