@@ -25,7 +25,7 @@ class DataFile:
         start_time = data_file.page_times()[0]
         self.start_time = datetime.utcfromtimestamp(start_time).isoformat()
         data_file.close()
-        self.status = 'queried'
+        self.status = 'unconverted'
 
 
 class DataFileContainer:

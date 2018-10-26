@@ -24,6 +24,7 @@ class Container(Ui_MainWindow):
     def __init__(self, window):
         self.window = window
         self.setupUi(window)
+        self.window.closeEvent = self.closeEvent
         self.converter_frame = ConverterFrame()
         self.converter_frame.setupUi(self.frame_convert)
         self.setup_frame = SetupFrame()
@@ -50,3 +51,9 @@ class Container(Ui_MainWindow):
     def add_item(self, row, col):
         item = QTableWidgetItem()
         self.start_stop_frame.tableWidget.setItem(row, col, item)
+
+    def closeEvent(self, event):
+        if self.converter_frame.confirm_quit():
+            event.accept()
+        else:
+            event.ignore()

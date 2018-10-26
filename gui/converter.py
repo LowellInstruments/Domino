@@ -288,22 +288,16 @@ class ConverterFrame(Ui_Frame):
         self.progress_dialog.show()
         self.conversion.start()
 
-    def closeEvent(self, event):
+    def confirm_quit(self):
         if len(self.data_file_container) == 0:
-            event.accept()
-            return
-
-        status = [table_item.conversion_status
-                  for table_item in self.data_file_container]
+            return True
+        status = [file.status for file in self.data_file_container]
         if any([True for s in status if s == 'unconverted']):
             reply = QtWidgets.QMessageBox.question(
                 self.frame,
                 'Confirm Quit',
-                'There are unconverted file in the queue. '
+                'There are unconverted files in the queue. '
                 'Are you sure you want to quit?')
-            if reply == QtWidgets.QMessageBox.Yes:
-                event.accept()
-            else:
-                event.ignore()
+            return reply == QtWidgets.QMessageBox.Yes
         else:
-            event.accept()
+            return False
