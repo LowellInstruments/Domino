@@ -311,6 +311,26 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButton_clear">
+        <property name="text">
+         <string>Clear List</string>
+        </property>
+        <property name="icon">
+         <iconset resource="icons.qrc">
+          <normaloff>:/icons/icons/icons8-remove-property-48.png</normaloff>:/icons/icons/icons8-remove-property-48.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>36</width>
+          <height>36</height>
+         </size>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton_convert">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

@@ -36,6 +36,7 @@ class ConverterFrame(Ui_Frame):
         self.frame = frame
         self.pushButton_add.clicked.connect(self.add_row)
         self.pushButton_remove.clicked.connect(self.delete_row)
+        self.pushButton_clear.clicked.connect(self.delete_table)
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_convert.clicked.connect(self.convert_files)
         self.pushButton_output_options.clicked.connect(self.show_options)
@@ -85,15 +86,15 @@ class ConverterFrame(Ui_Frame):
         self.refresh_table()
 
     def delete_table(self):
-        if len(self.data_file_container) > 0:
-            reply = QtWidgets.QMessageBox.question(
-                self.frame,
-                'Confirm',
-                'Are you sure you want to clear the file list?')
-            if reply == QtWidgets.QMessageBox.Yes:
-                for i in range(self.tableWidget.rowCount()):
-                    self.tableWidget.removeRow(0)
-                self.data_file_container.clear()
+        if len(self.data_file_container) == 0:
+            return
+        reply = QtWidgets.QMessageBox.question(
+            self.frame,
+            'Confirm',
+            'Are you sure you want to clear the file list?')
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.data_file_container.clear()
+            self.refresh_table()
 
     def refresh_table(self):
         self.tableWidget.setRowCount(len(self.data_file_container))
