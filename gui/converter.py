@@ -39,14 +39,15 @@ class ConverterFrame(Ui_Frame):
         self.pushButton_clear.clicked.connect(self.delete_table)
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_convert.clicked.connect(self.convert_files)
-        self.pushButton_output_options.clicked.connect(self.show_options)
+        self.pushButton_output_options.clicked.connect(
+            lambda: OptionsDialog(self.frame).exec_())
         self.buttonGroup.buttonToggled.connect(
             self.toggle_output_file_button_group)
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_ouput_type)
         self.tableWidget.clicked.connect(self.table_click)
         self.file_loader.load_complete_signal.connect(
-            self.extend_file_list_slot)
+            lambda: self.refresh_table())
         self.tableWidget.setColumnWidth(0, 200)
         self.tableWidget.setColumnWidth(1, 300)
         self.tableWidget.setColumnWidth(2, 100)
@@ -131,9 +132,6 @@ class ConverterFrame(Ui_Frame):
         else:
             self.comboBox_tilt_tables.setEnabled(False)
 
-    def show_options(self):
-        OptionsDialog(self.frame).exec_()
-
     def populate_tilt_curves(self):
         try:
             directory = sys._MEIPASS
@@ -212,13 +210,6 @@ class ConverterFrame(Ui_Frame):
         self.selected_row = cell.row()
         self.tableWidget.selectRow(self.selected_row)
 
-    def extend_file_list_slot(self, container):
-        self.data_file_container = container
-        self.refresh_table()
-
-    def conversion_complete_slot(self):
-        self.refresh_table()
-
     def file_warning(self, file):
         msgbox = QtWidgets.QMessageBox(self.frame)
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
@@ -283,7 +274,7 @@ class ConverterFrame(Ui_Frame):
         self.conversion.conversion_complete.connect(
             self.progress_dialog.conversion_complete)
         self.conversion.conversion_complete.connect(
-            self.conversion_complete_slot)
+            lambda: self.refresh_table())
 
         self.progress_dialog.show()
         self.conversion.start()
@@ -300,4 +291,4 @@ class ConverterFrame(Ui_Frame):
                 'Are you sure you want to quit?')
             return reply == QtWidgets.QMessageBox.Yes
         else:
-            return False
+            return True

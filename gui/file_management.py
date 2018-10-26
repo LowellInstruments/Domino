@@ -1,12 +1,11 @@
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.data_converter import DataConverter, ConversionParameters
-from gui.data_file import DataFileContainer
 import os
 
 
 class FileLoader(QThread):
-    load_complete_signal = pyqtSignal(DataFileContainer)
+    load_complete_signal = pyqtSignal()
 
     def __init__(self, data_file_container):
         super().__init__()
@@ -19,7 +18,7 @@ class FileLoader(QThread):
 
     def run(self):
         self.data_file_container.add_files(self.paths)
-        self.load_complete_signal.emit(self.data_file_container)
+        self.load_complete_signal.emit()
 
 
 class FileConverter(QThread):
@@ -35,10 +34,11 @@ class FileConverter(QThread):
         self.current_file_ind = 0
         self.file_sizes = [file.size for file in data_file_container]
         self.total_mb = sum(self.file_sizes)
-        self._is_running = True
+        self._is_running = False
         self.converter = None
 
     def run(self):
+        self._is_running = True
         for i, file in enumerate(self.data_file_container):
             if not self._is_running:
                 break
@@ -49,16 +49,7 @@ class FileConverter(QThread):
             if not os.path.isfile(file.path):
                 file.status = 'file_not_found'
                 continue
-            try:
-                conversion_parameters = ConversionParameters(
-                                            file.path,
-                                            **self.parameters)
-                self.converter = DataConverter(conversion_parameters)
-                self.converter.register_observer(self.update_progress)
-                self.converter.convert()
-                file.status = 'converted'
-            except (FileNotFoundError, TypeError, ValueError):
-                file.status = 'failed'
+            self._convert_file(file)
         self.conversion_complete.emit()
 
     def update_progress(self, percent_done):
@@ -73,6 +64,18 @@ class FileConverter(QThread):
         overall_percent = cumulative_mb / self.total_mb
         overall_percent *= 100
         self.progress_signal.emit(percent_done, overall_percent)
+
+    def _convert_file(self, file):
+        try:
+            conversion_parameters = ConversionParameters(
+                file.path,
+                **self.parameters)
+            self.converter = DataConverter(conversion_parameters)
+            self.converter.register_observer(self.update_progress)
+            self.converter.convert()
+            file.status = 'converted'
+        except (FileNotFoundError, TypeError, ValueError):
+            file.status = 'failed'
 
     def cancel(self):
         self._is_running = False
