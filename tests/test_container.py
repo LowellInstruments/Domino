@@ -82,6 +82,13 @@ class TestContainer(TestCase):
             assert ('No' ==
                     container.start_stop_frame.tableWidget.item(0, 1).text())
 
+    def test_readings_are_none(self):
+        with _get_sensor_readings_patch(return_value=None):
+            container = Container(QMainWindow())
+            container.refresher.refresh()
+            assert ('No' ==
+                    container.start_stop_frame.tableWidget.item(0, 1).text())
+
 
 def _raise_runtime_error(unused):
     raise RuntimeError

@@ -18,8 +18,8 @@ GUI_SENSOR_INFO = OrderedDict(
      ('my', int_format),
      ('mz', int_format),
      ('temp', thousands_format),
-     ('batt', hundredths_format),
-])
+     ('batt', hundredths_format)])
+
 
 class SensorRefresher(QTimer):
     def __init__(self, widget):
@@ -48,12 +48,14 @@ class SensorRefresher(QTimer):
 
 
 def enabled_string(sensor, readings):
-    if sensor in readings:
+    if readings and sensor in readings:
         return "Yes"
     return "No"
 
 
 def value_string(sensor, readings):
+    if not readings:
+        return ''
     reading = readings.get(sensor, '')
     if isinstance(reading, ndarray):
         return _format_sensor_value(sensor, reading[0])
@@ -61,6 +63,4 @@ def value_string(sensor, readings):
 
 
 def _format_sensor_value(sensor, value):
-    if value == '':
-        return value
     return GUI_SENSOR_INFO[sensor](value)
