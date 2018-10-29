@@ -18,8 +18,8 @@ GUI_SENSOR_INFO = OrderedDict(
      ('my', int_format),
      ('mz', int_format),
      ('temp', thousands_format),
-     ('batt', hundredths_format),
-])
+     ('batt', hundredths_format)])
+
 
 class SensorRefresher(QTimer):
     def __init__(self, widget):

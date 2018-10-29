@@ -1,5 +1,5 @@
 ipython
-pycodestyle<2.4.0
+pycodestyle
 flake8
 mock
 pytest
