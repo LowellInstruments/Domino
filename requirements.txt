@@ -1,12 +1,11 @@
 ipython
-pycodestyle<2.4.0
+pycodestyle
 flake8
 mock
 pytest
 pytest-cov
 pytest-xvfb
 pyinstaller
-
 numpy
 h5py
 PyQt5==5.9.2

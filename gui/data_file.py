@@ -1,7 +1,6 @@
 from pathlib import Path
 from mat.data_file_factory import load_data_file
 from datetime import datetime
-from collections import OrderedDict
 
 
 class DataFile:
@@ -30,7 +29,7 @@ class DataFile:
 
 class DataFileContainer:
     def __init__(self):
-        self._data_files = OrderedDict()
+        self._data_files = []
 
     def add_files(self, paths):
         for path in paths:
@@ -38,21 +37,24 @@ class DataFileContainer:
                 continue
             data_file = DataFile(path)
             data_file.query_file()
-            self._data_files[id(data_file)] = data_file
+            self._data_files.append(data_file)
 
-    def _check_for_duplicate(self,path):
-        if path in [self._data_files[key].path for key in self._data_files]:
+    def _check_for_duplicate(self, path):
+        if path in [file.path for file in self._data_files]:
             return True
         return False
 
     def clear(self):
         self._data_files.clear()
 
-    def delete(self, file_id):
-        del self._data_files[file_id]
+    def delete(self, index):
+        del self._data_files[index]
+
+    def __getitem__(self, index):
+        return self._data_files[index]
 
     def __iter__(self):
-        for file in self._data_files.values():
+        for file in self._data_files:
             yield file
 
     def __len__(self):

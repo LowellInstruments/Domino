@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
-from mat.data_converter import DataConverter, ConversionParameters
+from mat.data_converter import DataConverter, default_parameters
 import os
 
 
@@ -66,11 +66,11 @@ class FileConverter(QThread):
         self.progress_signal.emit(percent_done, overall_percent)
 
     def _convert_file(self, file):
+        self.current_file = file
         try:
-            conversion_parameters = ConversionParameters(
-                file.path,
-                **self.parameters)
-            self.converter = DataConverter(conversion_parameters)
+            conversion_parameters = default_parameters()
+            conversion_parameters.update(self.parameters)
+            self.converter = DataConverter(file.path, conversion_parameters)
             self.converter.register_observer(self.update_progress)
             self.converter.convert()
             file.status = 'converted'

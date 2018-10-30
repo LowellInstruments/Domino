@@ -1,42 +1,40 @@
 # GPLv3 License
 # Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
 from gui.converter_ui import Ui_Frame
-from gui.progress_dialog import ProgressDialog
+
 from gui.options_dialog import OptionsDialog
-from PyQt5 import QtWidgets, QtCore, QtGui
+from gui.converter_table import ConverterTable
+from PyQt5 import QtWidgets
 from mat import appdata, tiltcurve
 import os
 import sys
 import glob
 from operator import itemgetter
-from gui.file_management import FileConverter, FileLoader
-from PyQt5.QtCore import Qt
-from gui.data_file import DataFileContainer
+from mat.data_converter import default_parameters
+
 
 COMBOBOX_CURRENT = 'Current'
 COMBOBOX_COMPASS = 'Compass Heading'
 COMBOBOX_HDF5 = 'Hierarchical Data Format 5 (.hdf5)'
-FILE_NAME = 0
-FOLDER = 1
-SIZE = 2
-START_TIME = 3
 
 
 class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
-        self.file_queue = []
-        self.active_conversion_ind = 0
-        self.selected_row = None
-        self.data_file_container = DataFileContainer()
-        self.file_loader = FileLoader(self.data_file_container)
+        self.converter_table = None
 
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
-        self.pushButton_add.clicked.connect(self.add_row)
-        self.pushButton_remove.clicked.connect(self.delete_row)
-        self.pushButton_clear.clicked.connect(self.delete_table)
+        self.converter_table = ConverterTable(self.tableWidget)
+        self.populate_tilt_curves()
+        self.restore_last_session()
+        self._connect_signals_to_slots()
+
+    def _connect_signals_to_slots(self):
+        self.pushButton_add.clicked.connect(self.converter_table.add_row)
+        self.pushButton_remove.clicked.connect(self.converter_table.delete_row)
+        self.pushButton_clear.clicked.connect(self.converter_table.clear_table)
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_convert.clicked.connect(self.convert_files)
         self.pushButton_output_options.clicked.connect(
@@ -45,86 +43,6 @@ class ConverterFrame(Ui_Frame):
             self.toggle_output_file_button_group)
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_ouput_type)
-        self.tableWidget.clicked.connect(self.table_click)
-        self.file_loader.load_complete_signal.connect(
-            lambda: self.refresh_table())
-        self.tableWidget.setColumnWidth(0, 200)
-        self.tableWidget.setColumnWidth(1, 300)
-        self.tableWidget.setColumnWidth(2, 100)
-        self.tableWidget.setColumnWidth(3, 140)
-        self.tableWidget.setColumnWidth(4, 140)
-        self.populate_tilt_curves()
-        self.restore_last_session()
-
-    def add_row(self):
-        file_paths = self._open_file()
-        if not file_paths[0]:
-            return
-        self._update_recent_directory_appdata(file_paths[0][0])
-        self.file_loader.load_files(file_paths[0])
-
-    def _open_file(self):
-        application_data = appdata.get_userdata('converter-1.dat')
-        last_directory = (application_data['last_directory']
-                          if 'last_directory' in application_data else '')
-        file_paths = QtWidgets.QFileDialog.getOpenFileNames(
-            self.frame,
-            'Open Lowell Instruments Data File',
-            last_directory,
-            'Data Files (*.lid *.lis)')
-        return file_paths
-
-    def _update_recent_directory_appdata(self, file_path):
-        directory = os.path.dirname(file_path)
-        appdata.set_userdata('converter-1.dat', 'last_directory', directory)
-
-    def delete_row(self):
-        row_objects = self.tableWidget.selectionModel().selectedRows()
-        rows = []
-        for row in row_objects:
-            file = self.tableWidget.item(row.row(), 0).data(Qt.UserRole)
-            self.data_file_container.delete(file)
-        self.refresh_table()
-
-    def delete_table(self):
-        if len(self.data_file_container) == 0:
-            return
-        reply = QtWidgets.QMessageBox.question(
-            self.frame,
-            'Confirm',
-            'Are you sure you want to clear the file list?')
-        if reply == QtWidgets.QMessageBox.Yes:
-            self.data_file_container.clear()
-            self.refresh_table()
-
-    def refresh_table(self):
-        self.tableWidget.setRowCount(len(self.data_file_container))
-        for i, data_file in enumerate(self.data_file_container):
-            file_name = self._add_symbol(data_file.filename, data_file.status)
-            file_name_item = self._table_item(file_name)
-            file_name_item.setData(Qt.UserRole, id(data_file))
-            self.tableWidget.setItem(i, FILE_NAME, file_name_item)
-
-            self.tableWidget.setItem(i, FOLDER,
-                                     self._table_item(data_file.folder))
-            self.tableWidget.setItem(i, SIZE,
-                                     self._table_item(data_file.size_str))
-            self.tableWidget.setItem(i, START_TIME,
-                                     self._table_item(data_file.start_time))
-
-    def _table_item(self, string):
-        item = QtWidgets.QTableWidgetItem(string)
-        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-        return item
-
-    def _add_symbol(self, filename, status):
-        symbol_map = {'converted': '\u2714',
-                      'failed': '\u2718',
-                      'file_error': '\u2718'}
-        symbol = symbol_map.get(status)
-        if not symbol:
-            return filename
-        return '{} {}'.format(symbol, filename)
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
@@ -206,10 +124,6 @@ class ConverterFrame(Ui_Frame):
         self.lineEdit_output_folder.setEnabled(state)
         self.pushButton_browse.setEnabled(state)
 
-    def table_click(self, cell):
-        self.selected_row = cell.row()
-        self.tableWidget.selectRow(self.selected_row)
-
     def file_warning(self, file):
         msgbox = QtWidgets.QMessageBox(self.frame)
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
@@ -219,18 +133,13 @@ class ConverterFrame(Ui_Frame):
 
     def convert_files(self):
         self.save_session()
-        if len(self.data_file_container) == 0:
-            return
+        parameters = self._read_conversion_parameters()
+        self.converter_table.convert_files(parameters)
 
+    def _read_conversion_parameters(self):
+        parameters = default_parameters()
         application_data = appdata.get_userdata('converter-1.dat')
-        parameters = {'output_directory': None,
-                      'output_format': 'csv',
-                      'output_type': 'discrete',
-                      'average': True,
-                      'tilt_curve': None,
-                      'time_format': 'iso8601',
-                      'declination': 0}
-        # 'custom_calibration': None -- temporarily removed from above dict
+
         if self.radioButton_output_directory.isChecked():
             parameters['output_directory'] = self.lineEdit_output_folder.text()
             if not os.path.isdir(self.lineEdit_output_folder.text()):
@@ -256,39 +165,7 @@ class ConverterFrame(Ui_Frame):
 
         if self.comboBox_output_format.currentText() == COMBOBOX_HDF5:
             parameters['output_format'] = 'hdf5'
-
-        # pass the files and parameters off to the FileConverter
-        # thread for processing
-
-        self.conversion = FileConverter(self.data_file_container, parameters)
-        self.progress_dialog = ProgressDialog(self.frame)
-        self.progress_dialog.ui.pushButton.clicked.connect(
-            self.conversion.cancel)
-        self.progress_dialog.ui.pushButton.clicked.connect(
-            self.progress_dialog.click_cancel)
-
-        self.conversion.progress_signal.connect(
-            self.progress_dialog.update_progress)
-        self.conversion.conversion_status_signal.connect(
-            self.progress_dialog.update_status)
-        self.conversion.conversion_complete.connect(
-            self.progress_dialog.conversion_complete)
-        self.conversion.conversion_complete.connect(
-            lambda: self.refresh_table())
-
-        self.progress_dialog.show()
-        self.conversion.start()
+        return parameters
 
     def confirm_quit(self):
-        if len(self.data_file_container) == 0:
-            return True
-        status = [file.status for file in self.data_file_container]
-        if any([True for s in status if s == 'unconverted']):
-            reply = QtWidgets.QMessageBox.question(
-                self.frame,
-                'Confirm Quit',
-                'There are unconverted files in the queue. '
-                'Are you sure you want to quit?')
-            return reply == QtWidgets.QMessageBox.Yes
-        else:
-            return True
+        return self.converter_table.confirm_quit()
