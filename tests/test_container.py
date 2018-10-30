@@ -43,8 +43,10 @@ class TestContainer(TestCase):
         with _get_sensor_readings_patch(return_value=EXAMPLE_READINGS):
             container = Container(QMainWindow())
             container.refresher.refresh()
-            assert (str(EXAMPLE_READINGS['ax'][0]) ==
+            assert ("%.3f" % EXAMPLE_READINGS['ax'][0] ==
                     container.start_stop_frame.tableWidget.item(0, 2).text())
+            assert (str(int(EXAMPLE_READINGS['mx'][0])) ==
+                    container.start_stop_frame.tableWidget.item(3, 2).text())
 
     def test_empty_refresh(self):
         with _get_sensor_readings_patch(return_value={}):
@@ -75,6 +77,13 @@ class TestContainer(TestCase):
 
     def test_refresh_error(self):
         with _get_sensor_readings_patch(new=_raise_runtime_error):
+            container = Container(QMainWindow())
+            container.refresher.refresh()
+            assert ('No' ==
+                    container.start_stop_frame.tableWidget.item(0, 1).text())
+
+    def test_readings_are_none(self):
+        with _get_sensor_readings_patch(return_value=None):
             container = Container(QMainWindow())
             container.refresher.refresh()
             assert ('No' ==

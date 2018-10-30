@@ -11,7 +11,7 @@ from PyQt5.QtCore import (
     QSize,
 )
 from gui.sensor_refresher import (
-    SENSOR_ORDER,
+    GUI_SENSOR_INFO,
     SensorRefresher,
 )
 from gui.container_ui import Ui_MainWindow
@@ -44,7 +44,7 @@ class Container(Ui_MainWindow):
         self.refresher = SensorRefresher(self.start_stop_frame.tableWidget)
 
     def create_sensor_widgets(self):
-        for index, sensor in enumerate(SENSOR_ORDER):
+        for index, sensor in enumerate(GUI_SENSOR_INFO.keys()):
             self.add_item(index, 1)
             self.add_item(index, 2)
 
