@@ -134,20 +134,15 @@ class ConverterFrame(Ui_Frame):
     def convert_files(self):
         self.save_session()
         parameters = self._read_conversion_parameters()
+        if parameters['output_directory'] == 'error':
+            return
         self.converter_table.convert_files(parameters)
 
     def _read_conversion_parameters(self):
         parameters = default_parameters()
         application_data = appdata.get_userdata('converter-1.dat')
 
-        if self.radioButton_output_directory.isChecked():
-            parameters['output_directory'] = self.lineEdit_output_folder.text()
-            if not os.path.isdir(self.lineEdit_output_folder.text()):
-                QtWidgets.QMessageBox.warning(self.frame,
-                                              'Select Folder',
-                                              'You must select an output path')
-                return
-
+        parameters['output_directory'] = self._get_output_directory()
         parameters['time_format'] = application_data.get('time_format',
                                                          'iso8601')
         parameters['average'] = application_data.get('average_bursts', True)
@@ -166,6 +161,18 @@ class ConverterFrame(Ui_Frame):
         if self.comboBox_output_format.currentText() == COMBOBOX_HDF5:
             parameters['output_format'] = 'hdf5'
         return parameters
+
+    def _get_output_directory(self):
+        if self.radioButton_output_directory.isChecked():
+            directory = self.lineEdit_output_folder.text()
+            if not os.path.isdir(directory):
+                QtWidgets.QMessageBox.warning(
+                                    self.frame,
+                                    'Select Folder',
+                                    'You must select a valid output path')
+                return 'error'
+            return directory
+
 
     def confirm_quit(self):
         return self.converter_table.confirm_quit()
