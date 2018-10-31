@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/icons8-remove-property-48.png</file>
     <file>icons/icons8-cancel-48.png</file>
     <file>icons/icons8-private-48.png</file>
     <file>icons/icons8-timer-48.png</file>

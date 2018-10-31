@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './designer_files/setup.ui'
+# Form implementation generated from reading ui file 'designer_files/setup.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -64,6 +64,7 @@ class Ui_Frame(object):
         self.comboBox_start_time = QtWidgets.QComboBox(self.groupBox_3)
         self.comboBox_start_time.setObjectName("comboBox_start_time")
         self.comboBox_start_time.addItem("")
+        self.comboBox_start_time.addItem("")
         self.gridLayout_6.addWidget(self.comboBox_start_time, 0, 0, 1, 1)
         self.dateTimeEdit_start_time = QtWidgets.QDateTimeEdit(self.groupBox_3)
         self.dateTimeEdit_start_time.setObjectName("dateTimeEdit_start_time")
@@ -75,6 +76,7 @@ class Ui_Frame(object):
         self.gridLayout_7.setObjectName("gridLayout_7")
         self.comboBox_end_time = QtWidgets.QComboBox(self.groupBox_4)
         self.comboBox_end_time.setObjectName("comboBox_end_time")
+        self.comboBox_end_time.addItem("")
         self.comboBox_end_time.addItem("")
         self.gridLayout_7.addWidget(self.comboBox_end_time, 0, 0, 1, 1)
         self.dateTimeEdit_end_time = QtWidgets.QDateTimeEdit(self.groupBox_4)
@@ -115,6 +117,7 @@ class Ui_Frame(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.groupBox_7)
         self.verticalLayout.setObjectName("verticalLayout")
         self.checkBox_led = QtWidgets.QCheckBox(self.groupBox_7)
+        self.checkBox_led.setChecked(True)
         self.checkBox_led.setObjectName("checkBox_led")
         self.verticalLayout.addWidget(self.checkBox_led)
         self.gridLayout.addWidget(self.groupBox_7, 2, 0, 1, 1)
@@ -164,6 +167,7 @@ class Ui_Frame(object):
         self.gridLayout.setRowStretch(2, 3)
         self.gridLayout.setRowStretch(3, 2)
         self.gridLayout.setRowStretch(4, 1)
+        self.label_5.setBuddy(self.comboBox_temp_interval)
 
         self.retranslateUi(Frame)
         QtCore.QMetaObject.connectSlotsByName(Frame)
@@ -173,12 +177,14 @@ class Ui_Frame(object):
         Frame.setWindowTitle(_translate("Frame", "Frame"))
         self.groupBox_6.setTitle(_translate("Frame", "Description"))
         self.groupBox.setTitle(_translate("Frame", "Temperature"))
-        self.label_5.setText(_translate("Frame", "Sampling Interval:"))
+        self.label_5.setText(_translate("Frame", "&Sampling Interval:"))
         self.checkBox_temperature.setText(_translate("Frame", "Temperature"))
         self.groupBox_3.setTitle(_translate("Frame", "Start Time"))
         self.comboBox_start_time.setItemText(0, _translate("Frame", "Start Recording Immediately"))
+        self.comboBox_start_time.setItemText(1, _translate("Frame", "Start at Time"))
         self.groupBox_4.setTitle(_translate("Frame", "Stop Time"))
         self.comboBox_end_time.setItemText(0, _translate("Frame", "Record Until Stopped"))
+        self.comboBox_end_time.setItemText(1, _translate("Frame", "Stop at Time"))
         self.pushButton_save.setText(_translate("Frame", "Save Setup File"))
         self.groupBox_5.setTitle(_translate("Frame", "Summary"))
         self.label_11.setText(_translate("Frame", "File size: 125.5 MB / month"))

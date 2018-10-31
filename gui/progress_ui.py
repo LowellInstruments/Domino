@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-# GPLv3 License
-# Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
 
-# Form implementation generated from reading ui file 'progress.ui'
+# Form implementation generated from reading ui file 'designer_files/progress.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -68,3 +66,13 @@ class Ui_Dialog(object):
         self.label_2.setText(_translate("Dialog", "Total Progress"))
 
 from . import icons_rc
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Dialog = QtWidgets.QDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(Dialog)
+    Dialog.show()
+    sys.exit(app.exec_())
+
