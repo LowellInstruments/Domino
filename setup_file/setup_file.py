@@ -101,7 +101,7 @@ class SetupFile:
                           interval % INTERVALS == 0)
 
     def set_filename(self, filename):
-        if not search(r'^[a-zA-Z0-9_\- ]{1,11}\.lid$', filename):
+        if not search(r'^[a-zA-Z0-9_\-]{1,11}\.lid$', filename):
             raise ValueError('Filename error')
         self._setup_dict[FILE_NAME] = filename
 
@@ -122,12 +122,12 @@ class SetupFile:
     def _set_accelmag_enabled(self, sensor, state):
         self._confirm_bool(state)
         self._setup_dict[sensor] = state
-        if not self._orient_enabled():
+        if not self.orient_enabled():
             self.set_orient_interval(1)
             self.set_orient_burst_rate(2)
             self.set_orient_burst_count(1)
 
-    def _orient_enabled(self):
+    def orient_enabled(self):
         return (self.value(ACCELEROMETER_ENABLED) or
                 self.value(MAGNETOMETER_ENABLED))
 
