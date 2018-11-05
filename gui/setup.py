@@ -27,6 +27,9 @@ class SetupFrame(Ui_Frame):
         self.comboBox_temp_interval.currentIndexChanged.connect(
                                                self.temp_interval_changed)
         self.lineEdit_burst_duration.textChanged.connect(self.duration_changed)
+        self.checkBox_continuous.stateChanged.connect(self.continuous_changed)
+        self.comboBox_orient_burst_rate.currentIndexChanged.connect(
+                                                self.burst_rate_slot)
         self.lineEdit_file_name.setMaxLength(11)
         self.interval_widget = \
             {'temperature': self.comboBox_temp_interval,
@@ -64,6 +67,11 @@ class SetupFrame(Ui_Frame):
     def orient_interval_changed(self):
         self.interval_changed('orientation')
 
+    def burst_rate_slot(self):
+        index = self.comboBox_orient_burst_rate.currentIndex()
+        burst_rate = BURST_FREQUENCY[index]
+        self.setup_file.set_orient_burst_rate(burst_rate)
+
     def interval_changed(self, sensor):
         index = self.interval_widget[sensor].currentIndex()
         self.interval_change_fcn[sensor](INTERVALS[index])
@@ -90,6 +98,16 @@ class SetupFrame(Ui_Frame):
             widget.setStyleSheet('background-color: rgb(255, 255, 0);')
         else:
             widget.setStyleSheet('')
+
+    def continuous_changed(self):
+        if self.checkBox_continuous.isChecked():
+            self.comboBox_orient_interval.setCurrentIndex(0)
+            self.comboBox_orient_interval.setEnabled(False)
+            self.lineEdit_burst_duration.setText('1')
+            self.lineEdit_burst_duration.setEnabled(False)
+        else:
+            self.comboBox_orient_interval.setEnabled(True)
+            self.lineEdit_burst_duration.setEnabled(True)
 
     def update_description(self):
         pass
