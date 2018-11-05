@@ -7,6 +7,7 @@ from setup_file.setup_file import (
     TEMPERATURE_INTERVAL,
     ORIENTATION_INTERVAL
 )
+from re import search
 
 
 class SetupFrame(Ui_Frame):
@@ -25,6 +26,7 @@ class SetupFrame(Ui_Frame):
                                                self.orient_interval_changed)
         self.comboBox_temp_interval.currentIndexChanged.connect(
                                                self.temp_interval_changed)
+        self.lineEdit_burst_duration.textChanged.connect(self.duration_changed)
         self.lineEdit_file_name.setMaxLength(11)
         self.interval_widget = \
             {'temperature': self.comboBox_temp_interval,
@@ -66,3 +68,28 @@ class SetupFrame(Ui_Frame):
         index = self.interval_widget[sensor].currentIndex()
         self.interval_change_fcn[sensor](INTERVALS[index])
         self.redraw_combo_boxes()
+
+    def duration_changed(self):
+        seconds = self.lineEdit_burst_duration.text()
+        rate = BURST_FREQUENCY[self.comboBox_orient_burst_rate.currentIndex()]
+        if not self._verify_integer(seconds):
+            self._error_color(self.lineEdit_burst_duration, True)
+        try:
+            self.setup_file.set_orient_burst_count(int(seconds)*rate)
+            self._error_color(self.lineEdit_burst_duration, False)
+        except ValueError:
+            self._error_color(self.lineEdit_burst_duration, True)
+
+    def _verify_integer(self, string):
+        if search('^[1-9]+[0-9]*$', string):
+            return True
+        return False
+
+    def _error_color(self, widget, error):
+        if error:
+            widget.setStyleSheet('background-color: rgb(255, 255, 0);')
+        else:
+            widget.setStyleSheet('')
+
+    def update_description(self):
+        pass

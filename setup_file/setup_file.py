@@ -155,7 +155,7 @@ class SetupFile:
         max_burst_count = (self.value(ORIENTATION_INTERVAL) *
                            self.value(ORIENTATION_BURST_RATE))
         if value > max_burst_count:
-            raise ValueError('Burst count must be less than orient interval '
+            raise ValueError('Burst count must be <= orient interval '
                              'multiplied by orient burst rate.')
         self._setup_dict[ORIENTATION_BURST_COUNT] = value
 
