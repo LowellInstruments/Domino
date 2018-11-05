@@ -9,7 +9,8 @@ from setup_file.setup_file import (
     ACCELEROMETER_ENABLED,
     MAGNETOMETER_ENABLED,
     TEMPERATURE_ENABLED,
-    LED_ENABLED
+    LED_ENABLED,
+    FILE_NAME
 )
 from re import search
 from collections import namedtuple
@@ -94,7 +95,10 @@ class SetupFrame(Ui_Frame):
         self.comboBox_orient_burst_rate.addItems(burst_list)
 
     def redraw(self):
+        file_name = self.setup_file.value(FILE_NAME)[:-4]
+        self.lineEdit_file_name.setText(file_name)
         self.redraw_combo_boxes()
+        self.redraw_check_boxes()
         orient_group = [self.comboBox_orient_interval,
                         self.comboBox_orient_burst_rate,
                         self.lineEdit_burst_duration,
@@ -104,6 +108,11 @@ class SetupFrame(Ui_Frame):
             self.continuous_changed()
         else:
             self._set_enabled(orient_group, False)
+
+    def redraw_check_boxes(self):
+        for sensor in self.sensor_mapping.values():
+            state = sensor.value()
+            sensor.widget.setChecked(state)
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
