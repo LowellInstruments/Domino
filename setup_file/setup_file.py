@@ -110,8 +110,9 @@ class SetupFile:
         self._setup_dict[TEMPERATURE_ENABLED] = state
         # if temperature logging is disabled, set the temperature recording
         # interval to 1 second
-        if state is False:
-            self._setup_dict[TEMPERATURE_INTERVAL] = 1
+        # The following causes a ValueError if the orient interval is > 1
+        # if state is False:
+        #     self._setup_dict[TEMPERATURE_INTERVAL] = 1
 
     def set_accelerometer_enabled(self, state):
         self._set_accelmag_enabled(ACCELEROMETER_ENABLED, state)

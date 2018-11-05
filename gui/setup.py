@@ -113,6 +113,9 @@ class SetupFrame(Ui_Frame):
         for sensor in self.sensor_mapping.values():
             state = sensor.value()
             sensor.widget.setChecked(state)
+        state = self.setup_file.value(TEMPERATURE_ENABLED)
+        self.comboBox_temp_interval.setEnabled(state)
+
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
@@ -150,8 +153,6 @@ class SetupFrame(Ui_Frame):
     def duration_changed(self):
         seconds = self.lineEdit_burst_duration.text()
         rate = BURST_FREQUENCY[self.comboBox_orient_burst_rate.currentIndex()]
-        if not search('^[1-9]+[0-9]*$', seconds):
-            self.show_error(self.lineEdit_burst_duration, True)
         try:
             self.setup_file.set_orient_burst_count(int(seconds)*rate)
             self.show_error(self.lineEdit_burst_duration, False)
