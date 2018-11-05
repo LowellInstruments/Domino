@@ -23,9 +23,9 @@ class SetupFrame(Ui_Frame):
         super().setupUi(frame)
         self.populate_combo_boxes()
         self.comboBox_orient_interval.currentIndexChanged.connect(
-                                               self.orient_interval_changed)
+                            lambda: self.interval_changed('orientation'))
         self.comboBox_temp_interval.currentIndexChanged.connect(
-                                               self.temp_interval_changed)
+                            lambda: self.interval_changed('temperature'))
         self.lineEdit_burst_duration.textChanged.connect(self.duration_changed)
         self.checkBox_continuous.stateChanged.connect(self.continuous_changed)
         self.comboBox_orient_burst_rate.currentIndexChanged.connect(
@@ -61,12 +61,6 @@ class SetupFrame(Ui_Frame):
             index = list(INTERVALS).index(interval)
             self.interval_widget[sensor].setCurrentIndex(index)
 
-    def temp_interval_changed(self):
-        self.interval_changed('temperature')
-
-    def orient_interval_changed(self):
-        self.interval_changed('orientation')
-
     def burst_rate_slot(self):
         index = self.comboBox_orient_burst_rate.currentIndex()
         burst_rate = BURST_FREQUENCY[index]
@@ -76,6 +70,9 @@ class SetupFrame(Ui_Frame):
         index = self.interval_widget[sensor].currentIndex()
         self.interval_change_fcn[sensor](INTERVALS[index])
         self.redraw_combo_boxes()
+
+    def sensor_enabled_slot(self, sensor):
+        pass
 
     def duration_changed(self):
         seconds = self.lineEdit_burst_duration.text()
@@ -100,14 +97,20 @@ class SetupFrame(Ui_Frame):
             widget.setStyleSheet('')
 
     def continuous_changed(self):
+        widgets = [self.comboBox_orient_interval,
+                   self.lineEdit_burst_duration]
         if self.checkBox_continuous.isChecked():
             self.comboBox_orient_interval.setCurrentIndex(0)
-            self.comboBox_orient_interval.setEnabled(False)
             self.lineEdit_burst_duration.setText('1')
-            self.lineEdit_burst_duration.setEnabled(False)
+            self._set_enabled(widgets, False)
         else:
-            self.comboBox_orient_interval.setEnabled(True)
-            self.lineEdit_burst_duration.setEnabled(True)
+            self._set_enabled(widgets, True)
+
+    def _set_enabled(self, widget, state):
+        if type(widget) is not list:
+            widget = [widget]
+        for w in widget:
+            w.setEnabled(state)
 
     def update_description(self):
         pass
