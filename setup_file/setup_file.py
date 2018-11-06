@@ -2,13 +2,12 @@ from datetime import datetime
 from mat.utils import parse_tags
 from numpy import array, logical_or, logical_and
 from pathlib import Path
-from re import search
-from setup_file.utils import date_string_to_posix
+from re import compile, search
+from setup_file.utils import date_string_to_datetime
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
 TYPE_BOOL = ('ACL', 'LED', 'MGN', 'TMP', 'PRS', 'PHD')
-TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
                'STM', 'ETM', 'LED', 'PRS', 'PHD', 'PRR', 'PRN']
 INTERVALS = array([1, 2, 5, 10, 15, 20, 30, 60,
@@ -22,7 +21,7 @@ BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
 DEFAULT_SETUP = {'DFN': 'untitled.lid', 'TMP': True, 'ACL': True,
                  'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 2, 'BMN': 1,
                  'STM': '1970-01-01 00:00:00',
-                 'ETM': '4096-01-01 00:00:00',
+                 'ETM': '2096-01-01 00:00:00',
                  'LED': False, 'PRS': False,
                  'PHD': False, 'PRR': 0, 'PRN': 0}
 FILE_NAME = 'DFN'
@@ -73,6 +72,8 @@ def _convert_to_type(setup_dict):
 class SetupFile:
     def __init__(self, setup_dict=None):
         self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
+        self.time_re = compile('^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
+                               '[0-1][0-9]:[0-6][0-9]:[0-6][0-9]$')
 
     def value(self, tag):
         return self._setup_dict[tag]
@@ -164,20 +165,21 @@ class SetupFile:
         self._confirm_bool(state)
         self._setup_dict[LED_ENABLED] = state
 
-    def set_time(self, position, time):
-        if position not in ['start', 'end']:
-            raise ValueError('position must be start or end')
-        tag = START_TIME if position == 'start' else END_TIME
-        old_value = self.value(tag)
-        self._setup_dict[tag] = time
+    def set_time(self, occasion, time):
+        if occasion not in [START_TIME, END_TIME]:
+            raise ValueError('position must be STM or ETM')
+        if not self.time_re.search(time):
+            raise ValueError('Incorrectly formatted time string')
+        old_value = self.value(occasion)
+        self._setup_dict[occasion] = time
         if not self._check_time():
-            self._setup_dict[tag] = old_value
+            self._setup_dict[occasion] = old_value
             raise ValueError('start time and end time must be in '
                              'correct order')
 
     def _check_time(self):
-        start_time = date_string_to_posix(self.value(START_TIME))
-        end_time = date_string_to_posix(self.value(END_TIME))
+        start_time = date_string_to_datetime(self.value(START_TIME))
+        end_time = date_string_to_datetime(self.value(END_TIME))
         if end_time <= start_time:
             return False
         return True

@@ -134,7 +134,7 @@
         </item>
         <item>
          <property name="text">
-          <string>Start at Time</string>
+          <string>Start at Time (year-month-day hours:minutes:seconds)</string>
          </property>
         </item>
        </widget>
@@ -143,6 +143,9 @@
        <widget class="QDateTimeEdit" name="dateTimeEdit_start_time">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
         </property>
        </widget>
       </item>
@@ -164,7 +167,7 @@
         </item>
         <item>
          <property name="text">
-          <string>Stop at Time</string>
+          <string>Stop at Time (year-month-day hours:minutes:seconds)</string>
          </property>
         </item>
        </widget>
@@ -173,6 +176,9 @@
        <widget class="QDateTimeEdit" name="dateTimeEdit_end_time">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
         </property>
        </widget>
       </item>

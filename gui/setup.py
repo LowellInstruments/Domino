@@ -16,6 +16,7 @@ from setup_file.setup_file import (
 )
 from re import search
 from collections import namedtuple
+from PyQt5.QtCore import QDateTime
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'value', 'change_fcn'])
@@ -30,6 +31,8 @@ class SetupFrame(Ui_Frame):
     def setupUi(self, frame):
         super().setupUi(frame)
         self.populate_combo_boxes()
+        self.setup_mapping()
+        self.redraw()
         self.lineEdit_file_name.textChanged.connect(
                     self.filename_changed)
         self.comboBox_orient_interval.currentIndexChanged.connect(
@@ -52,10 +55,12 @@ class SetupFrame(Ui_Frame):
                     self.redraw_date_boxes)
         self.comboBox_end_time.currentIndexChanged.connect(
                     self.redraw_date_boxes)
+        self.dateTimeEdit_start_time.dateTimeChanged.connect(
+                    self.date_time_changed)
+        self.dateTimeEdit_end_time.dateTimeChanged.connect(
+                    self.date_time_changed)
         self.lineEdit_file_name.setMaxLength(11)
-        self.setup_mapping()
 
-        self.redraw()
 
     def setup_mapping(self):
         self.interval_mapping = {
@@ -118,9 +123,16 @@ class SetupFrame(Ui_Frame):
             self._set_enabled(orient_group, False)
 
     def redraw_date_boxes(self):
-        mapping = [(self.comboBox_start_time, self.dateTimeEdit_start_time),
-                   (self.comboBox_end_time, self.dateTimeEdit_end_time)]
-        for combo_box, date_time in mapping:
+        mapping = [(self.comboBox_start_time,
+                    self.dateTimeEdit_start_time,
+                    START_TIME),
+                   (self.comboBox_end_time,
+                    self.dateTimeEdit_end_time,
+                    END_TIME)]
+        for combo_box, date_time, occasion in mapping:
+            time = self.setup_file.value(occasion)
+            time = QDateTime.fromString(time, 'yyyy-MM-dd HH:mm:ss')
+            date_time.setDateTime(time)
             state = True if combo_box.currentIndex() == 1 else False
             date_time.setEnabled(state)
 
@@ -153,6 +165,18 @@ class SetupFrame(Ui_Frame):
         index = self.comboBox_orient_burst_rate.currentIndex()
         burst_rate = BURST_FREQUENCY[index]
         self.setup_file.set_orient_burst_rate(burst_rate)
+
+    def date_time_changed(self):
+        mapping = [(self.dateTimeEdit_start_time, START_TIME),
+                   (self.dateTimeEdit_end_time, END_TIME)]
+        for widget, occasion in mapping:
+            date_time = widget.dateTime()
+            date_time_string = date_time.toString('yyyy-MM-dd HH:mm:ss')
+            try:
+                self.setup_file.set_time(occasion, date_time_string)
+                self.show_error(widget, False)
+            except ValueError:
+                self.show_error(widget, True)
 
     def interval_changed(self, sensor):
         index = self.interval_mapping[sensor].widget.currentIndex()
