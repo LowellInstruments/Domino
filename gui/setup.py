@@ -10,7 +10,9 @@ from setup_file.setup_file import (
     MAGNETOMETER_ENABLED,
     TEMPERATURE_ENABLED,
     LED_ENABLED,
-    FILE_NAME
+    FILE_NAME,
+    START_TIME,
+    END_TIME
 )
 from re import search
 from collections import namedtuple
@@ -45,7 +47,11 @@ class SetupFrame(Ui_Frame):
         self.lineEdit_burst_duration.textChanged.connect(self.duration_changed)
         self.checkBox_continuous.stateChanged.connect(self.continuous_changed)
         self.comboBox_orient_burst_rate.currentIndexChanged.connect(
-                                                self.burst_rate_slot)
+                    self.burst_rate_slot)
+        self.comboBox_start_time.currentIndexChanged.connect(
+                    self.redraw_date_boxes)
+        self.comboBox_end_time.currentIndexChanged.connect(
+                    self.redraw_date_boxes)
         self.lineEdit_file_name.setMaxLength(11)
         self.setup_mapping()
 
@@ -85,8 +91,9 @@ class SetupFrame(Ui_Frame):
                 sensor_map(
                     self.checkBox_led,
                     lambda: self.setup_file.value(LED_ENABLED),
-                    self.setup_file.set_led_enabled)
+                    self.setup_file.set_led_enabled),
         }
+
 
     def populate_combo_boxes(self):
         self.comboBox_temp_interval.addItems(INTERVAL_STRING)
@@ -99,6 +106,7 @@ class SetupFrame(Ui_Frame):
         self.lineEdit_file_name.setText(file_name)
         self.redraw_combo_boxes()
         self.redraw_check_boxes()
+        self.redraw_date_boxes()
         orient_group = [self.comboBox_orient_interval,
                         self.comboBox_orient_burst_rate,
                         self.lineEdit_burst_duration,
@@ -109,13 +117,19 @@ class SetupFrame(Ui_Frame):
         else:
             self._set_enabled(orient_group, False)
 
+    def redraw_date_boxes(self):
+        mapping = [(self.comboBox_start_time, self.dateTimeEdit_start_time),
+                   (self.comboBox_end_time, self.dateTimeEdit_end_time)]
+        for combo_box, date_time in mapping:
+            state = True if combo_box.currentIndex() == 1 else False
+            date_time.setEnabled(state)
+
     def redraw_check_boxes(self):
         for sensor in self.sensor_mapping.values():
             state = sensor.value()
             sensor.widget.setChecked(state)
         state = self.setup_file.value(TEMPERATURE_ENABLED)
         self.comboBox_temp_interval.setEnabled(state)
-
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
@@ -180,6 +194,3 @@ class SetupFrame(Ui_Frame):
             widget = [widget]
         for w in widget:
             w.setEnabled(state)
-
-    def update_description(self):
-        pass
