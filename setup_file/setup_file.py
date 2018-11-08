@@ -19,7 +19,7 @@ INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
                         dtype=object)
 BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
 DEFAULT_SETUP = {'DFN': 'untitled.lid', 'TMP': True, 'ACL': True,
-                 'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 2, 'BMN': 1,
+                 'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 16, 'BMN': 16,
                  'STM': '1970-01-01 00:00:00',
                  'ETM': '2096-01-01 00:00:00',
                  'LED': False, 'PRS': False,
@@ -69,11 +69,32 @@ def _convert_to_type(setup_dict):
     return setup_dict
 
 
+class ObservableDict(dict):
+    def __init__(self, kwargs):
+        super().__init__(kwargs)
+        self.observers = []
+
+    def set_observer(self, observer_fnc):
+        self.observers.append(observer_fnc)
+
+    def update_observers(self, key, value):
+        for observer in self.observers:
+            observer(key, value)
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        self.update_observers(key, value)
+
+
 class SetupFile:
     def __init__(self, setup_dict=None):
-        self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
+        setup_dict = setup_dict or dict(DEFAULT_SETUP)
+        self._setup_dict = ObservableDict(setup_dict)
         self.time_re = compile('^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
                                '[0-1][0-9]:[0-6][0-9]:[0-6][0-9]$')
+
+    def set_observer(self, observer_fcn):
+        self._setup_dict.set_observer(observer_fcn)
 
     def value(self, tag):
         return self._setup_dict[tag]
