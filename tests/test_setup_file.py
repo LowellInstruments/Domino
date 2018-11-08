@@ -11,6 +11,7 @@ from setup_file.setup_file import (
     ORIENTATION_BURST_RATE,
     ORIENTATION_BURST_COUNT,
     START_TIME,
+    END_TIME,
     LED_ENABLED,
 )
 from unittest import TestCase
@@ -138,16 +139,16 @@ class TestSetupFile(TestCase):
         setup = SetupFile()
         assert setup.value(START_TIME) == '1970-01-01 00:00:00'
         start_time = '2018-10-15 14:20:00'
-        setup.set_time('start', start_time)
+        setup.set_time(START_TIME, start_time)
         assert setup.value(START_TIME) == start_time
 
     def test_end_time_before_start_time(self):
         setup = SetupFile()
         start_time = '2018-10-15 14:20:00'
-        setup.set_time('start', start_time)
+        setup.set_time(START_TIME, start_time)
         end_time = '2018-10-15 00:00:00'
         with self.assertRaises(ValueError):
-            setup.set_time('end', end_time)
+            setup.set_time(END_TIME, end_time)
 
     def test_unknown_time_position(self):
         setup = SetupFile()
@@ -157,4 +158,4 @@ class TestSetupFile(TestCase):
     def test_wrong_date_format(self):
         setup = SetupFile()
         with self.assertRaises(ValueError):
-            setup.set_time('start', '2018/10/15 14:20:00')
+            setup.set_time(START_TIME, '2018/10/15 14:20:00')

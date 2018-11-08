@@ -59,20 +59,22 @@ class TestContainer(TestCase):
         with _get_sensor_readings_patch(return_value={}):
             container = Container(QMainWindow())
             frame = container.setup_frame
+            interval_widget = frame.comboBox_temp_interval
             initial_tri = frame.setup_file._setup_dict['TRI']
-            index = frame.interval_widget['temperature'].currentIndex()
-            frame.interval_widget['temperature'].setCurrentIndex(index + 1)
-            container.setup_frame.temp_interval_changed()
+            index = interval_widget.currentIndex()
+            interval_widget.setCurrentIndex(index + 1)
+            container.setup_frame.interval_changed('temperature')
             assert initial_tri != frame.setup_file._setup_dict['TRI']
 
     def test_orient_interval_changed(self):
         with _get_sensor_readings_patch(return_value={}):
             container = Container(QMainWindow())
             frame = container.setup_frame
+            interval_widget = frame.comboBox_orient_interval
             initial_tri = frame.setup_file._setup_dict['ORI']
-            index = frame.interval_widget['orientation'].currentIndex()
-            frame.interval_widget['orientation'].setCurrentIndex(index + 1)
-            container.setup_frame.orient_interval_changed()
+            index = interval_widget.currentIndex()
+            interval_widget.setCurrentIndex(index + 1)
+            container.setup_frame.interval_changed('orientation')
             assert initial_tri != frame.setup_file._setup_dict['ORI']
 
     def test_refresh_error(self):
