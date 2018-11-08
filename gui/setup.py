@@ -131,7 +131,7 @@ class SetupFrame(Ui_Frame):
         self.lineEdit_file_name.setText(file_name)
         self.redraw_temperature()
         self.redraw_orient_group()
-        self.redraw_combo_boxes()
+        self.redraw_interval_combo_boxes()
         self.redraw_check_boxes()
         self.redraw_date_boxes()
         self.redraw_burst()
@@ -149,7 +149,7 @@ class SetupFrame(Ui_Frame):
         state = True if self.setup_file.orient_enabled() else False
         self._set_enabled(orient_group, state)
 
-    def redraw_combo_boxes(self):
+    def redraw_interval_combo_boxes(self):
         for sensor in ['temperature', 'orientation']:
             intervals = self.setup_file.available_intervals(sensor)
             for i, val in enumerate(intervals):
@@ -179,22 +179,26 @@ class SetupFrame(Ui_Frame):
             date_time.setEnabled(state)
 
     def redraw_burst(self):
-        is_orient = self.setup_file.orient_enabled()
-        state = True if is_orient else False
+        if not self.setup_file.orient_enabled():
+            return
 
-        count = self.setup_file.value(ORIENTATION_BURST_COUNT)
-        rate = self.setup_file.value(ORIENTATION_BURST_RATE)
-        seconds = count // rate
-        index = list(BURST_FREQUENCY).index(rate)
-        self.comboBox_orient_burst_rate.setCurrentIndex(index + 1)
-        self.lineEdit_burst_duration.setText(str(seconds))
-        self.lineEdit_burst_duration.setEnabled(state)
-        self.checkBox_continuous.setEnabled(state)
-
-        if is_orient and self.setup_file.value(ORIENTATION_BURST_COUNT) == 1:
-            self.comboBox_orient_burst_rate.setCurrentIndex(0)
+        if self.comboBox_orient_burst_rate.currentIndex() == 0:
             self.lineEdit_burst_duration.setEnabled(False)
             self.checkBox_continuous.setEnabled(False)
+            self.lineEdit_burst_duration.setText('0')
+        elif self.checkBox_continuous.isChecked():
+            self.lineEdit_burst_duration.setEnabled(False)
+            self.comboBox_orient_burst_rate.setEnabled(False)
+        else:
+            self.lineEdit_burst_duration.setEnabled(True)
+            self.checkBox_continuous.setEnabled(True)
+            self.comboBox_orient_burst_rate.setEnabled(True)
+            count = self.setup_file.value(ORIENTATION_BURST_COUNT)
+            rate = self.setup_file.value(ORIENTATION_BURST_RATE)
+            seconds = count // rate
+            index = list(BURST_FREQUENCY).index(rate)
+            self.comboBox_orient_burst_rate.setCurrentIndex(index + 1)
+            self.lineEdit_burst_duration.setText(str(seconds))
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
@@ -207,14 +211,17 @@ class SetupFrame(Ui_Frame):
     def burst_rate_changed(self):
         index = self.comboBox_orient_burst_rate.currentIndex()
         if index == 0:
-            self.checkBox_continuous.setChecked(False)
             self.setup_file.set_orient_burst_count(1)
             self.setup_file.set_orient_burst_rate(2)
         else:
             burst_rate = BURST_FREQUENCY[index-1]
+            seconds = self.lineEdit_burst_duration.text()
             self.setup_file.set_orient_burst_rate(burst_rate)
-            self.setup_file.set_orient_burst_count(burst_rate)
-            self.duration_changed()
+            try:
+                self.setup_file.set_orient_burst_count(burst_rate*int(seconds))
+            except ValueError:
+                self.setup_file.set_orient_burst_count(burst_rate)
+                self.show_error(self.lineEdit_burst_duration, False)
 
     def date_time_changed(self, occasion):
         mapping = {'start_time':
@@ -233,7 +240,6 @@ class SetupFrame(Ui_Frame):
     def interval_changed(self, sensor):
         index = self.interval_mapping[sensor].widget.currentIndex()
         self.interval_mapping[sensor].change_fcn(INTERVALS[index])
-        self.duration_changed()
 
     def sensor_enabled_slot(self, sensor):
         state = self.sensor_mapping[sensor].widget.isChecked()
@@ -256,14 +262,10 @@ class SetupFrame(Ui_Frame):
             widget.setStyleSheet(style)
 
     def continuous_changed(self):
-        widgets = [self.comboBox_orient_interval,
-                   self.lineEdit_burst_duration]
         if self.checkBox_continuous.isChecked():
             self.comboBox_orient_interval.setCurrentIndex(0)
             self.lineEdit_burst_duration.setText('1')
-            self._set_enabled(widgets, False)
-        else:
-            self._set_enabled(widgets, True)
+        self.redraw()
 
     def _set_enabled(self, widgets, state):
         widgets = self._make_list(widgets)
