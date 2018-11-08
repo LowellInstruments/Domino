@@ -145,10 +145,6 @@ class SetupFile:
     def _set_accelmag_enabled(self, sensor, state):
         self._confirm_bool(state)
         self._setup_dict[sensor] = state
-        if not self.orient_enabled():
-            self.set_orient_interval(1)
-            self.set_orient_burst_rate(2)
-            self.set_orient_burst_count(1)
 
     def orient_enabled(self):
         return (self.value(ACCELEROMETER_ENABLED) or
