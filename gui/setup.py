@@ -1,7 +1,6 @@
 from gui.setup_ui import Ui_Frame
 from setup_file.setup_file import SetupFile
 from setup_file.setup_file import (
-    DEFAULT_SETUP,
     INTERVALS,
     INTERVAL_STRING,
     BURST_FREQUENCY,
@@ -22,7 +21,7 @@ from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 
-sensor_map = namedtuple('sensor_map', ['widget', 'value', 'change_fcn'])
+sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
 
 
 class SetupFrame(Ui_Frame):
@@ -93,42 +92,20 @@ class SetupFrame(Ui_Frame):
     def setup_mapping(self):
         self.interval_mapping = {
             'temperature':
-                sensor_map(
-                    self.comboBox_temp_interval,
-                    lambda: self.setup_file.value(TEMPERATURE_INTERVAL),
-                    self.setup_file.set_temperature_interval),
+                sensor_map(self.comboBox_temp_interval, TEMPERATURE_INTERVAL),
             'orientation':
-                sensor_map(
-                    self.comboBox_orient_interval,
-                    lambda: self.setup_file.value(ORIENTATION_INTERVAL),
-                    self.setup_file.set_orient_interval)
+                sensor_map(self.comboBox_orient_interval, ORIENTATION_INTERVAL)
         }
 
         self.sensor_mapping = {
             'temperature':
-                sensor_map(
-                    self.checkBox_temperature,
-                    lambda: self.setup_file.value(TEMPERATURE_ENABLED),
-                    lambda state: self.setup_file.set_channel_enabled(
-                        TEMPERATURE_ENABLED, state)),
+                sensor_map(self.checkBox_temperature, TEMPERATURE_ENABLED),
             'accelerometer':
-                sensor_map(
-                    self.checkBox_accelerometer,
-                    lambda: self.setup_file.value(ACCELEROMETER_ENABLED),
-                    lambda state: self.setup_file.set_channel_enabled(
-                        ACCELEROMETER_ENABLED, state)),
+                sensor_map(self.checkBox_accelerometer, ACCELEROMETER_ENABLED),
             'magnetometer':
-                sensor_map(
-                    self.checkBox_magnetometer,
-                    lambda: self.setup_file.value(MAGNETOMETER_ENABLED),
-                    lambda state: self.setup_file.set_channel_enabled(
-                        MAGNETOMETER_ENABLED, state)),
+                sensor_map(self.checkBox_magnetometer, MAGNETOMETER_ENABLED),
             'led':
-                sensor_map(
-                    self.checkBox_led,
-                    lambda: self.setup_file.value(LED_ENABLED),
-                    lambda state: self.setup_file.set_channel_enabled(
-                        LED_ENABLED, state)),
+                sensor_map(self.checkBox_led, LED_ENABLED),
         }
 
     def populate_combo_boxes(self):
@@ -164,17 +141,18 @@ class SetupFrame(Ui_Frame):
 
     def redraw_interval_combo_boxes(self):
         for sensor in ['temperature', 'orientation']:
-            intervals = self.setup_file.available_intervals(sensor)
+            tag = self.interval_mapping[sensor].tag
+            intervals = self.setup_file.available_intervals(tag)
             for i, val in enumerate(intervals):
                 widget = self.interval_mapping[sensor].widget
                 widget.model().item(i).setEnabled(val)
-            interval = self.interval_mapping[sensor].value()
+            interval = self.setup_file.value(tag)
             index = list(INTERVALS).index(interval)
             self.interval_mapping[sensor].widget.setCurrentIndex(index)
 
     def redraw_check_boxes(self):
         for sensor in self.sensor_mapping.values():
-            state = sensor.value()
+            state = self.setup_file.value(sensor.tag)
             sensor.widget.setChecked(state)
 
     def redraw_date_boxes(self):
@@ -271,11 +249,13 @@ class SetupFrame(Ui_Frame):
 
     def interval_changed(self, sensor):
         index = self.interval_mapping[sensor].widget.currentIndex()
-        self.interval_mapping[sensor].change_fcn(INTERVALS[index])
+        tag = self.interval_mapping[sensor].tag
+        self.setup_file.set_interval(tag, INTERVALS[index])
 
     def sensor_enabled_slot(self, sensor):
         state = self.sensor_mapping[sensor].widget.isChecked()
-        self.sensor_mapping[sensor].change_fcn(state)
+        tag = self.interval_mapping[sensor].tag
+        self.setup_file.set_channel_enabled(tag, state)
 
     def duration_changed(self):
         seconds = self.lineEdit_burst_duration.text()
