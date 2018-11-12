@@ -108,16 +108,17 @@ class SetupFile:
         in coordination with each other.
         Logical array (mask) of available orientation or temperature intervals
         """
-        if sensor not in ['temperature', 'orientation']:
+        if sensor not in [TEMPERATURE_INTERVAL, ORIENTATION_INTERVAL]:
             raise ValueError('Unknown sensor {}'.format(sensor))
         opposite_interval = self._opposite_interval(sensor)
-        if sensor is 'temperature':
+        if sensor is TEMPERATURE_INTERVAL:
             return logical_and(self._factors_and_multiples(opposite_interval),
                                INTERVALS >= opposite_interval)
-        return self._factors_and_multiples(opposite_interval)
+        else:
+            return self._factors_and_multiples(opposite_interval)
 
     def _opposite_interval(self, sensor):
-        if sensor is 'orientation':
+        if sensor is ORIENTATION_INTERVAL:
             return self.value(TEMPERATURE_INTERVAL)
         return self.value(ORIENTATION_INTERVAL)
 
@@ -142,20 +143,15 @@ class SetupFile:
         return (self.value(ACCELEROMETER_ENABLED) or
                 self.value(MAGNETOMETER_ENABLED))
 
-    def set_orient_interval(self, value):
-        if value not in INTERVALS[self.available_intervals('orientation')]:
-            raise ValueError('Invalid orientation interval value')
+    def set_interval(self, channel, value):
+        if value not in INTERVALS[self.available_intervals(channel)]:
+            raise ValueError('Invalid interval value')
         max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
             self.set_orient_burst_count(max_burst_count)
-        self._setup_dict[ORIENTATION_INTERVAL] = value
-        if value > self.value(TEMPERATURE_INTERVAL):
-            self.set_temperature_interval(value)
-
-    def set_temperature_interval(self, value):
-        if value not in INTERVALS[self.available_intervals('temperature')]:
-            raise ValueError('Invalid temperature interval value')
-        self._setup_dict[TEMPERATURE_INTERVAL] = value
+        self._setup_dict[channel] = value
+        if self.value(ORIENTATION_INTERVAL) > self.value(TEMPERATURE_INTERVAL):
+            self.set_interval(TEMPERATURE_INTERVAL, value)
 
     def set_orient_burst_rate(self, value):
         if value not in BURST_FREQUENCY:
