@@ -92,6 +92,9 @@ class SetupFile:
         self._setup_dict = ObservableDict(setup_dict)
         self.time_re = compile('^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
                                '[0-1][0-9]:[0-6][0-9]:[0-6][0-9]$')
+        self.is_continuous = True
+        self.is_start_time = False
+        self.is_end_time = False
 
     def set_observer(self, observer_fcn):
         self._setup_dict.set_observer(observer_fcn)
@@ -127,20 +130,9 @@ class SetupFile:
             raise ValueError('Filename error')
         self._setup_dict[FILE_NAME] = filename
 
-    def set_temperature_enabled(self, state):
+    def set_channel_enabled(self, sensor, state):
         self._confirm_bool(state)
-        self._setup_dict[TEMPERATURE_ENABLED] = state
-        # if temperature logging is disabled, set the temperature recording
-        # interval to 1 second
-        # The following causes a ValueError if the orient interval is > 1
-        # if state is False:
-        #     self._setup_dict[TEMPERATURE_INTERVAL] = 1
-
-    def set_accelerometer_enabled(self, state):
-        self._set_accelmag_enabled(ACCELEROMETER_ENABLED, state)
-
-    def set_magnetometer_enabled(self, state):
-        self._set_accelmag_enabled(MAGNETOMETER_ENABLED, state)
+        self._setup_dict[sensor] = state
 
     def _set_accelmag_enabled(self, sensor, state):
         self._confirm_bool(state)
@@ -177,10 +169,6 @@ class SetupFile:
             raise ValueError('Burst count must be <= orient interval '
                              'multiplied by orient burst rate.')
         self._setup_dict[ORIENTATION_BURST_COUNT] = value
-
-    def set_led_enabled(self, state):
-        self._confirm_bool(state)
-        self._setup_dict[LED_ENABLED] = state
 
     def set_time(self, occasion, time):
         if occasion not in [START_TIME, END_TIME]:
