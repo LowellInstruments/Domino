@@ -142,10 +142,13 @@
       <item row="1" column="0">
        <widget class="QDateTimeEdit" name="dateTimeEdit_start_time">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="displayFormat">
          <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -175,10 +178,13 @@
       <item row="1" column="0">
        <widget class="QDateTimeEdit" name="dateTimeEdit_end_time">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="displayFormat">
          <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

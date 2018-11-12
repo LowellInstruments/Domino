@@ -1,6 +1,7 @@
 from gui.setup_ui import Ui_Frame
 from setup_file.setup_file import SetupFile
 from setup_file.setup_file import (
+    DEFAULT_SETUP,
     INTERVALS,
     INTERVAL_STRING,
     BURST_FREQUENCY,
@@ -40,8 +41,16 @@ class SetupFrame(Ui_Frame):
         self.lineEdit_file_name.setMaxLength(11)
         self.populate_combo_boxes()
         self.setup_mapping()
+        self.set_retain_size([self.dateTimeEdit_start_time,
+                              self.dateTimeEdit_end_time])
         self.connect_signals(True)
         self.redraw()
+
+    def set_retain_size(self, widgets):
+        for widget in widgets:
+            date_time_size_policy = widget.sizePolicy()
+            date_time_size_policy.setRetainSizeWhenHidden(True)
+            widget.setSizePolicy(date_time_size_policy)
 
     def connect_signals(self, state):
         signals = [(self.lineEdit_file_name.textChanged,
@@ -65,9 +74,9 @@ class SetupFrame(Ui_Frame):
                    (self.comboBox_orient_burst_rate.currentIndexChanged,
                     self.burst_rate_changed),
                    (self.comboBox_start_time.currentIndexChanged,
-                    self.redraw_date_boxes),
+                    lambda: self.date_time_combobox_changed('start_time')),
                    (self.comboBox_end_time.currentIndexChanged,
-                    self.redraw_date_boxes),
+                    lambda: self.date_time_combobox_changed('end_time')),
                    (self.dateTimeEdit_start_time.dateTimeChanged,
                     lambda: self.date_time_changed('start_time')),
                    (self.dateTimeEdit_end_time.dateTimeChanged,
@@ -100,22 +109,26 @@ class SetupFrame(Ui_Frame):
                 sensor_map(
                     self.checkBox_temperature,
                     lambda: self.setup_file.value(TEMPERATURE_ENABLED),
-                    self.setup_file.set_temperature_enabled),
+                    lambda state: self.setup_file.set_channel_enabled(
+                        TEMPERATURE_ENABLED, state)),
             'accelerometer':
                 sensor_map(
                     self.checkBox_accelerometer,
                     lambda: self.setup_file.value(ACCELEROMETER_ENABLED),
-                    self.setup_file.set_accelerometer_enabled),
+                    lambda state: self.setup_file.set_channel_enabled(
+                        ACCELEROMETER_ENABLED, state)),
             'magnetometer':
                 sensor_map(
                     self.checkBox_magnetometer,
                     lambda: self.setup_file.value(MAGNETOMETER_ENABLED),
-                    self.setup_file.set_magnetometer_enabled),
+                    lambda state: self.setup_file.set_channel_enabled(
+                        MAGNETOMETER_ENABLED, state)),
             'led':
                 sensor_map(
                     self.checkBox_led,
                     lambda: self.setup_file.value(LED_ENABLED),
-                    self.setup_file.set_led_enabled),
+                    lambda state: self.setup_file.set_channel_enabled(
+                        LED_ENABLED, state)),
         }
 
     def populate_combo_boxes(self):
@@ -172,11 +185,13 @@ class SetupFrame(Ui_Frame):
                     self.dateTimeEdit_end_time,
                     END_TIME)]
         for combo_box, date_time, occasion in mapping:
-            time = self.setup_file.value(occasion)
-            time = QDateTime.fromString(time, 'yyyy-MM-dd HH:mm:ss')
-            date_time.setDateTime(time)
-            state = True if combo_box.currentIndex() == 1 else False
-            date_time.setEnabled(state)
+            if combo_box.currentIndex() == 1:
+                date_time.setVisible(True)
+                time = self.setup_file.value(occasion)
+                time = QDateTime.fromString(time, 'yyyy-MM-dd HH:mm:ss')
+                date_time.setDateTime(time)
+            else:
+                date_time.setVisible(False)
 
     def redraw_burst(self):
         if not self.setup_file.orient_enabled():
@@ -199,6 +214,23 @@ class SetupFrame(Ui_Frame):
             index = list(BURST_FREQUENCY).index(rate)
             self.comboBox_orient_burst_rate.setCurrentIndex(index + 1)
             self.lineEdit_burst_duration.setText(str(seconds))
+
+    def date_time_combobox_changed(self, occasion):
+        mapping = {'start_time':
+                   (self.comboBox_start_time,
+                    self.dateTimeEdit_start_time,
+                    START_TIME),
+                   'end_time':
+                   (self.comboBox_end_time,
+                    self.dateTimeEdit_end_time,
+                    END_TIME)}
+        combo_box, datetime_edit, tag = mapping[occasion]
+        if combo_box.currentIndex() == 0:
+            current_time = QDateTime.currentDateTime().toTime_t()
+            # next_hour = (current_time//3600)+3600
+            # self.setup_file.set_time(tag, next_hour)
+        else:
+            self.date_time_changed(occasion)
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
