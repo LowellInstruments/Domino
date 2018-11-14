@@ -30,6 +30,7 @@ class SetupFrame(Ui_Frame):
         self.setup_file.set_observer(self.test)
         self.interval_mapping = None
         self.sensor_mapping = None
+        self.date_mapping = None
 
     def test(self, key, value):
         self.redraw()
@@ -105,8 +106,13 @@ class SetupFrame(Ui_Frame):
             'magnetometer':
                 sensor_map(self.checkBox_magnetometer, MAGNETOMETER_ENABLED),
             'led':
-                sensor_map(self.checkBox_led, LED_ENABLED),
-        }
+                sensor_map(self.checkBox_led, LED_ENABLED)}
+
+        self.date_mapping = {
+            'start_time':
+                sensor_map(self.dateTimeEdit_start_time, START_TIME),
+            'end_time':
+                sensor_map(self.dateTimeEdit_end_time, END_TIME)}
 
     def populate_combo_boxes(self):
         self.comboBox_temp_interval.addItems(INTERVAL_STRING)
@@ -234,11 +240,7 @@ class SetupFrame(Ui_Frame):
                 self.show_error(self.lineEdit_burst_duration, False)
 
     def date_time_changed(self, occasion):
-        mapping = {'start_time':
-                   (self.dateTimeEdit_start_time, START_TIME),
-                   'end_time':
-                   (self.dateTimeEdit_end_time, END_TIME)}
-        widget, value = mapping[occasion]
+        widget, value = self.date_mapping[occasion]
         date_time = widget.dateTime()
         date_time_string = date_time.toString('yyyy-MM-dd HH:mm:ss')
         try:
