@@ -1,6 +1,7 @@
 from gui.setup_ui import Ui_Frame
 from setup_file.setup_file import SetupFile
 from setup_file.setup_file import (
+    DEFAULT_SETUP,
     INTERVALS,
     INTERVAL_STRING,
     BURST_FREQUENCY,
@@ -19,7 +20,7 @@ from setup_file.setup_file import (
 from collections import namedtuple
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
-from gui.gui_updater import Updater
+import logging
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -31,6 +32,7 @@ class SetupFrame(Ui_Frame):
         self.interval_mapping = None
         self.sensor_mapping = None
         self.date_mapping = None
+        logging.basicConfig(level=logging.DEBUG)
 
     def setupUi(self, frame):
         self.frame = frame
@@ -121,6 +123,7 @@ class SetupFrame(Ui_Frame):
         self.comboBox_orient_burst_rate.addItems(burst_list)
 
     def redraw(self, *args):
+        logging.debug(args)
         self.connect_signals(False)
         file_name = self.setup_file.value(FILE_NAME)[:-4]
         self.lineEdit_file_name.setText(file_name)
@@ -131,6 +134,8 @@ class SetupFrame(Ui_Frame):
         self.redraw_date_boxes()
         self.redraw_burst()
         self.show_error(self.lineEdit_burst_duration, False)
+        self.show_error(self.dateTimeEdit_start_time, False)
+        self.show_error(self.dateTimeEdit_end_time, False)
         self.connect_signals(True)
 
     def redraw_temperature(self):
@@ -210,12 +215,30 @@ class SetupFrame(Ui_Frame):
                     self.dateTimeEdit_end_time,
                     END_TIME)}
         combo_box, datetime_edit, tag = mapping[occasion]
-        if combo_box.currentIndex() == 0:
-            current_time = QDateTime.currentDateTime().toTime_t()
-            # next_hour = (current_time//3600)+3600
-            # self.setup_file.set_time(tag, next_hour)
+        if combo_box.currentIndex() == 1:
+            time_str = self._time_value(occasion)
+            try:
+                self.setup_file.set_time(tag, time_str)
+            except ValueError:
+                self.redraw()
         else:
-            self.date_time_changed(occasion)
+            default_value = DEFAULT_SETUP[tag]
+            self.setup_file.set_time(tag, default_value)
+
+    def _time_value(self, occasion):
+        current_time = QDateTime.currentDateTime().toTime_t()
+        next_hour = QDateTime.fromTime_t((current_time // 3600) * 3600 + 3600)
+        if occasion == 'start_time':
+            return next_hour.toString('yyyy-MM-dd HH:mm:ss')
+        else:
+            start_time = self.setup_file.value(START_TIME)
+            if start_time == DEFAULT_SETUP[START_TIME]:
+                end_time = next_hour.addYears(1)
+            else:
+                time_obj = QDateTime.fromString(start_time,
+                                                'yyyy-MM-dd HH:mm:ss')
+                end_time = time_obj.addYears(1)
+            return end_time.toString('yyyy-MM-dd HH:mm:ss')
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
@@ -245,9 +268,8 @@ class SetupFrame(Ui_Frame):
         date_time_string = date_time.toString('yyyy-MM-dd HH:mm:ss')
         try:
             self.setup_file.set_time(value, date_time_string)
-            # TODO Show error dialog
         except ValueError:
-            pass
+            self.show_error(widget, True)
 
     def interval_changed(self, sensor):
         index = self.interval_mapping[sensor].widget.currentIndex()
@@ -290,6 +312,7 @@ class SetupFrame(Ui_Frame):
         return widget
 
     def save_file(self):
+        self.redraw()
         path = QFileDialog.getExistingDirectory(self.frame, 'Save File')
         if not path:
             return
