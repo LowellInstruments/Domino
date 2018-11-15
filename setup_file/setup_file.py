@@ -19,11 +19,10 @@ INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
                         dtype=object)
 BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
 DEFAULT_SETUP = {'DFN': 'untitled.lid', 'TMP': True, 'ACL': True,
-                 'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 16, 'BMN': 16,
+                 'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 8, 'BMN': 8,
                  'STM': '1970-01-01 00:00:00',
                  'ETM': '2096-01-01 00:00:00',
-                 'LED': False, 'PRS': False,
-                 'PHD': False, 'PRR': 0, 'PRN': 0}
+                 'LED': True}
 FILE_NAME = 'DFN'
 TEMPERATURE_ENABLED = 'TMP'
 ACCELEROMETER_ENABLED = 'ACL'

@@ -256,7 +256,7 @@ class SetupFrame(Ui_Frame):
 
     def sensor_enabled_slot(self, sensor):
         state = self.sensor_mapping[sensor].widget.isChecked()
-        tag = self.interval_mapping[sensor].tag
+        tag = self.sensor_mapping[sensor].tag
         self.setup_file.set_channel_enabled(tag, state)
 
     def duration_changed(self):
