@@ -19,6 +19,7 @@ from setup_file.setup_file import (
 from collections import namedtuple
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from gui.gui_updater import Updater
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -27,13 +28,9 @@ sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
 class SetupFrame(Ui_Frame):
     def __init__(self):
         self.setup_file = SetupFile()
-        self.setup_file.set_observer(self.test)
         self.interval_mapping = None
         self.sensor_mapping = None
         self.date_mapping = None
-
-    def test(self, key, value):
-        self.redraw()
 
     def setupUi(self, frame):
         self.frame = frame
@@ -82,7 +79,9 @@ class SetupFrame(Ui_Frame):
                    (self.dateTimeEdit_end_time.dateTimeChanged,
                     lambda: self.date_time_changed('end_time')),
                    (self.pushButton_save.clicked,
-                    self.save_file)]
+                    self.save_file),
+                   (self.setup_file.changed_signal,
+                    self.redraw)]
 
         for signal, fcn in signals:
             if state is True:
@@ -121,7 +120,7 @@ class SetupFrame(Ui_Frame):
         burst_list = ['No Burst'] + burst_list
         self.comboBox_orient_burst_rate.addItems(burst_list)
 
-    def redraw(self):
+    def redraw(self, *args):
         self.connect_signals(False)
         file_name = self.setup_file.value(FILE_NAME)[:-4]
         self.lineEdit_file_name.setText(file_name)
@@ -131,6 +130,7 @@ class SetupFrame(Ui_Frame):
         self.redraw_check_boxes()
         self.redraw_date_boxes()
         self.redraw_burst()
+        self.show_error(self.lineEdit_burst_duration, False)
         self.connect_signals(True)
 
     def redraw_temperature(self):
@@ -181,16 +181,17 @@ class SetupFrame(Ui_Frame):
         if not self.setup_file.orient_enabled():
             return
 
-        if self.comboBox_orient_burst_rate.currentIndex() == 0:
+        if self.setup_file.value(ORIENTATION_BURST_COUNT) == 1:
             self.lineEdit_burst_duration.setEnabled(False)
             self.checkBox_continuous.setEnabled(False)
-            self.lineEdit_burst_duration.setText('0')
-        elif self.checkBox_continuous.isChecked():
+            #self.lineEdit_burst_duration.setText('0')
+        elif self.setup_file.is_continuous:
             self.lineEdit_burst_duration.setEnabled(False)
-            self.comboBox_orient_burst_rate.setEnabled(False)
+            self.comboBox_orient_interval.setEnabled(False)
+            self.lineEdit_burst_duration.setText('1')
         else:
             self.lineEdit_burst_duration.setEnabled(True)
-            self.checkBox_continuous.setEnabled(True)
+            self.comboBox_orient_interval.setEnabled(True)
             self.comboBox_orient_burst_rate.setEnabled(True)
             count = self.setup_file.value(ORIENTATION_BURST_COUNT)
             rate = self.setup_file.value(ORIENTATION_BURST_RATE)
@@ -237,7 +238,6 @@ class SetupFrame(Ui_Frame):
                 self.setup_file.set_orient_burst_count(burst_rate*int(seconds))
             except ValueError:
                 self.setup_file.set_orient_burst_count(burst_rate)
-                self.show_error(self.lineEdit_burst_duration, False)
 
     def date_time_changed(self, occasion):
         widget, value = self.date_mapping[occasion]
@@ -276,10 +276,8 @@ class SetupFrame(Ui_Frame):
             widget.setStyleSheet(style)
 
     def continuous_changed(self):
-        if self.checkBox_continuous.isChecked():
-            self.comboBox_orient_interval.setCurrentIndex(0)
-            self.lineEdit_burst_duration.setText('1')
-        self.redraw()
+        state = self.checkBox_continuous.isChecked()
+        self.setup_file.set_continuous(state)
 
     def _set_enabled(self, widgets, state):
         widgets = self._make_list(widgets)
