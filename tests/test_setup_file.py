@@ -10,9 +10,12 @@ from setup_file.setup_file import (
     ORIENTATION_INTERVAL,
     ORIENTATION_BURST_RATE,
     ORIENTATION_BURST_COUNT,
-    START_TIME,
-    END_TIME,
+    ACCELEROMETER_ENABLED,
+    MAGNETOMETER_ENABLED,
     LED_ENABLED,
+    TEMPERATURE_INTERVAL,
+    START_TIME,
+    END_TIME
 )
 from unittest import TestCase
 
@@ -45,15 +48,17 @@ class TestSetupFile(TestCase):
     def test_available_temperature_intervals(self):
         expected = array([15, 30, 60, 120, 300, 600, 900, 1800, 3600])
         setup = SetupFile()
-        setup.set_orient_interval(15)
-        temp_intervals = INTERVALS[setup.available_intervals('temperature')]
+        setup.set_interval(ORIENTATION_INTERVAL, 15)
+        temp_intervals = INTERVALS[
+            setup.available_intervals(TEMPERATURE_INTERVAL)]
         assert array_equal(temp_intervals, expected)
 
     def test_available_orientation_intervals(self):
         expected = array([1, 5, 15, 30, 60, 120, 300, 600, 900, 1800, 3600])
         setup = SetupFile()
-        setup.set_temperature_interval(15)
-        orient_intervals = INTERVALS[setup.available_intervals('orientation')]
+        setup.set_interval(ORIENTATION_INTERVAL, 15)
+        orient_intervals = INTERVALS[
+            setup.available_intervals(ORIENTATION_INTERVAL)]
         assert array_equal(orient_intervals, expected)
 
     def test_unknown_sensor(self):
@@ -73,43 +78,25 @@ class TestSetupFile(TestCase):
 
     def test_disable_temperature(self):
         setup = SetupFile()
-        setup.set_temperature_enabled(False)
+        setup.set_channel_enabled(TEMPERATURE_ENABLED, False)
         assert setup.value(TEMPERATURE_ENABLED) is False
-
-    def test_orientation_params_after_disabling_orient_channels(self):
-        """
-        If both orientation channels are disabled, ORI, BMR and BMN should
-        be set to 1, 2, 1 respectively
-        """
-        setup = SetupFile()
-        setup.set_orient_interval(15)
-        setup.set_orient_burst_rate(16)
-        setup.set_orient_burst_count(32)
-        assert setup.value(ORIENTATION_INTERVAL) == 15
-        assert setup.value(ORIENTATION_BURST_RATE) == 16
-        assert setup.value(ORIENTATION_BURST_COUNT) == 32
-        setup.set_accelerometer_enabled(False)
-        setup.set_magnetometer_enabled(False)
-        assert setup.value(ORIENTATION_INTERVAL) == 1
-        assert setup.value(ORIENTATION_BURST_RATE) == 2
-        assert setup.value(ORIENTATION_BURST_COUNT) == 1
 
     def test_bad_bool_value(self):
         setup = SetupFile()
         with self.assertRaises(ValueError):
-            setup.set_magnetometer_enabled(1)
+            setup.set_channel_enabled(MAGNETOMETER_ENABLED, 1)
 
     def test_set_invalid_orient_interval(self):
         setup = SetupFile()
-        setup.set_temperature_interval(10)
+        setup.set_interval(TEMPERATURE_INTERVAL, 10)
         with self.assertRaises(ValueError):
-            setup.set_orient_interval(15)
+            setup.set_interval(ORIENTATION_INTERVAL, 15)
 
     def test_set_invalid_temperature_interval(self):
         setup = SetupFile()
-        setup.set_orient_interval(15)
+        setup.set_interval(ORIENTATION_INTERVAL, 15)
         with self.assertRaises(ValueError):
-            setup.set_temperature_interval(10)
+            setup.set_interval(TEMPERATURE_INTERVAL, 10)
 
     def test_invalid_burst_rate(self):
         setup = SetupFile()
@@ -118,15 +105,15 @@ class TestSetupFile(TestCase):
 
     def test_too_large_orient_burst_count(self):
         setup = SetupFile()
-        setup.set_orient_interval(1)
+        setup.set_interval(ORIENTATION_INTERVAL, 1)
         setup.set_orient_burst_rate(16)
         with self.assertRaises(ValueError):
             setup.set_orient_burst_count(17)
 
     def test_enable_led(self):
         setup = SetupFile()
-        setup.set_led_enabled(True)
-        assert setup.value(LED_ENABLED) is True
+        setup.set_channel_enabled(LED_ENABLED, False)
+        assert setup.value(LED_ENABLED) is False
 
     def test_save_default_setup(self):
         setup = SetupFile()
