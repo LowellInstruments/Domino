@@ -49,6 +49,20 @@ class DescriptionGenerator:
         interval = self._interval_to_string(
             self.model.value(ORIENTATION_INTERVAL))
         rate = str(self.model.value(ORIENTATION_BURST_RATE)) + ' Hz'
+        output = self._active_channels()
+        if self.model.value(ORIENTATION_BURST_COUNT) == 1:
+            output += 'a single time every {}'.format(interval)
+        elif self.model.is_continuous:
+            output += 'continuously at {}.'.format(rate)
+        else:
+            seconds = (self.model.value(ORIENTATION_BURST_COUNT)
+                       // self.model.value(ORIENTATION_BURST_RATE))
+            plural = 's' if seconds > 1 else ''
+            output += 'at {} for {} second{} '.format(rate, seconds, plural)
+            output += 'every {}.'.format(interval)
+        return output
+
+    def _active_channels(self):
         if not self.model.orient_enabled():
             return 'Do not sample accelerometer and magnetometer.'
         output = 'Sample '
@@ -60,16 +74,6 @@ class DescriptionGenerator:
             output += 'and '
         if is_mag:
             output += 'magnetometer '
-        if self.model.value(ORIENTATION_BURST_COUNT) == 1:
-            output += 'a single time every {}'.format(interval)
-        elif self.model.is_continuous:
-            output += 'continuously at {}.'.format(rate)
-        else:
-            seconds = (self.model.value(ORIENTATION_BURST_COUNT)
-                       // self.model.value(ORIENTATION_BURST_RATE))
-            plural = 's' if seconds > 1 else ''
-            output += 'at {} for {} second{} '.format(rate, seconds, plural)
-            output += 'every {}.'.format(interval)
         return output
 
     def start_stop_description(self):
