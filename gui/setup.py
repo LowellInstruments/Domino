@@ -21,6 +21,7 @@ from collections import namedtuple
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
+from gui.description_generator import DescriptionGenerator
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -32,6 +33,7 @@ class SetupFrame(Ui_Frame):
         self.interval_mapping = None
         self.sensor_mapping = None
         self.date_mapping = None
+        self.description = DescriptionGenerator(self.setup_file)
         logging.basicConfig(level=logging.DEBUG)
 
     def setupUi(self, frame):
@@ -136,6 +138,8 @@ class SetupFrame(Ui_Frame):
         self.show_error(self.lineEdit_burst_duration, False)
         self.show_error(self.dateTimeEdit_start_time, False)
         self.show_error(self.dateTimeEdit_end_time, False)
+        description = self.description.description()
+        self.label_description.setText(description)
         self.connect_signals(True)
 
     def redraw_temperature(self):
