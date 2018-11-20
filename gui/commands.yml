@@ -1,0 +1,20 @@
+GTM:
+  interval: 1
+  update_fcn: SimpleTextElement
+  init: [label_logger_time, 'Logger Time: {}']
+FSZ:
+  interval: 5
+  update_fcn: FileSize
+  init: [label_file_size, 'File Size {:0.2f} MB']
+GSN:
+  interval: 10
+  update_fcn: SimpleTextElement
+  init: [label_serial, 'Serial Number: {}']
+GFV:
+  interval: 10
+  update_fcn: SimpleTextElement
+  init: [label_firmware, 'Firmware versioni: {}']
+GSN:
+  interval: 10
+  update_fcn: SimpleTextElement
+  init: [label_model, 'Model Number: {}']

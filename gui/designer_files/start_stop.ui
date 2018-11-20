@@ -35,7 +35,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QPushButton" name="pushButton_4">
+         <widget class="QPushButton" name="pushButton_icon">
           <property name="maximumSize">
            <size>
             <width>50</width>
@@ -61,7 +61,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="label_status">
           <property name="font">
            <font>
             <pointsize>10</pointsize>
@@ -84,28 +84,28 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_connection">
         <property name="text">
          <string>Connected on USB</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="label_file_size">
         <property name="text">
          <string>File Size: 487.65 MB</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="label_sd_usage">
         <property name="text">
          <string>SD Card Usage: 3.25 of 3.96 GB Available</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="label_battery">
         <property name="text">
          <string>Battery Status: Good</string>
         </property>
@@ -114,14 +114,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QLabel" name="label_6">
+         <widget class="QLabel" name="label_logger_time">
           <property name="text">
            <string>Logger Time: 2018-10-02 11:10:05</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="pushButton_sync_clock">
           <property name="text">
            <string>Set Clock</string>
           </property>
@@ -130,7 +130,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="label_11">
+       <widget class="QLabel" name="label_computer_time">
         <property name="text">
          <string>Computer Time: 2018-10-02 11:10:17</string>
         </property>
@@ -144,28 +144,28 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="label_serial">
         <property name="text">
          <string>Serial Number: 111A</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="label_firmware">
         <property name="text">
          <string>Firmware Version: 1.8.64</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="label_model">
         <property name="text">
          <string>Model Number: MAT-1</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_10">
+       <widget class="QLabel" name="label_deployment">
         <property name="text">
          <string>Deployment Number</string>
         </property>
@@ -181,7 +181,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="pushButton_stop">
           <property name="text">
            <string>Stop Running</string>
           </property>
@@ -198,7 +198,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="pushButton_start">
           <property name="text">
            <string>Start Running</string>
           </property>
