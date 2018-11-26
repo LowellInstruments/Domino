@@ -1,11 +1,23 @@
 GTM:
   interval: 1
   update_fcn: SimpleTextElement
-  init: [label_logger_time, 'Logger Time: {}']
+  init: [label_logger_time, 'Logger time: {}']
+STS:
+  interval: 1
+  update_fcn: Status
+  init: [label_status, pushButton_start, pushButton_stop, pushButton_sync_clock, 'Device is {}']
 FSZ:
   interval: 5
   update_fcn: FileSize
-  init: [label_file_size, 'File Size {:0.2f} MB']
+  init: [label_file_size, 'File size {:0.2f} MB']
+CTS:
+  interval: 5
+  update_fcn: FileSize
+  init: [label_sd_total_space, ' of {:0.2f} GB available']
+CFS:
+  interval: 5
+  update_fcn: FileSize
+  init: [label_sd_free_space, 'SD card free space: {:0.2f}']
 GSN:
   interval: 10
   update_fcn: SimpleTextElement
@@ -13,7 +25,7 @@ GSN:
 GFV:
   interval: 10
   update_fcn: SimpleTextElement
-  init: [label_firmware, 'Firmware versioni: {}']
+  init: [label_firmware, 'Firmware version: {}']
 GSN:
   interval: 10
   update_fcn: SimpleTextElement

@@ -3,6 +3,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_elements import build_commands
+from queue import Queue
 
 
 class StartStopFrame(Ui_Frame):
@@ -18,10 +19,39 @@ class StartStopFrame(Ui_Frame):
         self.logger = LoggerQueryThread(self.commands)
         self.logger.query_update.connect(self.query_slot)
         self.logger.start()
+        self.time_updater = TimeUpdater()
+        self.time_updater.time_signal.connect(self.update_time_slot)
+        self.time_updater.start()
+        self.pushButton_sync_clock.clicked.connect(
+            lambda: self.logger.queue.put('sync_time'))
+        self.pushButton_start.clicked.connect(self.run)
+        self.pushButton_stop.clicked.connect(self.stop)
 
     def query_slot(self, query_results):
         tag, data = query_results
         self.commands[tag]['update'].update(data)
+
+    def run(self):
+        self.pushButton_sync_clock.setEnabled(False)
+        self.pushButton_start.setEnabled(False)
+        self.logger.queue.put('RUN')
+
+    def stop(self):
+        self.pushButton_stop.setEnabled(False)
+        self.logger.queue.put('STP')
+
+    def update_time_slot(self, time_str):
+        self.label_computer_time.setText('Computer Time: {}'.format(time_str))
+
+
+class TimeUpdater(QThread):
+    time_signal = pyqtSignal(str)
+
+    def run(self):
+        while True:
+            time = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+            self.time_signal.emit(time)
+            self.sleep(1)
 
 
 class LoggerQueryThread(QThread):
@@ -31,10 +61,16 @@ class LoggerQueryThread(QThread):
         super().__init__()
         self.commands = commands
         self.controller = LoggerController()
+        self.queue = Queue()
+
+    def sync_time(self):
+        self._sync_time = True
 
     def run(self):
         self.controller.open_port()
         while self.controller.is_connected:
+            if not self.queue.empty():
+                self._query(self.queue.get())
             next_command = self.get_next_command()
             if next_command:
                 result = self._query(next_command)
