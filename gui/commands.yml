@@ -6,6 +6,10 @@ STS:
   interval: 1
   update_fcn: Status
   init: []
+get_sensor_readings:
+  interval: 1
+  update_fcn: Sensors
+  init: []
 FSZ:
   interval: 5
   update_fcn: FileSize
