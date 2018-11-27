@@ -29,7 +29,8 @@ class StartStopFrame(Ui_Frame):
 
     def query_slot(self, query_results):
         tag, data = query_results
-        self.commands[tag]['update'].update(data)
+        if data:
+            self.commands[tag]['update'].update(data)
 
     def run(self):
         self.pushButton_sync_clock.setEnabled(False)
@@ -78,9 +79,12 @@ class LoggerQueryThread(QThread):
             self.msleep(5)
 
     def _query(self, command):
-        if len(command) == 3:
-            return self.controller.command(command)
-        return getattr(self.controller, command)()
+        try:
+            if len(command) == 3:
+                return self.controller.command(command)
+            return getattr(self.controller, command)()
+        except RuntimeError:
+            return None
 
     def get_next_command(self):
         now = datetime.now().timestamp()

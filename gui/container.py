@@ -10,10 +10,6 @@ from PyQt5.QtCore import (
     QRect,
     QSize,
 )
-from gui.sensor_refresher import (
-    GUI_SENSOR_INFO,
-    SensorRefresher,
-)
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop import StartStopFrame
 from gui.converter import ConverterFrame

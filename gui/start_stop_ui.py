@@ -130,6 +130,7 @@ class Ui_Frame(object):
         self.label_battery.setObjectName("label_battery")
         self.verticalLayout.addWidget(self.label_battery)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setSpacing(6)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.label_logger_time = QtWidgets.QLabel(self.frame_2)
         self.label_logger_time.setObjectName("label_logger_time")
