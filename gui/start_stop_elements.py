@@ -38,13 +38,12 @@ class FileSize(SimpleTextElement):
 
 
 class Status:
-    def __init__(self, gui, label_status, button_start, button_stop,
-                 button_sync, format_str):
-        self.label_status = getattr(gui, label_status)
-        self.button_start = getattr(gui, button_start)
-        self.button_stop = getattr(gui, button_stop)
-        self.button_sync = getattr(gui, button_sync)
-        self.format_str = format_str
+    def __init__(self, gui):
+        self.label_status = gui.label_status
+        self.button_start = gui.pushButton_start
+        self.button_stop = gui.pushButton_stop
+        self.button_sync = gui.pushButton_sync_clock
+        self.format_str = 'Device is {}'
 
     def update(self, data):
         status_code = int(data)

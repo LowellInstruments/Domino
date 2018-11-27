@@ -5,7 +5,7 @@ GTM:
 STS:
   interval: 1
   update_fcn: Status
-  init: [label_status, pushButton_start, pushButton_stop, pushButton_sync_clock, 'Device is {}']
+  init: []
 FSZ:
   interval: 5
   update_fcn: FileSize
