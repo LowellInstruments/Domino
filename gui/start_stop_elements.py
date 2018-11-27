@@ -1,6 +1,7 @@
 from yaml import load
 from gui.sensor_formats import hundredths_format, thousands_format, int_format
 from re import search
+from PyQt5 import QtGui, QtCore
 
 
 def build_commands(path, gui):
@@ -39,20 +40,26 @@ class FileSize(SimpleTextElement):
 
 class Status:
     def __init__(self, gui):
-        self.label_status = gui.label_status
-        self.button_start = gui.pushButton_start
-        self.button_stop = gui.pushButton_stop
-        self.button_sync = gui.pushButton_sync_clock
-        self.format_str = 'Device is {}'
+        self.gui = gui
+        self.rabbit_icon = QtGui.QIcon()
+        self.rabbit_icon.addPixmap(
+            QtGui.QPixmap(":/icons/icons/icons8-running-rabbit-48.png"),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.stopped_icon = QtGui.QIcon()
+        self.stopped_icon.addPixmap(
+            QtGui.QPixmap(":/icons/icons/icons8-private-48.png"),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
     def update(self, data):
         status_code = int(data)
-        state = False if status_code & 1 else True
-        self._show_running(state)
+        self._show_running(False if status_code & 1 else True)
 
     def _show_running(self, state):
         status_str = 'running' if state is True else 'not running'
-        self.label_status.setText(self.format_str.format(status_str))
-        self.button_start.setEnabled(not state)
-        self.button_stop.setEnabled(state)
-        self.button_sync.setEnabled(not state)
+        self.gui.label_status.setText('Device is {}'.format(status_str))
+        self.gui.pushButton_start.setEnabled(not state)
+        self.gui.pushButton_stop.setEnabled(state)
+        self.gui.pushButton_sync_clock.setEnabled(not state)
+        icon = self.rabbit_icon if state is True else self.stopped_icon
+        self.gui.pushButton_icon.setIcon(icon)
+        self.gui.pushButton_icon.setIconSize(QtCore.QSize(36, 36))
