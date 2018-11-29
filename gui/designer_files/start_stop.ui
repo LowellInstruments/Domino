@@ -20,139 +20,7 @@
    <enum>QFrame::Raised</enum>
   </property>
   <layout class="QGridLayout" name="gridLayout" columnstretch="1,1">
-   <item row="0" column="1">
-    <widget class="QTableWidget" name="tableWidget">
-     <property name="showGrid">
-      <bool>true</bool>
-     </property>
-     <property name="cornerButtonEnabled">
-      <bool>false</bool>
-     </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>22</number>
-     </attribute>
-     <row>
-      <property name="text">
-       <string>Accelerometer X</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Accelerometer Y</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Accelerometer Z</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Magnetometer X</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Magnetometer Y</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Magnetometer Z</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Temperature</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Battery</string>
-      </property>
-     </row>
-     <column>
-      <property name="text">
-       <string>Sensor</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Enabled</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Value</string>
-      </property>
-     </column>
-     <item row="0" column="0">
-      <property name="text">
-       <string>Accelerometer X</string>
-      </property>
-     </item>
-     <item row="1" column="0">
-      <property name="text">
-       <string>Accelerometer Y</string>
-      </property>
-     </item>
-     <item row="2" column="0">
-      <property name="text">
-       <string>Accelerometer Z</string>
-      </property>
-     </item>
-     <item row="3" column="0">
-      <property name="text">
-       <string>Magnetometer X</string>
-      </property>
-     </item>
-     <item row="3" column="1">
-      <property name="text">
-       <string/>
-      </property>
-     </item>
-     <item row="4" column="0">
-      <property name="text">
-       <string>Magnetometer Y</string>
-      </property>
-     </item>
-     <item row="5" column="0">
-      <property name="text">
-       <string>Magnetometer Z</string>
-      </property>
-     </item>
-     <item row="6" column="0">
-      <property name="text">
-       <string>Temperature</string>
-      </property>
-     </item>
-     <item row="7" column="0">
-      <property name="text">
-       <string>Battery</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>340</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="0" column="0" rowspan="2">
+   <item row="0" column="0" rowspan="3">
     <widget class="QFrame" name="frame_2">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -393,6 +261,165 @@
        </spacer>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="1">
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::NoSelection</enum>
+     </property>
+     <property name="showGrid">
+      <bool>true</bool>
+     </property>
+     <property name="cornerButtonEnabled">
+      <bool>false</bool>
+     </property>
+     <attribute name="horizontalHeaderVisible">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>22</number>
+     </attribute>
+     <attribute name="verticalHeaderStretchLastSection">
+      <bool>false</bool>
+     </attribute>
+     <row>
+      <property name="text">
+       <string>Accelerometer X</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Accelerometer Y</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Accelerometer Z</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Magnetometer X</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Magnetometer Y</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Magnetometer Z</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Temperature</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Battery</string>
+      </property>
+     </row>
+     <column>
+      <property name="text">
+       <string>Sensor</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Enabled</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Value</string>
+      </property>
+     </column>
+     <item row="0" column="0">
+      <property name="text">
+       <string>Accelerometer X</string>
+      </property>
+     </item>
+     <item row="1" column="0">
+      <property name="text">
+       <string>Accelerometer Y</string>
+      </property>
+     </item>
+     <item row="2" column="0">
+      <property name="text">
+       <string>Accelerometer Z</string>
+      </property>
+     </item>
+     <item row="3" column="0">
+      <property name="text">
+       <string>Magnetometer X</string>
+      </property>
+     </item>
+     <item row="3" column="1">
+      <property name="text">
+       <string/>
+      </property>
+     </item>
+     <item row="4" column="0">
+      <property name="text">
+       <string>Magnetometer Y</string>
+      </property>
+     </item>
+     <item row="5" column="0">
+      <property name="text">
+       <string>Magnetometer Z</string>
+      </property>
+     </item>
+     <item row="6" column="0">
+      <property name="text">
+       <string>Temperature</string>
+      </property>
+     </item>
+     <item row="7" column="0">
+      <property name="text">
+       <string>Battery</string>
+      </property>
+     </item>
     </widget>
    </item>
   </layout>

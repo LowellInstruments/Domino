@@ -106,3 +106,13 @@ class Sensors:
 
     def _format_sensor_value(self, sensor, value):
         return GUI_SENSOR_INFO[sensor](value)
+
+
+class Deployment:
+    def __init__(self, gui):
+        self.gui = gui
+
+    def update(self, data):
+        if 'DP' in data:
+            deployment_str = 'Deployment Number: {}'.format(data['DP'])
+            self.gui.label_deployment.setText(deployment_str)

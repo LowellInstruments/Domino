@@ -6,6 +6,10 @@ STS:
   interval: 1
   update_fcn: Status
   init: []
+logger_info:
+  interval: 1000000
+  update_fcn: Deployment
+  init: []
 get_sensor_readings:
   interval: 1
   update_fcn: Sensors
@@ -15,7 +19,7 @@ FSZ:
   update_fcn: FileSize
   init: [label_file_size, 'File size {:0.2f} MB']
 CTS:
-  interval: 5
+  interval: 1000000
   update_fcn: FileSize
   init: [label_sd_total_space, ' of {:0.2f} GB available']
 CFS:

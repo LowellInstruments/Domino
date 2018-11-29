@@ -4,6 +4,7 @@ from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_elements import build_commands
 from queue import Queue
+from PyQt5.QtWidgets import QHeaderView
 
 
 class StartStopFrame(Ui_Frame):
@@ -15,6 +16,8 @@ class StartStopFrame(Ui_Frame):
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch)
         self.commands = build_commands('gui/commands.yml', self)
         self.logger = LoggerQueryThread(self.commands)
         self.logger.query_update.connect(self.query_slot)
@@ -63,6 +66,7 @@ class LoggerQueryThread(QThread):
         self.commands = commands
         self.controller = LoggerController()
         self.queue = Queue()
+        self.queue.put('load_logger_info')
 
     def sync_time(self):
         self._sync_time = True
