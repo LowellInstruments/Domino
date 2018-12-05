@@ -133,13 +133,6 @@
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="label_battery">
-        <property name="text">
-         <string>Battery Status: ---</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <property name="spacing">
          <number>6</number>
