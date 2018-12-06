@@ -93,15 +93,18 @@ class LoggerQueryThread(QThread):
         while True:
             if self.try_connecting():
                 self.connected.emit(True)
+                self.start_query_loop()
             else:
                 self.connected.emit(False)
                 self.sleep(1)
-            while self.controller.is_connected:
-                next_command = self.get_next_command()
-                if next_command:
-                    result = self._send_command(next_command)
-                    self.query_update.emit((next_command, result))
-                self.msleep(10)
+
+    def start_query_loop(self):
+        while self.controller.is_connected:
+            next_command = self.get_next_command()
+            if next_command:
+                result = self._send_command(next_command)
+                self.query_update.emit((next_command, result))
+            self.msleep(10)
 
     def try_connecting(self):
         try:
