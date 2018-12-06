@@ -41,6 +41,11 @@ SENSORS = OrderedDict(
      ('batt', hundredths_format)]
 )
 
+LOGGER_INFO = {
+    'DP': ('Deployment Number: {}', 'label_deployment'),
+    'MN': ('Model Number: {}', 'label_model')
+}
+
 
 class Commands:
     def __init__(self, gui):
@@ -154,9 +159,8 @@ class SensorUpdate(Update):
 class DeploymentUpdate(Update):
     def update(self, query_results):
         command, data = query_results
-        if 'DP' in data:
-            deployment_str = 'Deployment Number: {}'.format(data['DP'])
-            self.gui.label_deployment.setText(deployment_str)
-        if 'MN' in data:
-            model_str = 'Model Number: {}'.format(data['MN'])
-            self.gui.label_model.setText(model_str)
+        for tag in LOGGER_INFO:
+            if tag in data:
+                format_, widget_name = LOGGER_INFO[tag]
+                widget = getattr(self.gui, widget_name)
+                widget.setText(format_.format(data[tag]))
