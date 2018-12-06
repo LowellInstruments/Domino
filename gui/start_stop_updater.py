@@ -10,7 +10,7 @@ COMMANDS = [
     ['GTM', 1, 'SimpleUpdate'],
     ['STS', 1, 'StatusUpdate'],
     ['get_sensor_readings', 1, 'SensorUpdate'],
-    ['logger_info', 99999999, 'DeploymentUpdate'],
+    ['logger_info', 10, 'DeploymentUpdate'],
     ['FSZ', 5, 'FileSizeUpdate'],
     ['CTS', 10, 'FileSizeUpdate'],
     ['CFS', 10, 'FileSizeUpdate'],
@@ -25,9 +25,9 @@ FILE_SIZE = {
 }
 
 SIMPLE_FIELD = {
-    'GTM': ('Logger time: {}', 'label_logger_time'),
+    'GTM': ('Logger Time: {}', 'label_logger_time'),
     'GSN': ('Serial Number: {}', 'label_serial'),
-    'GFV': ('Firmware version: {}', 'label_firmware'),
+    'GFV': ('Firmware Version: {}', 'label_firmware'),
 }
 
 SENSORS = OrderedDict(
@@ -157,6 +157,6 @@ class DeploymentUpdate(Update):
         if 'DP' in data:
             deployment_str = 'Deployment Number: {}'.format(data['DP'])
             self.gui.label_deployment.setText(deployment_str)
-        if 'MA' in data:
-            model_str = 'Model Number: {}'.format(data['MA'])
+        if 'MN' in data:
+            model_str = 'Model Number: {}'.format(data['MN'])
             self.gui.label_model.setText(model_str)

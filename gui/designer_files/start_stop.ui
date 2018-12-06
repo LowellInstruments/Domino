@@ -170,28 +170,28 @@
       <item>
        <widget class="QLabel" name="label_serial">
         <property name="text">
-         <string>Serial Number: 111A</string>
+         <string>Serial Number:</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_firmware">
         <property name="text">
-         <string>Firmware Version: 1.8.64</string>
+         <string>Firmware Version:</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_model">
         <property name="text">
-         <string>Model Number: MAT-1</string>
+         <string>Model Number:</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_deployment">
         <property name="text">
-         <string>Deployment Number</string>
+         <string>Deployment Number:</string>
         </property>
        </widget>
       </item>

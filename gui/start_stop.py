@@ -7,6 +7,7 @@ from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
 from PyQt5.QtWidgets import QHeaderView
+from gui.start_stop_clear import clear_gui
 
 
 TIME_FIELD = 2
@@ -26,6 +27,7 @@ class StartStopFrame(Ui_Frame):
         self.commands = Commands(self)
         self.logger = LoggerQueryThread(self.commands.get_schedule())
         self.logger.query_update.connect(self.query_slot)
+        self.logger.connected.connect(self.connected_slot)
         logging.debug('Starting logger thread')
         self.logger.start()
         self.time_updater = TimeUpdater()
@@ -41,6 +43,12 @@ class StartStopFrame(Ui_Frame):
         command, data = query_results
         if data:
             self.commands.command_handler(query_results)
+
+    def connected_slot(self, state):
+        if state is False:
+            clear_gui(self)
+        else:
+            self.label_connection.setText('Connected on USB')
 
     def run(self):
         self.pushButton_sync_clock.setEnabled(False)
@@ -67,6 +75,7 @@ class TimeUpdater(QThread):
 
 class LoggerQueryThread(QThread):
     query_update = pyqtSignal(tuple)
+    connected = pyqtSignal(bool)
 
     def __init__(self, commands):
         super().__init__()
@@ -75,7 +84,6 @@ class LoggerQueryThread(QThread):
         self.controller = LoggerController()
         logging.debug(self.controller)
         self.queue = Queue()
-        self.queue.put('load_logger_info')
 
     def command(self, command):
         self.queue.put(command)
@@ -83,7 +91,10 @@ class LoggerQueryThread(QThread):
     def run(self):
         logging.debug('Entered thread')
         while True:
-            if not self.try_connecting():
+            if self.try_connecting():
+                self.connected.emit(True)
+            else:
+                self.connected.emit(False)
                 self.sleep(1)
             while self.controller.is_connected:
                 next_command = self.get_next_command()
