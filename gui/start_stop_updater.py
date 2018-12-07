@@ -114,7 +114,7 @@ class StatusUpdate(Update):
 
     def update(self, query_results):
         command, data = query_results
-        status_code = int(data)
+        status_code = int(data, 16)
         self._show_running(False if status_code & 1 else True)
 
     def _show_running(self, state):
