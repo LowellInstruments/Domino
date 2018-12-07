@@ -86,7 +86,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>&amp;Sampling Interval:</string>
+         <string>Sampling Interval:</string>
         </property>
         <property name="buddy">
          <cstring>comboBox_temp_interval</cstring>
@@ -134,13 +134,23 @@
         </item>
         <item>
          <property name="text">
-          <string>Start at Time</string>
+          <string>Start at Time (year-month-day hours:minutes:seconds)</string>
          </property>
         </item>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QDateTimeEdit" name="dateTimeEdit_start_time"/>
+       <widget class="QDateTimeEdit" name="dateTimeEdit_start_time">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -160,13 +170,23 @@
         </item>
         <item>
          <property name="text">
-          <string>Stop at Time</string>
+          <string>Stop at Time (year-month-day hours:minutes:seconds)</string>
          </property>
         </item>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QDateTimeEdit" name="dateTimeEdit_end_time"/>
+       <widget class="QDateTimeEdit" name="dateTimeEdit_end_time">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -220,34 +240,13 @@
       <string>Summary</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_8">
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_11">
-        <property name="text">
-         <string>File size: 125.5 MB / month</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Expected run time with new battery: 14 months</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="label_description">
         <property name="text">
          <string>Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 16 Hz for 10 seconds every 60 seconds. </string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>Logger will begin recording when started and will cease recording when manually stopped.</string>
         </property>
        </widget>
       </item>
@@ -292,16 +291,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="lineEdit_burst_duration">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -339,7 +328,7 @@
       <item row="2" column="1">
        <widget class="QComboBox" name="comboBox_orient_burst_rate"/>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <spacer name="verticalSpacer_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -351,6 +340,33 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="spacing">
+         <number>15</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_burst_duration">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_continuous">
+          <property name="text">
+           <string>Continuous</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

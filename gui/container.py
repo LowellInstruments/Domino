@@ -10,12 +10,8 @@ from PyQt5.QtCore import (
     QRect,
     QSize,
 )
-from gui.sensor_refresher import (
-    GUI_SENSOR_INFO,
-    SensorRefresher,
-)
 from gui.container_ui import Ui_MainWindow
-from gui.start_stop_ui import Ui_Frame as StartStopFrame
+from gui.start_stop import StartStopFrame
 from gui.converter import ConverterFrame
 from gui.setup import SetupFrame
 
@@ -40,17 +36,17 @@ class Container(Ui_MainWindow):
         self.pushButton1.setIconSize(QSize(36, 36))
         self.pushButton1.setFlat(True)
         self.pushButton1.setObjectName('Preferences')
-        self.create_sensor_widgets()
-        self.refresher = SensorRefresher(self.start_stop_frame.tableWidget)
-
-    def create_sensor_widgets(self):
-        for index, sensor in enumerate(GUI_SENSOR_INFO.keys()):
-            self.add_item(index, 1)
-            self.add_item(index, 2)
-
-    def add_item(self, row, col):
-        item = QTableWidgetItem()
-        self.start_stop_frame.tableWidget.setItem(row, col, item)
+    #     self.create_sensor_widgets()
+    #     self.refresher = SensorRefresher(self.start_stop_frame.tableWidget)
+    #
+    # def create_sensor_widgets(self):
+    #     for index, sensor in enumerate(GUI_SENSOR_INFO.keys()):
+    #         self.add_item(index, 1)
+    #         self.add_item(index, 2)
+    #
+    # def add_item(self, row, col):
+    #     item = QTableWidgetItem()
+    #     self.start_stop_frame.tableWidget.setItem(row, col, item)
 
     def closeEvent(self, event):
         if self.converter_frame.confirm_quit():

@@ -2,15 +2,15 @@ from datetime import datetime
 from mat.utils import parse_tags
 from numpy import array, logical_or, logical_and
 from pathlib import Path
-from re import search
-from setup_file.utils import date_string_to_posix
+from re import compile, search
+from setup_file.utils import date_string_to_datetime
+from PyQt5.QtCore import pyqtSignal, QObject
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
 TYPE_BOOL = ('ACL', 'LED', 'MGN', 'TMP', 'PRS', 'PHD')
-TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
-               'STM', 'ETM', 'LED', 'PRS', 'PHD', 'PRR', 'PRN']
+               'STM', 'ETM', 'LED']
 INTERVALS = array([1, 2, 5, 10, 15, 20, 30, 60,
                    120, 300, 600, 900, 1800, 3600])
 INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
@@ -20,11 +20,10 @@ INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
                         dtype=object)
 BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
 DEFAULT_SETUP = {'DFN': 'untitled.lid', 'TMP': True, 'ACL': True,
-                 'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 2, 'BMN': 1,
+                 'MGN': True, 'TRI': 1, 'ORI': 1, 'BMR': 8, 'BMN': 8,
                  'STM': '1970-01-01 00:00:00',
-                 'ETM': '4096-01-01 00:00:00',
-                 'LED': False, 'PRS': False,
-                 'PHD': False, 'PRR': 0, 'PRN': 0}
+                 'ETM': '2096-01-01 00:00:00',
+                 'LED': True}
 FILE_NAME = 'DFN'
 TEMPERATURE_ENABLED = 'TMP'
 ACCELEROMETER_ENABLED = 'ACL'
@@ -70,12 +69,24 @@ def _convert_to_type(setup_dict):
     return setup_dict
 
 
-class SetupFile:
+class SetupFile(QObject):
+    changed_signal = pyqtSignal(tuple)
+
     def __init__(self, setup_dict=None):
+        super().__init__()
         self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
+        self.time_re = compile('^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
+                               '[0-1][0-9]:[0-6][0-9]:[0-6][0-9]$')
+        self.is_continuous = False
+        self.is_start_time = False
+        self.is_end_time = False
 
     def value(self, tag):
         return self._setup_dict[tag]
+
+    def update_value(self, tag, value):
+        self._setup_dict[tag] = value
+        self.changed_signal.emit((tag, value))
 
     def available_intervals(self, sensor):
         """
@@ -83,16 +94,17 @@ class SetupFile:
         in coordination with each other.
         Logical array (mask) of available orientation or temperature intervals
         """
-        if sensor not in ['temperature', 'orientation']:
+        if sensor not in [TEMPERATURE_INTERVAL, ORIENTATION_INTERVAL]:
             raise ValueError('Unknown sensor {}'.format(sensor))
         opposite_interval = self._opposite_interval(sensor)
-        if sensor is 'temperature':
+        if sensor is TEMPERATURE_INTERVAL:
             return logical_and(self._factors_and_multiples(opposite_interval),
                                INTERVALS >= opposite_interval)
-        return self._factors_and_multiples(opposite_interval)
+        else:
+            return self._factors_and_multiples(opposite_interval)
 
     def _opposite_interval(self, sensor):
-        if sensor is 'orientation':
+        if sensor is ORIENTATION_INTERVAL:
             return self.value(TEMPERATURE_INTERVAL)
         return self.value(ORIENTATION_INTERVAL)
 
@@ -101,85 +113,72 @@ class SetupFile:
                           interval % INTERVALS == 0)
 
     def set_filename(self, filename):
-        if not search(r'^[a-zA-Z0-9_\- ]{1,11}\.lid$', filename):
+        if not search(r'^[a-zA-Z0-9_\-]{1,11}\.lid$', filename):
             raise ValueError('Filename error')
-        self._setup_dict[FILE_NAME] = filename
+        self.update_value(FILE_NAME, filename)
 
-    def set_temperature_enabled(self, state):
+    def set_channel_enabled(self, sensor, state):
         self._confirm_bool(state)
-        self._setup_dict[TEMPERATURE_ENABLED] = state
-        # if temperature logging is disabled, set the temperature recording
-        # interval to 1 second
-        if state is False:
-            self._setup_dict[TEMPERATURE_INTERVAL] = 1
-
-    def set_accelerometer_enabled(self, state):
-        self._set_accelmag_enabled(ACCELEROMETER_ENABLED, state)
-
-    def set_magnetometer_enabled(self, state):
-        self._set_accelmag_enabled(MAGNETOMETER_ENABLED, state)
+        self.update_value(sensor, state)
 
     def _set_accelmag_enabled(self, sensor, state):
         self._confirm_bool(state)
-        self._setup_dict[sensor] = state
-        if not self._orient_enabled():
-            self.set_orient_interval(1)
-            self.set_orient_burst_rate(2)
-            self.set_orient_burst_count(1)
+        self.update_value(sensor, state)
 
-    def _orient_enabled(self):
+    def orient_enabled(self):
         return (self.value(ACCELEROMETER_ENABLED) or
                 self.value(MAGNETOMETER_ENABLED))
 
-    def set_orient_interval(self, value):
-        if value not in INTERVALS[self.available_intervals('orientation')]:
-            raise ValueError('Invalid orientation interval value')
+    def set_interval(self, channel, value):
+        if value not in INTERVALS[self.available_intervals(channel)]:
+            raise ValueError('Invalid interval value')
+        if channel == ORIENTATION_INTERVAL:
+            self._check_continuous()
+        self.update_value(channel, value)
         max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
             self.set_orient_burst_count(max_burst_count)
-        self._setup_dict[ORIENTATION_INTERVAL] = value
-        if value > self.value(TEMPERATURE_INTERVAL):
-            self.set_temperature_interval(value)
-
-    def set_temperature_interval(self, value):
-        if value not in INTERVALS[self.available_intervals('temperature')]:
-            raise ValueError('Invalid temperature interval value')
-        self._setup_dict[TEMPERATURE_INTERVAL] = value
+        if self.value(ORIENTATION_INTERVAL) > self.value(TEMPERATURE_INTERVAL):
+            self.set_interval(TEMPERATURE_INTERVAL, value)
 
     def set_orient_burst_rate(self, value):
         if value not in BURST_FREQUENCY:
             raise ValueError('Invalid burst rate')
-        self._setup_dict[ORIENTATION_BURST_RATE] = value
+        self.update_value(ORIENTATION_BURST_RATE, value)
+        if self.is_continuous:
+            self.update_value(ORIENTATION_BURST_COUNT, value)
 
     def set_orient_burst_count(self, value):
         max_burst_count = (self.value(ORIENTATION_INTERVAL) *
                            self.value(ORIENTATION_BURST_RATE))
-        if value > max_burst_count:
-            raise ValueError('Burst count must be less than orient interval '
+        if 0 <= value > max_burst_count:
+            raise ValueError('Burst count must be > 0 and <= orient interval '
                              'multiplied by orient burst rate.')
-        self._setup_dict[ORIENTATION_BURST_COUNT] = value
+        if self.is_continuous and (self.value(ORIENTATION_BURST_COUNT) !=
+                                   self.value(ORIENTATION_BURST_RATE)):
+            raise ValueError('Invalid burst count while in continuous mode')
+        self.update_value(ORIENTATION_BURST_COUNT, value)
 
-    def set_led_enabled(self, state):
-        self._confirm_bool(state)
-        self._setup_dict[LED_ENABLED] = state
+    def set_time(self, occasion, time):
+        if occasion not in [START_TIME, END_TIME]:
+            raise ValueError('position must be STM or ETM')
+        if not self.time_re.search(time):
+            raise ValueError('Incorrectly formatted time string')
+        time_dict = {START_TIME: self.value(START_TIME),
+                     END_TIME: self.value(END_TIME)}
+        time_dict[occasion] = time
+        self._check_time(time_dict)
+        self.update_value(occasion, time)
 
-    def set_time(self, position, time):
-        if position not in ['start', 'end']:
-            raise ValueError('position must be start or end')
-        tag = START_TIME if position == 'start' else END_TIME
-        old_value = self.value(tag)
-        self._setup_dict[tag] = time
-        if not self._check_time():
-            self._setup_dict[tag] = old_value
+    def _check_time(self, time_dict):
+        if time_dict[END_TIME] <= time_dict[START_TIME]:
             raise ValueError('start time and end time must be in '
                              'correct order')
 
-    def _check_time(self):
-        start_time = date_string_to_posix(self.value(START_TIME))
-        end_time = date_string_to_posix(self.value(END_TIME))
-        if end_time <= start_time:
-            return False
-        return True
+    def _check_continuous(self):
+        if self.is_continuous:
+            raise ValueError('Cannot change orientation interval or burst '
+                             'count when operating in continuous mode')
 
     def _confirm_bool(self, state):
         if type(state) is not bool:
@@ -188,6 +187,15 @@ class SetupFile:
     def write_file(self, directory):
         file_writer = ConfigFileWriter(directory, self._setup_dict)
         file_writer.write_file()
+
+    def set_continuous(self, state):
+        self._confirm_bool(state)
+        self.is_continuous = state
+        if state is True:
+            self.update_value(ORIENTATION_INTERVAL, 1)
+            burst_rate = self.value(ORIENTATION_BURST_RATE)
+            self.update_value(ORIENTATION_BURST_COUNT, burst_rate)
+        self.changed_signal.emit(('continuous', state))
 
 
 class ConfigFileWriter:
