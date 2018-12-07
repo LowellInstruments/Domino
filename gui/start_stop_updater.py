@@ -46,6 +46,16 @@ LOGGER_INFO = {
     'MN': ('Model Number: {}', 'label_model')
 }
 
+ERROR_CODES = [
+    (2, 'Delayed start'),
+    (4, 'SD card error'),
+    (8, 'MAT.cfg error'),
+    (16, 'Safe shutdown'),
+    (32, 'SD retry error'),
+    (64, 'ADXL data error'),
+    (128, 'Stack Overflow')
+]
+
 
 class Commands:
     def __init__(self, gui):
@@ -115,11 +125,21 @@ class StatusUpdate(Update):
     def update(self, query_results):
         command, data = query_results
         status_code = int(data, 16)
-        self._show_running(False if status_code & 1 else True)
+        self._show_running(self._running(status_code))
+        self.gui.label_status.setText(self.description(status_code))
+
+    def _running(self, status_code):
+        return False if status_code & 1 else True
+
+    def description(self, status_code):
+        running = 'running' if self._running(status_code) else 'stopped'
+        status_str = 'Device is {}'.format(running)
+        for value, string in ERROR_CODES:
+            if status_code & value:
+                status_str += ' - {}'.format(string)
+        return status_str
 
     def _show_running(self, state):
-        status_str = 'running' if state is True else 'not running'
-        self.gui.label_status.setText('Device is {}'.format(status_str))
         self.gui.pushButton_start.setEnabled(not state)
         self.gui.pushButton_stop.setEnabled(state)
         self.gui.pushButton_sync_clock.setEnabled(not state)
