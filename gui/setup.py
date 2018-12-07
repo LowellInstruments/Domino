@@ -22,6 +22,7 @@ from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
 from gui.description_generator import DescriptionGenerator
+from mat import appdata
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -317,9 +318,14 @@ class SetupFrame(Ui_Frame):
 
     def save_file(self):
         self.redraw()
-        path = QFileDialog.getExistingDirectory(self.frame, 'Save File')
+        application_data = appdata.get_userdata('domino.dat')
+        directory = application_data.get('setup_file_directory')
+        path = QFileDialog.getExistingDirectory(self.frame,
+                                                'Save File',
+                                                directory=directory)
         if not path:
             return
+        appdata.set_userdata('domino.dat', 'setup_file_directory', path)
         self.setup_file.write_file(path)
         QMessageBox.information(self.frame,
                                 'File Saved',
