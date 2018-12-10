@@ -80,24 +80,24 @@ class ConverterFrame(Ui_Frame):
                 path)
 
     def save_session(self):
-        appdata.set_userdata('converter-1.dat',
+        appdata.set_userdata('domino.dat',
                              'output_type',
                              self.comboBox_output_type.currentText())
-        appdata.set_userdata('converter-1.dat',
+        appdata.set_userdata('domino.dat',
                              'output_format',
                              self.comboBox_output_format.currentText())
-        appdata.set_userdata('converter-1.dat',
+        appdata.set_userdata('domino.dat',
                              'meter_model',
                              self.comboBox_tilt_tables.currentText())
-        appdata.set_userdata('converter-1.dat',
+        appdata.set_userdata('domino.dat',
                              'same_directory',
                              self.radioButton_output_same.isChecked())
-        appdata.set_userdata('converter-1.dat',
+        appdata.set_userdata('domino.dat',
                              'output_directory',
                              self.lineEdit_output_folder.text())
 
     def restore_last_session(self):
-        application_data = appdata.get_userdata('converter-1.dat')
+        application_data = appdata.get_userdata('domino.dat')
         self.comboBox_output_type.setCurrentText(application_data.get(
             'output_type', 'Discrete Channels'))
         self.comboBox_output_format.setCurrentText(application_data.get(
@@ -140,7 +140,7 @@ class ConverterFrame(Ui_Frame):
 
     def _read_conversion_parameters(self):
         parameters = default_parameters()
-        application_data = appdata.get_userdata('converter-1.dat')
+        application_data = appdata.get_userdata('domino.dat')
 
         parameters['output_directory'] = self._get_output_directory()
         parameters['time_format'] = application_data.get('time_format',
