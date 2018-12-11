@@ -6,7 +6,7 @@ from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
-from PyQt5.QtWidgets import QHeaderView
+from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from gui.start_stop_clear import clear_gui
 
 
@@ -47,8 +47,12 @@ class StartStopFrame(Ui_Frame):
     def connected_slot(self, state):
         if state is False:
             clear_gui(self)
+            self.label_connection.setText('No logger on USB or no access to USB (hover mouse to fix the latter)')
+            tip = 'On a terminal, try:\nsudo adduser <your_user> dialout\nand restart your desktop session.'
+            self.label_connection.setToolTip(tip)
         else:
             self.label_connection.setText('Connected on USB')
+            self.label_connection.toolTip = None
 
     def run(self):
         self.pushButton_sync_clock.setEnabled(False)
@@ -90,13 +94,11 @@ class LoggerQueryThread(QThread):
 
     def run(self):
         logging.debug('Entered thread')
-        while True:
-            if self.try_connecting():
-                self.connected.emit(True)
-                self.start_query_loop()
-            else:
-                self.connected.emit(False)
-                self.sleep(1)
+        while self.try_connecting():
+            self.connected.emit(True)
+            self.start_query_loop()
+        self.connected.emit(False)
+        self.sleep(1)
 
     def start_query_loop(self):
         while self.controller.is_connected:
@@ -108,8 +110,7 @@ class LoggerQueryThread(QThread):
 
     def try_connecting(self):
         try:
-            self.controller.open_port()
-            return True
+            return self.controller.open_port()
         except RuntimeError:
             return False
 
