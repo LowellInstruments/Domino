@@ -6,8 +6,9 @@ from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
-from PyQt5.QtWidgets import QHeaderView, QMessageBox
+from PyQt5.QtWidgets import QHeaderView
 from gui.start_stop_clear import clear_gui
+import sys
 
 
 TIME_FIELD = 2
@@ -47,12 +48,16 @@ class StartStopFrame(Ui_Frame):
     def connected_slot(self, state):
         if state is False:
             clear_gui(self)
-            self.label_connection.setText('No logger on USB or no access to USB (hover mouse to fix the latter)')
-            tip = 'On a terminal, try:\nsudo adduser <your_user> dialout\nand restart your desktop session.'
-            self.label_connection.setToolTip(tip)
+            msg_text = 'No logger on USB or no USB access\n'
+            if sys.platform == 'linux':
+                tool_tip = 'On a terminal, type:\n'\
+                           'sudo adduser <your_user> dialout\n'\
+                           'and restart your desktop session.'
+                msg_text = msg_text + '(hover mouse here to fix the latter)'
         else:
-            self.label_connection.setText('Connected on USB')
-            self.label_connection.toolTip = None
+            tool_tip = None
+            msg_text = 'Logger connected on USB'
+        self.update_label_connection(msg_text, tool_tip)
 
     def run(self):
         self.pushButton_sync_clock.setEnabled(False)
@@ -65,6 +70,10 @@ class StartStopFrame(Ui_Frame):
 
     def update_time_slot(self, time_str):
         self.label_computer_time.setText('Computer Time: {}'.format(time_str))
+
+    def update_label_connection(self, text, tip):
+        self.label_connection.setText(text)
+        self.label_connection.setToolTip(tip)
 
 
 class TimeUpdater(QThread):
@@ -94,11 +103,13 @@ class LoggerQueryThread(QThread):
 
     def run(self):
         logging.debug('Entered thread')
-        while self.try_connecting():
-            self.connected.emit(True)
-            self.start_query_loop()
-        self.connected.emit(False)
-        self.sleep(1)
+        while True:
+            if self.try_connecting():
+                self.connected.emit(True)
+                self.start_query_loop()
+            else:
+                self.connected.emit(False)
+                self.sleep(1)
 
     def start_query_loop(self):
         while self.controller.is_connected:
