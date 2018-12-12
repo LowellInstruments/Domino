@@ -50,14 +50,15 @@ class StartStopFrame(Ui_Frame):
             clear_gui(self)
             msg_text = 'No logger on USB or no USB access\n'
             if sys.platform == 'linux':
+                msg_text += '(hover mouse here for details)'
                 tool_tip = 'On a terminal, type:\n'\
                            'sudo adduser <your_user> dialout\n'\
                            'and restart your desktop session.'
-                msg_text = msg_text + '(hover mouse here to fix the latter)'
         else:
-            tool_tip = None
             msg_text = 'Logger connected on USB'
-        self.update_label_connection(msg_text, tool_tip)
+            tool_tip = None
+        self.label_connection.setText(msg_text)
+        self.label_connection.setToolTip(tool_tip)
 
     def run(self):
         self.pushButton_sync_clock.setEnabled(False)
@@ -70,10 +71,6 @@ class StartStopFrame(Ui_Frame):
 
     def update_time_slot(self, time_str):
         self.label_computer_time.setText('Computer Time: {}'.format(time_str))
-
-    def update_label_connection(self, text, tip):
-        self.label_connection.setText(text)
-        self.label_connection.setToolTip(tip)
 
 
 class TimeUpdater(QThread):
