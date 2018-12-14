@@ -1,10 +1,11 @@
 from PyQt5.QtGui import (
     QIcon,
-    QPixmap,
+    QPixmap
 )
 from PyQt5.QtWidgets import (
     QPushButton,
     QTableWidgetItem,
+    QMessageBox
 )
 from PyQt5.QtCore import (
     QRect,
@@ -18,6 +19,7 @@ from gui.setup import SetupFrame
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
+        self.version = '0.0.1'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
@@ -30,12 +32,13 @@ class Container(Ui_MainWindow):
         self.pushButton1 = QPushButton(self.centralwidget)
         self.pushButton1.setGeometry(QRect(740, 5, 48, 48))
         icon = QIcon()
-        icon.addPixmap(QPixmap(":/icons/icons/icons8-menu-48.png"),
+        icon.addPixmap(QPixmap(":/icons/icons/icons8-about-36.png"),
                        QIcon.Normal, QIcon.Off)
         self.pushButton1.setIcon(icon)
         self.pushButton1.setIconSize(QSize(36, 36))
         self.pushButton1.setFlat(True)
-        self.pushButton1.setObjectName('Preferences')
+        self.pushButton1.setObjectName('about')
+        self.pushButton1.clicked.connect(self.about)
     #     self.create_sensor_widgets()
     #     self.refresher = SensorRefresher(self.start_stop_frame.tableWidget)
     #
@@ -53,3 +56,9 @@ class Container(Ui_MainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def about(self):
+        description = 'Lowell Instruments LLC\n' \
+                      'Domino ' + self.version + '\n\n' \
+                      'www.lowellinstruments.com'
+        QMessageBox.information(self.window, 'Domino', description)
