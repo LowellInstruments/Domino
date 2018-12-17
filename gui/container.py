@@ -30,7 +30,8 @@ class Container(Ui_MainWindow):
         self.start_stop_frame = StartStopFrame()
         self.start_stop_frame.setupUi(self.frame_start_stop)
         self.pushButton1 = QPushButton(self.centralwidget)
-        self.pushButton1.setGeometry(QRect(740, 5, 48, 48))
+        x_pos = self.window.width() - 60
+        self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
         icon = QIcon()
         icon.addPixmap(QPixmap(":/icons/icons/icons8-about-36.png"),
                        QIcon.Normal, QIcon.Off)
@@ -39,17 +40,14 @@ class Container(Ui_MainWindow):
         self.pushButton1.setFlat(True)
         self.pushButton1.setObjectName('about')
         self.pushButton1.clicked.connect(self.about)
-    #     self.create_sensor_widgets()
-    #     self.refresher = SensorRefresher(self.start_stop_frame.tableWidget)
-    #
-    # def create_sensor_widgets(self):
-    #     for index, sensor in enumerate(GUI_SENSOR_INFO.keys()):
-    #         self.add_item(index, 1)
-    #         self.add_item(index, 2)
-    #
-    # def add_item(self, row, col):
-    #     item = QTableWidgetItem()
-    #     self.start_stop_frame.tableWidget.setItem(row, col, item)
+        self.old_resize = self.window.resizeEvent
+        self.window.resizeEvent = self.resizeEvent
+        pass
+
+    def resizeEvent(self, event):
+        self.old_resize(event)
+        x_pos = self.window.width() - 60
+        self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
 
     def closeEvent(self, event):
         if self.converter_frame.confirm_quit():

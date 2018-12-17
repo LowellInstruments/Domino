@@ -16,12 +16,6 @@
     <height>600</height>
    </size>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>800</width>
-    <height>600</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>Lowell Instruments - Domino</string>
   </property>
@@ -108,21 +102,6 @@
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar">
-   <property name="sizeGripEnabled">
-    <bool>false</bool>
-   </property>
   </widget>
  </widget>
  <resources>
