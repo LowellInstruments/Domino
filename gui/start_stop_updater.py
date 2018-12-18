@@ -3,11 +3,12 @@ from re import search
 from PyQt5 import QtGui, QtCore, QtWidgets
 from numpy import ndarray
 from collections import OrderedDict
+from datetime import datetime
 
 
 # [Command, repeat interval, class]
 COMMANDS = [
-    ['GTM', 1, 'SimpleUpdate'],
+    ['GTM', 1, 'TimeUpdate'],
     ['STS', 1, 'StatusUpdate'],
     ['get_sensor_readings', 1, 'SensorUpdate'],
     ['logger_info', 10, 'DeploymentUpdate'],
@@ -92,21 +93,39 @@ class Update:
 
 
 class SimpleUpdate(Update):
+    def __init__(self, gui):
+        super().__init__(gui)
+        self.widget = None
+
     def update(self, query_results):
         command, data = query_results
         format_, widget_name = SIMPLE_FIELD[command]
-        widget = getattr(self.gui, widget_name)
-        widget.setText(format_.format(data))
+        self.widget = getattr(self.gui, widget_name)
+        self.widget.setText(format_.format(data))
+
+
+class TimeUpdate(SimpleUpdate):
+    def update(self, query_results):
+        super().update(query_results)
+        _, data = query_results
+        logger_time = datetime.strptime(data, '%Y/%m/%d %H:%M:%S')
+        computer_time = datetime.now()
+        diff = abs(logger_time - computer_time).total_seconds()
+        if diff > 60:
+            style = 'background-color: rgb(255, 255, 0);'
+        else:
+            style = ''
+        self.widget.setStyleSheet(style)
 
 
 class FileSizeUpdate(Update):
     def update(self, query_results):
         command, data = query_results
         format_, widget_name = FILE_SIZE[command]
-        widget = getattr(self.gui, widget_name)
+        self.widget = getattr(self.gui, widget_name)
         numeric_data = search('[0-9]+', data).group()
         numeric_data = float(numeric_data) / 1024**2
-        widget.setText(format_.format(numeric_data))
+        self.widget.setText(format_.format(numeric_data))
 
 
 class StatusUpdate(Update):
