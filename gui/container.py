@@ -42,7 +42,6 @@ class Container(Ui_MainWindow):
         self.pushButton1.clicked.connect(self.about)
         self.old_resize = self.window.resizeEvent
         self.window.resizeEvent = self.resizeEvent
-        pass
 
     def resizeEvent(self, event):
         self.old_resize(event)
