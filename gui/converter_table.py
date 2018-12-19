@@ -59,13 +59,8 @@ class ConverterTable:
     def clear_table(self):
         if len(self.data_file_container) == 0:
             return
-        reply = QtWidgets.QMessageBox.question(
-            self.tableWidget.window(),
-            'Confirm',
-            'Are you sure you want to clear the file list?')
-        if reply == QtWidgets.QMessageBox.Yes:
-            self.data_file_container.clear()
-            self.refresh_table()
+        self.data_file_container.clear()
+        self.refresh_table()
 
     def refresh_table(self):
         self.tableWidget.setRowCount(len(self.data_file_container))
