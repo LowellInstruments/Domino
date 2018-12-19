@@ -1,13 +1,14 @@
 import logging
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from gui.start_stop_clear import clear_gui
+from PyQt5.QtWidgets import QApplication
 
 
 TIME_FIELD = 2
@@ -37,6 +38,12 @@ class StartStopFrame(Ui_Frame):
             lambda: self.logger.command('sync_time'))
         self.pushButton_start.clicked.connect(self.run)
         self.pushButton_stop.clicked.connect(self.stop)
+        self.pushButton_icon.clicked.connect(self.reset)
+
+    def reset(self):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ShiftModifier | Qt.ControlModifier:
+            self.logger.command('RST')
 
     def query_slot(self, query_results):
         logging.debug(query_results)
