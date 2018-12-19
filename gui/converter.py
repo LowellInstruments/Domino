@@ -173,6 +173,5 @@ class ConverterFrame(Ui_Frame):
                 return 'error'
             return directory
 
-
     def confirm_quit(self):
         return self.converter_table.confirm_quit()
