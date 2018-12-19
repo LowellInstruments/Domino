@@ -6,7 +6,7 @@ from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
-from PyQt5.QtWidgets import QHeaderView
+from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from gui.start_stop_clear import clear_gui
 
 
@@ -51,9 +51,23 @@ class StartStopFrame(Ui_Frame):
             self.label_connection.setText('Connected on USB')
 
     def run(self):
+        style_sheet = self.label_logger_time.styleSheet()
+        if style_sheet == 'background-color: rgb(255, 255, 0);':
+            if not self.confirm_run_with_different_time():
+                return
+
         self.pushButton_sync_clock.setEnabled(False)
         self.pushButton_start.setEnabled(False)
         self.logger.command('RUN')
+
+    def confirm_run_with_different_time(self):
+        message = 'Device time differs from computer time by more than 1 ' \
+                  'minute. Do you still want to start the device?'
+        answer = QMessageBox.warning(self.frame, 'Check Time',
+                                     message,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        return answer == QMessageBox.Yes
 
     def stop(self):
         self.pushButton_stop.setEnabled(False)
@@ -89,7 +103,6 @@ class LoggerQueryThread(QThread):
         self.queue.put(command)
 
     def run(self):
-        logging.debug('Entered thread')
         while True:
             if self.try_connecting():
                 self.connected.emit(True)
