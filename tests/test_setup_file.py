@@ -57,6 +57,7 @@ class TestSetupFile(TestCase):
         expected = array([1, 5, 15, 30, 60, 120, 300, 600, 900, 1800, 3600])
         setup = SetupFile()
         setup.set_interval(ORIENTATION_INTERVAL, 15)
+        setup.set_interval(TEMPERATURE_INTERVAL, 15)
         orient_intervals = INTERVALS[
             setup.available_intervals(ORIENTATION_INTERVAL)]
         assert array_equal(orient_intervals, expected)
@@ -88,6 +89,7 @@ class TestSetupFile(TestCase):
 
     def test_set_invalid_orient_interval(self):
         setup = SetupFile()
+        setup.set_interval(ORIENTATION_INTERVAL, 1)
         setup.set_interval(TEMPERATURE_INTERVAL, 10)
         with self.assertRaises(ValueError):
             setup.set_interval(ORIENTATION_INTERVAL, 15)
