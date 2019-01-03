@@ -1,7 +1,6 @@
 # GPLv3 License
 # Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
 from gui.converter_ui import Ui_Frame
-
 from gui.options_dialog import OptionsDialog
 from gui.converter_table import ConverterTable
 from PyQt5 import QtWidgets
@@ -84,9 +83,6 @@ class ConverterFrame(Ui_Frame):
                              'output_type',
                              self.comboBox_output_type.currentText())
         appdata.set_userdata('domino.dat',
-                             'output_format',
-                             self.comboBox_output_format.currentText())
-        appdata.set_userdata('domino.dat',
                              'meter_model',
                              self.comboBox_tilt_tables.currentText())
         appdata.set_userdata('domino.dat',
@@ -100,8 +96,6 @@ class ConverterFrame(Ui_Frame):
         application_data = appdata.get_userdata('domino.dat')
         self.comboBox_output_type.setCurrentText(application_data.get(
             'output_type', 'Discrete Channels'))
-        self.comboBox_output_format.setCurrentText(application_data.get(
-            'output_format', 'Comma Separated Value (.csv) - (slow)'))
         tilt_curve_ind = self.comboBox_tilt_tables.findText(
             application_data.get('meter_model', ''))
         tilt_curve_ind = 0 if tilt_curve_ind == -1 else tilt_curve_ind
@@ -150,6 +144,12 @@ class ConverterFrame(Ui_Frame):
             parameters['declination'] = float(
                 application_data.get('declination', 0))
 
+        split_size = application_data.get('split')
+        if split_size != 'Do not split output files':
+            parameters['split'] = int(split_size.split(' ')[0])
+
+        output_format = application_data.get('output_format')
+
         if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
             parameters['output_type'] = 'current'
             parameters['tilt_curve'] = tiltcurve.TiltCurve(
@@ -158,8 +158,8 @@ class ConverterFrame(Ui_Frame):
         elif self.comboBox_output_type.currentText() == COMBOBOX_COMPASS:
             parameters['output_type'] = 'compass'
 
-        if self.comboBox_output_format.currentText() == COMBOBOX_HDF5:
-            parameters['output_format'] = 'hdf5'
+        parameters['output_format'] = application_data.get('output_format',
+                                                           'csv')
         return parameters
 
     def _get_output_directory(self):

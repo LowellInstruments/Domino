@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/icons8-help-48.png</file>
+    <file>icons/icons8-year-of-dog-96-white.png</file>
     <file>icons/icons8-remove-property-48.png</file>
     <file>icons/icons8-cancel-48.png</file>
     <file>icons/icons8-private-48.png</file>
