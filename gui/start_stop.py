@@ -1,13 +1,14 @@
 import logging
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from mat.logger_controller import LoggerController
 from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
-from PyQt5.QtWidgets import QHeaderView
+from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from gui.start_stop_clear import clear_gui
+from PyQt5.QtWidgets import QApplication
 
 
 TIME_FIELD = 2
@@ -37,6 +38,12 @@ class StartStopFrame(Ui_Frame):
             lambda: self.logger.command('sync_time'))
         self.pushButton_start.clicked.connect(self.run)
         self.pushButton_stop.clicked.connect(self.stop)
+        self.pushButton_icon.clicked.connect(self.reset)
+
+    def reset(self):
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ShiftModifier | Qt.ControlModifier:
+            self.logger.command('RST')
 
     def query_slot(self, query_results):
         logging.debug(query_results)
@@ -51,9 +58,23 @@ class StartStopFrame(Ui_Frame):
             self.label_connection.setText('Connected on USB')
 
     def run(self):
+        style_sheet = self.label_logger_time.styleSheet()
+        if style_sheet == 'background-color: rgb(255, 255, 0);':
+            if not self.confirm_run_with_different_time():
+                return
+
         self.pushButton_sync_clock.setEnabled(False)
         self.pushButton_start.setEnabled(False)
         self.logger.command('RUN')
+
+    def confirm_run_with_different_time(self):
+        message = 'Device time differs from computer time by more than 1 ' \
+                  'minute. Do you still want to start the device?'
+        answer = QMessageBox.warning(self.frame, 'Check Time',
+                                     message,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        return answer == QMessageBox.Yes
 
     def stop(self):
         self.pushButton_stop.setEnabled(False)
@@ -89,7 +110,6 @@ class LoggerQueryThread(QThread):
         self.queue.put(command)
 
     def run(self):
-        logging.debug('Entered thread')
         while True:
             if self.try_connecting():
                 self.connected.emit(True)

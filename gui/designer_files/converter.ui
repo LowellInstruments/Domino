@@ -161,12 +161,7 @@
        <widget class="QComboBox" name="comboBox_output_format">
         <item>
          <property name="text">
-          <string>Comma Separated Value (.csv) - (slow)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Hierarchical Data Format 5 (.hdf5)</string>
+          <string>Comma Separated Value (.csv)</string>
          </property>
         </item>
        </widget>

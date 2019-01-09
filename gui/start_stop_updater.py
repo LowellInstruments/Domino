@@ -3,11 +3,12 @@ from re import search
 from PyQt5 import QtGui, QtCore, QtWidgets
 from numpy import ndarray
 from collections import OrderedDict
+from datetime import datetime
 
 
 # [Command, repeat interval, class]
 COMMANDS = [
-    ['GTM', 1, 'SimpleUpdate'],
+    ['GTM', 1, 'TimeUpdate'],
     ['STS', 1, 'StatusUpdate'],
     ['get_sensor_readings', 1, 'SensorUpdate'],
     ['logger_info', 10, 'DeploymentUpdate'],
@@ -46,6 +47,16 @@ LOGGER_INFO = {
     'MN': ('Model Number: {}', 'label_model')
 }
 
+ERROR_CODES = [
+    (2, 'Delayed start'),
+    (4, 'SD card error'),
+    (8, 'MAT.cfg error'),
+    (16, 'Safe shutdown'),
+    (32, 'SD retry error'),
+    (64, 'ADXL data error'),
+    (128, 'Stack Overflow')
+]
+
 
 class Commands:
     def __init__(self, gui):
@@ -82,21 +93,39 @@ class Update:
 
 
 class SimpleUpdate(Update):
+    def __init__(self, gui):
+        super().__init__(gui)
+        self.widget = None
+
     def update(self, query_results):
         command, data = query_results
         format_, widget_name = SIMPLE_FIELD[command]
-        widget = getattr(self.gui, widget_name)
-        widget.setText(format_.format(data))
+        self.widget = getattr(self.gui, widget_name)
+        self.widget.setText(format_.format(data))
+
+
+class TimeUpdate(SimpleUpdate):
+    def update(self, query_results):
+        super().update(query_results)
+        _, data = query_results
+        logger_time = datetime.strptime(data, '%Y/%m/%d %H:%M:%S')
+        computer_time = datetime.now()
+        diff = abs(logger_time - computer_time).total_seconds()
+        if diff > 60:
+            style = 'background-color: rgb(255, 255, 0);'
+        else:
+            style = ''
+        self.widget.setStyleSheet(style)
 
 
 class FileSizeUpdate(Update):
     def update(self, query_results):
         command, data = query_results
         format_, widget_name = FILE_SIZE[command]
-        widget = getattr(self.gui, widget_name)
+        self.widget = getattr(self.gui, widget_name)
         numeric_data = search('[0-9]+', data).group()
         numeric_data = float(numeric_data) / 1024**2
-        widget.setText(format_.format(numeric_data))
+        self.widget.setText(format_.format(numeric_data))
 
 
 class StatusUpdate(Update):
@@ -114,12 +143,22 @@ class StatusUpdate(Update):
 
     def update(self, query_results):
         command, data = query_results
-        status_code = int(data)
-        self._show_running(False if status_code & 1 else True)
+        status_code = int(data, 16)
+        self._show_running(self._running(status_code))
+        self.gui.label_status.setText(self.description(status_code))
+
+    def _running(self, status_code):
+        return False if status_code & 1 else True
+
+    def description(self, status_code):
+        running = 'running' if self._running(status_code) else 'stopped'
+        status_str = 'Device is {}'.format(running)
+        for value, string in ERROR_CODES:
+            if status_code & value:
+                status_str += ' - {}'.format(string)
+        return status_str
 
     def _show_running(self, state):
-        status_str = 'running' if state is True else 'not running'
-        self.gui.label_status.setText('Device is {}'.format(status_str))
         self.gui.pushButton_start.setEnabled(not state)
         self.gui.pushButton_stop.setEnabled(state)
         self.gui.pushButton_sync_clock.setEnabled(not state)

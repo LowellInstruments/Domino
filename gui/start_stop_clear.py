@@ -21,6 +21,7 @@ def clear_gui(gui):
     for widget_name, string in DEFAULTS:
         widget = getattr(gui, widget_name)
         widget.setText(string)
+        widget.setStyleSheet('')
 
 
 def _clear_table(gui):
