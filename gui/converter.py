@@ -10,12 +10,32 @@ import sys
 import glob
 from operator import itemgetter
 from mat.data_converter import default_parameters
+from PyQt5.QtWidgets import QMessageBox
 
 
 COMBOBOX_CURRENT = 'Current'
 COMBOBOX_COMPASS = 'Compass Heading'
 COMBOBOX_DISCRETE = 'Discrete Channels'
 COMBOBOX_HDF5 = 'Hierarchical Data Format 5 (.hdf5)'
+
+
+class AboutDeclination:
+    TEXT = 'Magnetic declination is the angle between magnetic north and ' \
+           'true north. This angle varies depending on position on the ' \
+           'Earth\'s surface.' \
+           '\n\nIn order for current and compass data to ' \
+           'be converted to geographic coordinates, you must enter the ' \
+           'declination at your deployment site, otherwise the heading and ' \
+           'velocity components will be relative to magnetic north.' \
+           '\n\nDeclination can be found using a calculator such as the one '\
+           'on NOAA\'s website: ngdc.noaa.gov/geomag-web'
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def show(self):
+        QMessageBox.question(
+            self.parent, 'About Declination', self.TEXT, QMessageBox.Ok)
 
 
 class ConverterFrame(Ui_Frame):
@@ -43,6 +63,8 @@ class ConverterFrame(Ui_Frame):
             self.toggle_output_file_button_group)
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_ouput_type)
+        self.pushButton_help.clicked.connect(
+            lambda: AboutDeclination(self.frame).show())
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
