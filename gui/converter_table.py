@@ -36,7 +36,7 @@ class ConverterTable:
         self.file_loader.load_files(file_paths[0])
 
     def _open_file(self):
-        application_data = appdata.get_userdata('converter-1.dat')
+        application_data = appdata.get_userdata('domino.dat')
         last_directory = (application_data['last_directory']
                           if 'last_directory' in application_data else '')
         file_paths = QtWidgets.QFileDialog.getOpenFileNames(
@@ -48,7 +48,7 @@ class ConverterTable:
 
     def _update_recent_directory_appdata(self, file_path):
         directory = os.path.dirname(file_path)
-        appdata.set_userdata('converter-1.dat', 'last_directory', directory)
+        appdata.set_userdata('domino.dat', 'last_directory', directory)
 
     def delete_row(self):
         row_objects = self.tableWidget.selectionModel().selectedRows()
