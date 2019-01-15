@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QFileDialog
 from gui.options_ui import Ui_Dialog
 from mat import appdata
 
@@ -11,6 +12,8 @@ class OptionsDialog(QDialog):
         self.setWindowTitle('File Output Options')
         self.ui.pushButton_save.clicked.connect(self.save)
         self.ui.pushButton_cancel.clicked.connect(self.cancel)
+        self.ui.pushButton_browse.clicked.connect(
+            self.open_custom_calibration)
         self.button_mapping = {'radioButton_iso8601_time': 'iso8601',
                                'radioButton_legacy_time': 'legacy',
                                'radioButton_elapsed_time': 'elapsed',
@@ -23,7 +26,21 @@ class OptionsDialog(QDialog):
                                'posix': 'radioButton_posix_time',
                                'csv': 'radioButton_csv',
                                'hdf5': 'radioButton_hdf5'}
+        self.ui.buttonGroup_calibration.buttonClicked.connect(
+            self.calibration_file_type_slot)
         self.load_saved()
+
+    def open_custom_calibration(self):
+        file_paths = QFileDialog.getOpenFileName(
+            self,
+            'Open Custom Calibration File',
+            '',
+            'Calibration File (*.cal)')
+
+    def calibration_file_type_slot(self):
+        state = self.ui.radioButton_custom_cal.isChecked()
+        self.ui.lineEdit_custom_cal.setEnabled(state)
+        self.ui.pushButton_browse.setEnabled(state)
 
     def load_saved(self):
         application_data = appdata.get_userdata('domino.dat')
