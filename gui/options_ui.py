@@ -89,6 +89,7 @@ class Ui_Dialog(object):
         self.lineEdit_custom_cal = QtWidgets.QLineEdit(self.tab_4)
         self.lineEdit_custom_cal.setEnabled(False)
         self.lineEdit_custom_cal.setGeometry(QtCore.QRect(40, 80, 231, 20))
+        self.lineEdit_custom_cal.setReadOnly(True)
         self.lineEdit_custom_cal.setObjectName("lineEdit_custom_cal")
         self.pushButton_browse = QtWidgets.QPushButton(self.tab_4)
         self.pushButton_browse.setEnabled(False)

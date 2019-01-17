@@ -11,6 +11,7 @@ import glob
 from operator import itemgetter
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox
+from mat.calibration_factories import make_from_calibration_file
 
 
 COMBOBOX_CURRENT = 'Current'
@@ -138,6 +139,7 @@ class ConverterFrame(Ui_Frame):
             application_data.get('output_directory', ''))
         self.lineEdit_declination.setText(
             str(application_data.get('declination', 0)))
+        appdata.set_userdata('domino.dat', 'custom_cal', '')
 
     def set_combobox(self, combobox, value):
         ind = combobox.findText(value)
@@ -194,7 +196,18 @@ class ConverterFrame(Ui_Frame):
         parameters['output_format'] = application_data.get('output_format',
                                                            'csv')
         parameters['declination'] = self._declination()
+        parameters['calibration'] = self._load_calibration_file(
+            application_data.get('custom_cal', None))
         return parameters
+
+    def _load_calibration_file(self, path):
+        if not path:
+            return None
+        try:
+            calibration = make_from_calibration_file(path)
+        except ValueError:
+            calibration = None
+        return calibration
 
     def _declination(self):
         try:
