@@ -4,7 +4,6 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import (
     QPushButton,
-    QTableWidgetItem,
     QMessageBox
 )
 from PyQt5.QtCore import (
@@ -55,7 +54,13 @@ class Container(Ui_MainWindow):
             event.ignore()
 
     def about(self):
-        description = 'Lowell Instruments LLC\n' \
-                      'Domino ' + self.version + '\n\n' \
-                      'www.lowellinstruments.com'
-        QMessageBox.information(self.window, 'Domino', description)
+        description = 'Lowell Instruments LLC<br>' \
+                      'Domino ' + self.version + '<br>' \
+                      '<a href="http://www.lowellinstruments.com">' \
+                      'www.lowellinstruments.com</a>'
+        message = QMessageBox(self.window)
+        message.setTextFormat(1)
+        message.setIcon(QMessageBox.Information)
+        message.setWindowTitle('About Domino')
+        message.setText(description)
+        message.exec_()
