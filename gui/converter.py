@@ -24,19 +24,24 @@ class AboutDeclination:
     TEXT = 'Magnetic declination is the angle between magnetic north and ' \
            'true north. This angle varies depending on position on the ' \
            'Earth\'s surface.' \
-           '\n\nIn order for current and compass data to ' \
+           '<br><br>In order for current and compass data to ' \
            'be converted to geographic coordinates, you must enter the ' \
            'declination at your deployment site, otherwise the heading and ' \
            'velocity components will be relative to magnetic north.' \
-           '\n\nDeclination can be found using a calculator such as the one '\
-           'on NOAA\'s website: ngdc.noaa.gov/geomag-web'
+           '<br><br>Declination can be found using a calculator such as ' \
+           '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
+           'Calculator</a>'
 
     def __init__(self, parent):
         self.parent = parent
 
     def show(self):
-        QMessageBox.question(
-            self.parent, 'About Declination', self.TEXT, QMessageBox.Ok)
+        message = QMessageBox(self.parent)
+        message.setTextFormat(1)
+        message.setIcon(QMessageBox.Information)
+        message.setWindowTitle('About Declination')
+        message.setText(self.TEXT)
+        message.exec_()
 
 
 class ConverterFrame(Ui_Frame):
