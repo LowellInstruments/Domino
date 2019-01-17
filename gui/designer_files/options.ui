@@ -228,7 +228,7 @@
       <attribute name="title">
        <string>Calibration Coefficients (advanced)</string>
       </attribute>
-      <widget class="QRadioButton" name="radioButton_5">
+      <widget class="QRadioButton" name="radioButton_factory_cal">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -244,10 +244,10 @@
         <bool>true</bool>
        </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup_2</string>
+        <string notr="true">buttonGroup_calibration</string>
        </attribute>
       </widget>
-      <widget class="QRadioButton" name="radioButton_6">
+      <widget class="QRadioButton" name="radioButton_custom_cal">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -260,10 +260,13 @@
         <string>Use Custom Calibration File</string>
        </property>
        <attribute name="buttonGroup">
-        <string notr="true">buttonGroup_2</string>
+        <string notr="true">buttonGroup_calibration</string>
        </attribute>
       </widget>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="lineEdit_custom_cal">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>40</x>
@@ -272,8 +275,14 @@
          <height>20</height>
         </rect>
        </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_browse">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>280</x>
@@ -297,13 +306,6 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="pushButton_defaults">
-       <property name="text">
-        <string>Restore Defaults</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -342,6 +344,6 @@
  <buttongroups>
   <buttongroup name="buttonGroup_output_format"/>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_calibration"/>
  </buttongroups>
 </ui>

@@ -10,11 +10,33 @@ import sys
 import glob
 from operator import itemgetter
 from mat.data_converter import default_parameters
+from PyQt5.QtWidgets import QMessageBox
+from mat.calibration_factories import make_from_calibration_file
 
 
 COMBOBOX_CURRENT = 'Current'
 COMBOBOX_COMPASS = 'Compass Heading'
+COMBOBOX_DISCRETE = 'Discrete Channels'
 COMBOBOX_HDF5 = 'Hierarchical Data Format 5 (.hdf5)'
+
+
+class AboutDeclination:
+    TEXT = 'Magnetic declination is the angle between magnetic north and ' \
+           'true north. This angle varies depending on position on the ' \
+           'Earth\'s surface.' \
+           '\n\nIn order for current and compass data to ' \
+           'be converted to geographic coordinates, you must enter the ' \
+           'declination at your deployment site, otherwise the heading and ' \
+           'velocity components will be relative to magnetic north.' \
+           '\n\nDeclination can be found using a calculator such as the one '\
+           'on NOAA\'s website: ngdc.noaa.gov/geomag-web'
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def show(self):
+        QMessageBox.question(
+            self.parent, 'About Declination', self.TEXT, QMessageBox.Ok)
 
 
 class ConverterFrame(Ui_Frame):
@@ -27,8 +49,8 @@ class ConverterFrame(Ui_Frame):
         self.frame = frame
         self.converter_table = ConverterTable(self.tableWidget)
         self.populate_tilt_curves()
-        self.restore_last_session()
         self._connect_signals_to_slots()
+        self.restore_last_session()
 
     def _connect_signals_to_slots(self):
         self.pushButton_add.clicked.connect(self.converter_table.add_row)
@@ -42,6 +64,8 @@ class ConverterFrame(Ui_Frame):
             self.toggle_output_file_button_group)
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_ouput_type)
+        self.pushButton_help.clicked.connect(
+            lambda: AboutDeclination(self.frame).show())
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
@@ -49,6 +73,10 @@ class ConverterFrame(Ui_Frame):
         else:
             self.comboBox_tilt_tables.setEnabled(False)
 
+        if self.comboBox_output_type.currentText() == COMBOBOX_DISCRETE:
+            self.lineEdit_declination.setEnabled(False)
+        else:
+            self.lineEdit_declination.setEnabled(True)
     def populate_tilt_curves(self):
         try:
             directory = sys._MEIPASS
@@ -92,14 +120,16 @@ class ConverterFrame(Ui_Frame):
                              'output_directory',
                              self.lineEdit_output_folder.text())
 
+        appdata.set_userdata('domino.dat', 'declination', self._declination())
+
     def restore_last_session(self):
         application_data = appdata.get_userdata('domino.dat')
-        self.comboBox_output_type.setCurrentText(application_data.get(
-            'output_type', 'Discrete Channels'))
-        tilt_curve_ind = self.comboBox_tilt_tables.findText(
-            application_data.get('meter_model', ''))
-        tilt_curve_ind = 0 if tilt_curve_ind == -1 else tilt_curve_ind
-        self.comboBox_tilt_tables.setCurrentIndex(tilt_curve_ind)
+        output_type = application_data.get('output_type', 'Discrete Channels')
+        self.set_combobox(self.comboBox_output_type, output_type)
+
+        tilt_curve = application_data.get('meter_model', '')
+        self.set_combobox(self.comboBox_tilt_tables, tilt_curve)
+
         same_directory = application_data.get('same_directory', True)
         if same_directory:
             self.radioButton_output_same.setChecked(True)
@@ -107,6 +137,14 @@ class ConverterFrame(Ui_Frame):
             self.radioButton_output_directory.setChecked(True)
         self.lineEdit_output_folder.setText(
             application_data.get('output_directory', ''))
+        self.lineEdit_declination.setText(
+            str(application_data.get('declination', 0)))
+        appdata.set_userdata('domino.dat', 'custom_cal', '')
+
+    def set_combobox(self, combobox, value):
+        ind = combobox.findText(value)
+        ind = 0 if ind == -1 else ind
+        combobox.setCurrentIndex(ind)
 
     def choose_output_directory(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(
@@ -140,9 +178,6 @@ class ConverterFrame(Ui_Frame):
         parameters['time_format'] = application_data.get('time_format',
                                                          'iso8601')
         parameters['average'] = application_data.get('average_bursts', True)
-        if application_data.get('is_declination', False):
-            parameters['declination'] = float(
-                application_data.get('declination', 0))
 
         split_size = application_data.get('split')
         if split_size != 'Do not split output files':
@@ -160,7 +195,26 @@ class ConverterFrame(Ui_Frame):
 
         parameters['output_format'] = application_data.get('output_format',
                                                            'csv')
+        parameters['declination'] = self._declination()
+        parameters['calibration'] = self._load_calibration_file(
+            application_data.get('custom_cal', None))
         return parameters
+
+    def _load_calibration_file(self, path):
+        if not path:
+            return None
+        try:
+            calibration = make_from_calibration_file(path)
+        except ValueError:
+            calibration = None
+        return calibration
+
+    def _declination(self):
+        try:
+            declination = float(self.lineEdit_declination.text())
+        except ValueError:
+            declination = 0
+        return declination
 
     def _get_output_directory(self):
         if self.radioButton_output_directory.isChecked():

@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QMessageBox
 from gui.options_ui import Ui_Dialog
 from mat import appdata
+from mat.calibration_factories import make_from_calibration_file
 
 
 class OptionsDialog(QDialog):
@@ -11,6 +14,8 @@ class OptionsDialog(QDialog):
         self.setWindowTitle('File Output Options')
         self.ui.pushButton_save.clicked.connect(self.save)
         self.ui.pushButton_cancel.clicked.connect(self.cancel)
+        self.ui.pushButton_browse.clicked.connect(
+            self.open_custom_calibration)
         self.button_mapping = {'radioButton_iso8601_time': 'iso8601',
                                'radioButton_legacy_time': 'legacy',
                                'radioButton_elapsed_time': 'elapsed',
@@ -23,7 +28,36 @@ class OptionsDialog(QDialog):
                                'posix': 'radioButton_posix_time',
                                'csv': 'radioButton_csv',
                                'hdf5': 'radioButton_hdf5'}
+        self.ui.buttonGroup_calibration.buttonToggled.connect(
+            self.calibration_file_type_slot)
         self.load_saved()
+
+    def alert_bad_cal_file(self):
+        QMessageBox.warning(self, 'Calibration File Error',
+                            'There was an error loading the custom '
+                            'calibration file.',
+                            QMessageBox.Ok)
+
+    def open_custom_calibration(self):
+        file_path = QFileDialog.getOpenFileName(
+            self,
+            'Open Custom Calibration File',
+            '',
+            'Calibration File (*.cal)')
+        if not file_path[0]:
+            return
+        try:
+            make_from_calibration_file(file_path[0])
+            self.ui.lineEdit_custom_cal.setText(file_path[0])
+        except ValueError:
+            self.alert_bad_cal_file()
+            self.ui.lineEdit_custom_cal.setText('')
+            self.ui.radioButton_factory_cal.setChecked(True)
+
+    def calibration_file_type_slot(self):
+        state = self.ui.radioButton_custom_cal.isChecked()
+        self.ui.lineEdit_custom_cal.setEnabled(state)
+        self.ui.pushButton_browse.setEnabled(state)
 
     def load_saved(self):
         application_data = appdata.get_userdata('domino.dat')
@@ -39,6 +73,10 @@ class OptionsDialog(QDialog):
         split_size = application_data.get('split',
                                           'Do not split output files')
         self.ui.comboBox_split.setCurrentText(split_size)
+        calibration = application_data.get('custom_cal', None)
+        if calibration:
+            self.ui.radioButton_custom_cal.setChecked(True)
+            self.ui.lineEdit_custom_cal.setText(calibration)
 
     def save(self):
         button_name = self.ui.buttonGroup.checkedButton().objectName()
@@ -56,6 +94,9 @@ class OptionsDialog(QDialog):
         appdata.set_userdata('domino.dat',
                              'split',
                              self.ui.comboBox_split.currentText())
+        appdata.set_userdata('domino.dat',
+                             'custom_cal',
+                             self.ui.lineEdit_custom_cal.text())
         self.hide()
 
     def cancel(self):
