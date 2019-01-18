@@ -134,6 +134,11 @@
           <string>Compass Heading</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Yaw/Pitch/Roll</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="1" column="0">
