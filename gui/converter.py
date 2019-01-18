@@ -14,10 +14,9 @@ from PyQt5.QtWidgets import QMessageBox
 from mat.calibration_factories import make_from_calibration_file
 
 
-COMBOBOX_CURRENT = 'Current'
-COMBOBOX_COMPASS = 'Compass Heading'
-COMBOBOX_DISCRETE = 'Discrete Channels'
-COMBOBOX_HDF5 = 'Hierarchical Data Format 5 (.hdf5)'
+OUTPUT_TYPE = {'Current': 'current',
+               'Compass Heading': 'compass',
+               'Yaw/Pitch/Roll': 'ypr'}
 
 
 class AboutDeclination:
@@ -73,12 +72,12 @@ class ConverterFrame(Ui_Frame):
             lambda: AboutDeclination(self.frame).show())
 
     def change_ouput_type(self):
-        if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
+        if self.comboBox_output_type.currentText() == 'Current':
             self.comboBox_tilt_tables.setEnabled(True)
         else:
             self.comboBox_tilt_tables.setEnabled(False)
 
-        if self.comboBox_output_type.currentText() == COMBOBOX_DISCRETE:
+        if self.comboBox_output_type.currentText() == 'Discrete Channels':
             self.lineEdit_declination.setEnabled(False)
         else:
             self.lineEdit_declination.setEnabled(True)
@@ -190,13 +189,14 @@ class ConverterFrame(Ui_Frame):
 
         output_format = application_data.get('output_format')
 
-        if self.comboBox_output_type.currentText() == COMBOBOX_CURRENT:
+        if self.comboBox_output_type.currentText() == 'Current':
             parameters['output_type'] = 'current'
             parameters['tilt_curve'] = tiltcurve.TiltCurve(
                 self.comboBox_tilt_tables.currentData())
-
-        elif self.comboBox_output_type.currentText() == COMBOBOX_COMPASS:
-            parameters['output_type'] = 'compass'
+        else:
+            output_type = OUTPUT_TYPE.get(
+                self.comboBox_output_type.currentText(), 'discrete')
+            parameters['output_type'] = output_type
 
         parameters['output_format'] = application_data.get('output_format',
                                                            'csv')
