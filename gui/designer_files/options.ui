@@ -233,12 +233,12 @@
         <rect>
          <x>20</x>
          <y>20</y>
-         <width>251</width>
+         <width>331</width>
          <height>17</height>
         </rect>
        </property>
        <property name="text">
-        <string>Use Factory Calibration Values</string>
+        <string>Use Factory Calibration Values (Recommended)</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -252,12 +252,12 @@
         <rect>
          <x>20</x>
          <y>50</y>
-         <width>171</width>
+         <width>321</width>
          <height>17</height>
         </rect>
        </property>
        <property name="text">
-        <string>Use Custom Calibration File</string>
+        <string>Use Custom Calibration File (Danger Zone)</string>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">buttonGroup_calibration</string>
@@ -342,8 +342,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_output_format"/>
   <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_calibration"/>
+  <buttongroup name="buttonGroup_output_format"/>
  </buttongroups>
 </ui>
