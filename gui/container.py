@@ -54,10 +54,17 @@ class Container(Ui_MainWindow):
             event.ignore()
 
     def about(self):
-        description = 'Lowell Instruments LLC<br>' \
-                      'Domino ' + self.version + '<br>' \
-                      '<a href="http://www.lowellinstruments.com">' \
-                      'www.lowellinstruments.com</a>'
+        description = \
+            '<a href="http://www.lowellinstruments.com">' \
+            'Lowell Instruments LLC</a><br />' \
+            'Domino ' + self.version + '&trade;<br /><br />' \
+            'Copyright 2018-2019 by Lowell Instruments, some ' \
+            'rights reserved. <br />' \
+            'Source code for this application is available under ' \
+            'the GPLv3 License at ' \
+            '<a href="https://github.com/LowellInstruments/Domino">' \
+            'https://github.com/LowellInstruments/Domino</a>'
+
         message = QMessageBox(self.window)
         message.setTextFormat(1)
         message.setIcon(QMessageBox.Information)
