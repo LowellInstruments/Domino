@@ -172,6 +172,8 @@ class ConverterFrame(Ui_Frame):
         parameters = self._read_conversion_parameters()
         if parameters['output_directory'] == 'error':
             return
+        if parameters['calibration'] and not self.confirm_custom_cal():
+            return
         self.converter_table.convert_files(parameters)
 
     def _read_conversion_parameters(self):
@@ -231,6 +233,17 @@ class ConverterFrame(Ui_Frame):
                                     'You must select a valid output path')
                 return 'error'
             return directory
+
+    def confirm_custom_cal(self):
+        text = 'You currently have a custom calibration file selected. ' \
+               'This calibration will be applied to all the files in the ' \
+               'conversion queue. Are you sure you want to apply it?'
+        answer = QtWidgets.QMessageBox.warning(
+                    self.frame,
+                    'Confirm Custom Calibration',
+                    text,
+                    QMessageBox.Yes | QMessageBox.Cancel)
+        return answer == QMessageBox.Yes
 
     def confirm_quit(self):
         return self.converter_table.confirm_quit()
