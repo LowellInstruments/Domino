@@ -43,7 +43,7 @@ class OptionsDialog(QDialog):
             self,
             'Open Custom Calibration File',
             '',
-            'Calibration File (*.cal)')
+            'Custom Calibration File (*.ccf)')
         if not file_path[0]:
             return
         try:
