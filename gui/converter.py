@@ -12,6 +12,7 @@ from operator import itemgetter
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox
 from mat.calibration_factories import make_from_calibration_file
+from gui.gui_utils import show_error, is_float
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -70,6 +71,17 @@ class ConverterFrame(Ui_Frame):
             self.change_ouput_type)
         self.pushButton_help.clicked.connect(
             lambda: AboutDeclination(self.frame).show())
+        self.lineEdit_declination.textEdited.connect(self.change_declination)
+
+    def change_declination(self):
+        declination = self.lineEdit_declination.text()
+        if not is_float(declination):
+            show_error(self.lineEdit_declination, True)
+            return
+        if not -180 <= float(declination) <= 180:
+            show_error(self.lineEdit_declination, True)
+            return
+        show_error(self.lineEdit_declination, False)
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == 'Current':
@@ -81,6 +93,7 @@ class ConverterFrame(Ui_Frame):
             self.lineEdit_declination.setEnabled(False)
         else:
             self.lineEdit_declination.setEnabled(True)
+
     def populate_tilt_curves(self):
         try:
             directory = sys._MEIPASS
