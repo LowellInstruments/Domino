@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
 from gui.description_generator import DescriptionGenerator
 from mat import appdata
+from gui.gui_utils import show_error, set_enabled
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -136,9 +137,9 @@ class SetupFrame(Ui_Frame):
         self.redraw_check_boxes()
         self.redraw_date_boxes()
         self.redraw_burst()
-        self.show_error(self.lineEdit_burst_duration, False)
-        self.show_error(self.dateTimeEdit_start_time, False)
-        self.show_error(self.dateTimeEdit_end_time, False)
+        show_error(self.lineEdit_burst_duration, False)
+        show_error(self.dateTimeEdit_start_time, False)
+        show_error(self.dateTimeEdit_end_time, False)
         description = self.description.description()
         self.label_description.setText(description)
         self.connect_signals(True)
@@ -153,7 +154,7 @@ class SetupFrame(Ui_Frame):
                         self.lineEdit_burst_duration,
                         self.checkBox_continuous]
         state = True if self.setup_file.orient_enabled() else False
-        self._set_enabled(orient_group, state)
+        set_enabled(orient_group, state)
 
     def redraw_interval_combo_boxes(self):
         for sensor in ['temperature', 'orientation']:
@@ -249,9 +250,9 @@ class SetupFrame(Ui_Frame):
         string = self.lineEdit_file_name.text()
         try:
             self.setup_file.set_filename(string + '.lid')
-            self.show_error(self.lineEdit_file_name, False)
+            show_error(self.lineEdit_file_name, False)
         except ValueError:
-            self.show_error(self.lineEdit_file_name, True)
+            show_error(self.lineEdit_file_name, True)
 
     def burst_rate_changed(self):
         index = self.comboBox_orient_burst_rate.currentIndex()
@@ -274,7 +275,7 @@ class SetupFrame(Ui_Frame):
         try:
             self.setup_file.set_time(value, date_time_string)
         except ValueError:
-            self.show_error(widget, True)
+            show_error(widget, True)
 
     def interval_changed(self, sensor):
         index = self.interval_mapping[sensor].widget.currentIndex()
@@ -292,24 +293,13 @@ class SetupFrame(Ui_Frame):
         count = self.setup_file.value(ORIENTATION_BURST_COUNT)
         try:
             self.setup_file.set_orient_burst_count(int(seconds)*rate)
-            self.show_error(self.lineEdit_burst_duration, False)
+            show_error(self.lineEdit_burst_duration, False)
         except ValueError:
-            self.show_error(self.lineEdit_burst_duration, True)
-
-    def show_error(self, widgets, error):
-        widgets = self._make_list(widgets)
-        style = 'background-color: rgb(255, 255, 0);' if error else ''
-        for widget in widgets:
-            widget.setStyleSheet(style)
+            show_error(self.lineEdit_burst_duration, True)
 
     def continuous_changed(self):
         state = self.checkBox_continuous.isChecked()
         self.setup_file.set_continuous(state)
-
-    def _set_enabled(self, widgets, state):
-        widgets = self._make_list(widgets)
-        for w in widgets:
-            w.setEnabled(state)
 
     def _make_list(self, widget):
         if type(widget) is not list:
