@@ -1,3 +1,4 @@
+from PyQt5.QtWidgets import QMessageBox
 
 
 def show_error(widgets, state):
@@ -25,3 +26,7 @@ def is_float(string):
         return True
     except ValueError:
         return False
+
+
+def error_message(parent, title, message):
+    QMessageBox.warning(parent, title, message, QMessageBox.Ok)

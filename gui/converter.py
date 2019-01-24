@@ -12,7 +12,7 @@ from operator import itemgetter
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox
 from mat.calibration_factories import make_from_calibration_file
-from gui.gui_utils import show_error, is_float
+from gui.gui_utils import show_error, is_float, error_message
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -30,7 +30,8 @@ class AboutDeclination:
            'velocity components will be relative to magnetic north.' \
            '<br><br>Declination can be found using a calculator such as ' \
            '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
-           'Calculator</a>'
+           'Calculator</a><br /><br />' \
+           'Values must be in the range [-180, 180]'
 
     def __init__(self, parent):
         self.parent = parent
@@ -48,6 +49,7 @@ class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
         self.converter_table = None
+        self.errors = {'declination': False}
 
     def setupUi(self, frame):
         super().setupUi(frame)
@@ -71,17 +73,17 @@ class ConverterFrame(Ui_Frame):
             self.change_ouput_type)
         self.pushButton_help.clicked.connect(
             lambda: AboutDeclination(self.frame).show())
-        self.lineEdit_declination.textEdited.connect(self.change_declination)
+        self.lineEdit_declination.textEdited.connect(self.declination_changed)
 
-    def change_declination(self):
+    def declination_changed(self):
         declination = self.lineEdit_declination.text()
-        if not is_float(declination):
-            show_error(self.lineEdit_declination, True)
-            return
-        if not -180 <= float(declination) <= 180:
-            show_error(self.lineEdit_declination, True)
-            return
-        show_error(self.lineEdit_declination, False)
+        if is_float(declination) and -180 <= float(declination) <= 180:
+            error_state = False
+        else:
+            error_state = True
+        self.errors['declination'] = error_state
+        show_error(self.lineEdit_declination, error_state)
+
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == 'Current':
@@ -155,7 +157,7 @@ class ConverterFrame(Ui_Frame):
         self.lineEdit_output_folder.setText(
             application_data.get('output_directory', ''))
         self.lineEdit_declination.setText(
-            str(application_data.get('declination', 0)))
+            str(application_data.get('declination', 0.0)))
         appdata.set_userdata('domino.dat', 'custom_cal', '')
 
     def set_combobox(self, combobox, value):
@@ -181,6 +183,10 @@ class ConverterFrame(Ui_Frame):
         msgbox.exec()
 
     def convert_files(self):
+        if any(self.errors.values()):
+            error_message(self.frame, 'Error',
+                          'Please correct highlighted error(s)')
+            return
         self.save_session()
         parameters = self._read_conversion_parameters()
         if parameters['output_directory'] == 'error':
