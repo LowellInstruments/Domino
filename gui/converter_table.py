@@ -54,10 +54,9 @@ class ConverterTable:
         directory = os.path.dirname(file_path)
         appdata.set_userdata('domino.dat', 'last_directory', directory)
 
-    def load_error_slot(self, filename):
-        text = 'A file error was encountered while ' \
-               'attempting to load {}.'.format(filename)
-        QtWidgets.QMessageBox.warning(self.parent, 'File Load Error', text)
+    def load_error_slot(self, error_str):
+        QtWidgets.QMessageBox.warning(self.parent, 'File Load Error',
+                                      error_str)
 
     def delete_row(self):
         row_objects = self.tableWidget.selectionModel().selectedRows()
