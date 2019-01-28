@@ -54,7 +54,7 @@ class ConverterFrame(Ui_Frame):
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
-        self.converter_table = ConverterTable(self.tableWidget)
+        self.converter_table = ConverterTable(self.tableWidget, frame)
         self.populate_tilt_curves()
         self._connect_signals_to_slots()
         self.restore_last_session()

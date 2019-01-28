@@ -19,6 +19,9 @@ class DataFile:
         except ValueError:
             self.status = 'file_error'
             return
+        if len(data_file.page_times()) == 0:
+            self.status = 'file_error'
+            return
         self.size = data_file.file_size() / 1024 ** 2
         self.size_str = '{:.3f}MB'.format(data_file.file_size() / 1024 ** 2)
         start_time = data_file.page_times()[0]
@@ -49,6 +52,10 @@ class DataFileContainer:
 
     def delete(self, index):
         del self._data_files[index]
+
+    def remove_error_files(self):
+        self._data_files = [file for file in self._data_files if
+                            file.status != 'file_error']
 
     def __getitem__(self, index):
         return self._data_files[index]
