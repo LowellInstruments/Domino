@@ -1,6 +1,7 @@
 from mat import appdata
 from gui.file_management import FileConverter, FileLoader
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox
 from gui.data_file import DataFileContainer
 from PyQt5 import QtWidgets, QtCore
 from gui.progress_dialog import ProgressDialog
@@ -14,8 +15,9 @@ START_TIME = 3
 
 
 class ConverterTable:
-    def __init__(self, tableWidget):
+    def __init__(self, tableWidget, parent):
         self.tableWidget = tableWidget
+        self.parent = parent
         self.data_file_container = DataFileContainer()
         self.file_loader = FileLoader(self.data_file_container)
         self.tableWidget.setSelectionMode(1)
@@ -27,6 +29,8 @@ class ConverterTable:
         self.tableWidget.setColumnWidth(4, 140)
         self.file_loader.load_complete_signal.connect(
             lambda: self.refresh_table())
+        self.file_loader.load_error_signal.connect(
+            self.load_error_slot)
 
     def add_row(self):
         file_paths = self._open_file()
@@ -49,6 +53,10 @@ class ConverterTable:
     def _update_recent_directory_appdata(self, file_path):
         directory = os.path.dirname(file_path)
         appdata.set_userdata('domino.dat', 'last_directory', directory)
+
+    def load_error_slot(self, error_str):
+        QtWidgets.QMessageBox.warning(self.parent, 'File Load Error',
+                                      error_str)
 
     def delete_row(self):
         row_objects = self.tableWidget.selectionModel().selectedRows()

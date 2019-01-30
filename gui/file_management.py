@@ -6,6 +6,7 @@ import os
 
 class FileLoader(QThread):
     load_complete_signal = pyqtSignal()
+    load_error_signal = pyqtSignal(str)
 
     def __init__(self, data_file_container):
         super().__init__()
@@ -18,8 +19,23 @@ class FileLoader(QThread):
 
     def run(self):
         self.data_file_container.add_files(self.paths)
+        self._check_for_errors()
         self.load_complete_signal.emit()
 
+    def _check_for_errors(self):
+        error_map = {
+            'error_type':
+                'The file "{}" could not be loaded because it is the wrong '
+                'file type.',
+            'error_first_page':
+                'The file "{}" could not be loaded because it does not '
+                'contain data.'}
+        for file in self.data_file_container:
+            status = file.status
+            if status.startswith('error'):
+                error_str = error_map[status].format(file.filename)
+                self.load_error_signal.emit(error_str)
+        self.data_file_container.remove_error_files()
 
 class FileConverter(QThread):
     progress_signal = pyqtSignal(int, int)
