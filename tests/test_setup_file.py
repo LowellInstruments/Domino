@@ -18,6 +18,7 @@ from setup_file.setup_file import (
     END_TIME
 )
 from unittest import TestCase
+import os
 
 
 def reference_file(file_name):
@@ -119,7 +120,7 @@ class TestSetupFile(TestCase):
 
     def test_save_default_setup(self):
         setup = SetupFile()
-        setup.write_file(files_directory())
+        setup.write_file(os.path.join(files_directory(), 'MAT.cfg'))
         setup = load_setup_file(reference_file('MAT.cfg'))
         assert setup._setup_dict == DEFAULT_SETUP
         reference_file('MAT.cfg').unlink()
