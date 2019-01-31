@@ -184,8 +184,8 @@ class SetupFile(QObject):
         if type(state) is not bool:
             raise ValueError('State must be True or False')
 
-    def write_file(self, directory):
-        file_writer = ConfigFileWriter(directory, self._setup_dict)
+    def write_file(self, path):
+        file_writer = ConfigFileWriter(path, self._setup_dict)
         file_writer.write_file()
 
     def set_continuous(self, state):
@@ -199,13 +199,13 @@ class SetupFile(QObject):
 
 
 class ConfigFileWriter:
-    def __init__(self, directory, setup_dict):
-        self.directory = directory
+    def __init__(self, path, setup_dict):
+        self.path = path
         self.setup_dict = setup_dict
 
     def write_file(self):
-        directory = Path(self.directory or '')
-        with open(directory / 'MAT.cfg', 'w', newline='\r\n') as fid:
+        directory = Path(self.path)
+        with open(directory, 'w', newline='\r\n') as fid:
             self._write_header(fid)
             for line in self._formatted_tag_and_value():
                 fid.write(line)
