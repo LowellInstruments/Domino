@@ -14,6 +14,9 @@ from gui.container_ui import Ui_MainWindow
 from gui.start_stop import StartStopFrame
 from gui.converter import ConverterFrame
 from gui.setup import SetupFrame
+from PyQt5.QtCore import QThread
+from PyQt5.QtCore import pyqtSignal
+from gui.version_check import VersionChecker
 
 
 class Container(Ui_MainWindow):
@@ -41,6 +44,12 @@ class Container(Ui_MainWindow):
         self.pushButton1.clicked.connect(self.about)
         self.old_resize = self.window.resizeEvent
         self.window.resizeEvent = self.resizeEvent
+        self.start_version_check()
+
+    def start_version_check(self):
+        self.version_check = VersionCheckerThread(self.window, self.version)
+        self.version_check.new_version_signal.connect(self.new_version_found)
+        self.version_check.start()
 
     def resizeEvent(self, event):
         self.old_resize(event)
@@ -71,3 +80,28 @@ class Container(Ui_MainWindow):
         message.setWindowTitle('About Domino')
         message.setText(description)
         message.exec_()
+
+    def new_version_found(self):
+        text = 'A new version of Domino is available. Please visit ' \
+               'the Lowell Instruments ' \
+               '<a href="https://lowellinstruments.com/downloads/">' \
+               'downloads</a> page for the latest version.'
+        message = QMessageBox(self.window)
+        message.setTextFormat(1)
+        message.setIcon(QMessageBox.Information)
+        message.setWindowTitle('Update Available')
+        message.setText(text)
+        message.exec_()
+
+
+class VersionCheckerThread(QThread):
+    new_version_signal = pyqtSignal()
+
+    def __init__(self, parent, version):
+        super().__init__()
+        self.version_checker = VersionChecker()
+        self.version = version
+
+    def run(self):
+        if not self.version_checker.is_latest(self.version):
+            self.new_version_signal.emit()
