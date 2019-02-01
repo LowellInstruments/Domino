@@ -24,6 +24,7 @@ import logging
 from gui.description_generator import DescriptionGenerator
 from mat import appdata
 from gui.gui_utils import show_error, set_enabled
+import os
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -309,14 +310,25 @@ class SetupFrame(Ui_Frame):
     def save_file(self):
         self.redraw()
         application_data = appdata.get_userdata('domino.dat')
-        directory = application_data.get('setup_file_directory')
-        path = QFileDialog.getExistingDirectory(self.frame,
-                                                'Save File',
-                                                directory=directory)
-        if not path:
+        directory = application_data.get('setup_file_directory', '')
+        file_name = os.path.join(directory, 'MAT.cfg')
+        path = QFileDialog.getSaveFileName(self.frame, 'Save File', file_name)
+        if not path[0]:
             return
-        appdata.set_userdata('domino.dat', 'setup_file_directory', path)
-        self.setup_file.write_file(path)
+        if not self.check_mat_cfg(os.path.basename(path[0])):
+            return
+        directory = os.path.dirname(path[0])
+        appdata.set_userdata('domino.dat', 'setup_file_directory', directory)
+        self.setup_file.write_file(path[0])
         QMessageBox.information(self.frame,
                                 'File Saved',
                                 'File saved successfully')
+
+    def check_mat_cfg(self, filename):
+        if filename == 'MAT.cfg':
+            return True
+        else:
+            QMessageBox.information(self.frame,
+                                    'File name error',
+                                    'File name must be MAT.cfg')
+            return False
