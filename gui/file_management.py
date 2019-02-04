@@ -42,16 +42,24 @@ class FileConverter(QThread):
     conversion_status_signal = pyqtSignal(str, int, int)
     conversion_complete = pyqtSignal()
 
-    def __init__(self, data_file_container, parameters):
+    def __init__(self):
         # parameters is a dict of parameters required by FileConverter
         super().__init__()
-        self.data_file_container = data_file_container
-        self.parameters = parameters
+        self.data_file_container = None
+        self.parameters = None
         self.current_file_ind = 0
-        self.file_sizes = [file.size for file in data_file_container]
-        self.total_mb = sum(self.file_sizes)
+        self.file_sizes = 0
+        self.total_mb = 0
         self._is_running = False
         self.converter = None
+
+    def set_parameters(self, parameters):
+        self.parameters = parameters
+
+    def set_data_files(self, data_file_container):
+        self.data_file_container = data_file_container
+        self.file_sizes = [file.size for file in data_file_container]
+        self.total_mb = sum(self.file_sizes)
 
     def run(self):
         self._is_running = True

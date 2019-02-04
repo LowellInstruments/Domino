@@ -31,6 +31,7 @@ class ConverterTable:
             lambda: self.refresh_table())
         self.file_loader.load_error_signal.connect(
             self.load_error_slot)
+        self.conversion = FileConverter()
 
     def add_row(self):
         file_paths = self._open_file()
@@ -102,7 +103,8 @@ class ConverterTable:
     def convert_files(self, parameters):
         if len(self.data_file_container) == 0:
             return
-        self.conversion = FileConverter(self.data_file_container, parameters)
+        self.conversion.set_parameters(parameters)
+        self.conversion.set_data_files(self.data_file_container)
         self.progress_dialog = ProgressDialog(self.tableWidget.window())
         self.progress_dialog.ui.pushButton.clicked.connect(
             self.conversion.cancel)
