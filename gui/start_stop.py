@@ -1,8 +1,10 @@
+# GPLv3 License
+# Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 import logging
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from mat.logger_controller import LoggerController
+from mat.logger_controller_usb import LoggerControllerUSB
 from datetime import datetime
 from gui.start_stop_updater import Commands
 from queue import Queue
@@ -102,7 +104,7 @@ class LoggerQueryThread(QThread):
         super().__init__()
         logging.debug('thread init')
         self.commands = commands
-        self.controller = LoggerController()
+        self.controller = LoggerControllerUSB()
         logging.debug(self.controller)
         self.queue = Queue()
 
