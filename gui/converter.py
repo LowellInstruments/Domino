@@ -1,5 +1,5 @@
 # GPLv3 License
-# Copyright (c) 2018 Lowell Instruments, LLC, some rights reserved
+# Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 from gui.converter_ui import Ui_Frame
 from gui.options_dialog import OptionsDialog
 from gui.converter_table import ConverterTable
