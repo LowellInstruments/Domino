@@ -1,3 +1,5 @@
+# GPLv3 License
+# Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 import logging
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
