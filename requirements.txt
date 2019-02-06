@@ -9,6 +9,7 @@ pyinstaller
 numpy
 h5py
 PyQt5==5.9.2
-git+https://github.com/LowellInstruments/lowell-mat.git#egg=lowell-mat
+git+https://github.com/LowellInstruments/lowell-mat.git@mat-85
 pyyaml
 pytest-qt
+pytest-mock

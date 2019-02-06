@@ -3,7 +3,12 @@ from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QFrame
 from PyQt5.QtCore import Qt
 import sys
-from mock import patch
+from mock import patch, Mock
+from contextlib import contextmanager
+import pytest
+
+
+app = QApplication(sys.argv)
 
 
 def reference_file(file_name):
@@ -24,19 +29,40 @@ app_data = {'time_format': 'iso8601',
             'setup_file_directory': ''}
 
 
-@patch('gui.converter.appdata.get_userdata', return_value=app_data)
-@patch('gui.converter.appdata.set_userdata')
-def test_calibrate(set_appdata, get_appdata, qtbot):
+@pytest.fixture
+def mocked_get_userdata(mocker):
+    return mocker.patch('gui.converter.appdata.get_userdata')
 
-    app = QApplication(sys.argv)
-    ui = converter.ConverterFrame()
-    frame = QFrame()
-    ui.setupUi(frame)
-    qtbot.add_widget(app)
+
+@pytest.fixture
+def mocked_set_userdata(mocker):
+    return mocker.patch('gui.converter.appdata.set_userdata')
+
+
+@pytest.fixture
+def new_ui(mocked_get_userdata, mocked_set_userdata):
+    def _appdata(this_appdata):
+        mocked_get_userdata.return_value = this_appdata
+        ui = converter.ConverterFrame()
+        frame = QFrame()
+        ui.setupUi(frame)
+        return ui
+    return _appdata
+
+
+def load_and_convert_file(file, ui, bot):
+    file = reference_file(file)
     load_signal = ui.converter_table.file_loader.load_complete_signal
-    with qtbot.waitSignal(load_signal) as blocker:
-        file = reference_file('ScenarioA.lid')
+    with bot.waitSignal(load_signal, timeout=1000) as blocker:
         ui.converter_table.file_loader.load_files([str(file)])
     complete_signal = ui.converter_table.conversion.conversion_complete
-    with qtbot.waitSignal(complete_signal, timeout=10000) as blocker:
-        qtbot.mouseClick(ui.pushButton_convert, Qt.LeftButton)
+    with bot.waitSignal(complete_signal, timeout=10000) as blocker:
+        bot.mouseClick(ui.pushButton_convert, Qt.LeftButton)
+
+
+def test_one(new_ui, qtbot):
+    test_app_data = app_data.copy()
+    test_app_data['time_format'] = 'elapsed'
+    ui = new_ui(app_data)
+    load_and_convert_file('ScenarioA.lid', ui, qtbot)
+
