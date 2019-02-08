@@ -30,8 +30,4 @@ class VersionChecker:
         latest = self.get_latest_version()
         if not latest:
             return True
-
-        if LooseVersion(version) >= LooseVersion(latest):
-            return True
-        else:
-            return False
+        return LooseVersion(version) >= LooseVersion(latest)

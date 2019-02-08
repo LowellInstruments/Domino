@@ -21,7 +21,7 @@ from gui.version_check import VersionChecker
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.0.1'
+        self.version = '0.5.0'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
@@ -31,6 +31,8 @@ class Container(Ui_MainWindow):
         self.setup_frame.setupUi(self.frame_setup_file)
         self.start_stop_frame = StartStopFrame()
         self.start_stop_frame.setupUi(self.frame_start_stop)
+        self.window.setWindowTitle('Lowell Instruments - Domino {}'
+                                   .format(self.version))
         self.pushButton1 = QPushButton(self.centralwidget)
         x_pos = self.window.width() - 60
         self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
@@ -66,7 +68,7 @@ class Container(Ui_MainWindow):
         description = \
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
-            'Domino ' + self.version + '&trade;<br /><br />' \
+            'Domino' + '&trade; ' + self.version + '<br /><br />' \
             'Copyright 2018-2019 by Lowell Instruments, some ' \
             'rights reserved. <br />' \
             'Source code for this application is available under ' \

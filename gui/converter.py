@@ -31,7 +31,7 @@ class AboutDeclination:
            '<br><br>Declination can be found using a calculator such as ' \
            '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
            'Calculator</a><br /><br />' \
-           'Values must be in the range [-180, 180]'
+           'Values must be in the range [-180, 180]<br /> East is positive.'
 
     def __init__(self, parent):
         self.parent = parent
