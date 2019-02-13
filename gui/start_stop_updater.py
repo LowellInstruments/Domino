@@ -16,7 +16,7 @@ COMMANDS = [
     ['FSZ', 5, 'FileSizeUpdate'],
     ['CTS', 10, 'FileSizeUpdate'],
     ['CFS', 10, 'FileSizeUpdate'],
-    ['GSN', 10, 'SimpleUpdate'],
+    ['GSN', 10, 'SerialNumberUpdate'],
     ['GFV', 10, 'SimpleUpdate']
 ]
 
@@ -28,8 +28,7 @@ FILE_SIZE = {
 
 SIMPLE_FIELD = {
     'GTM': ('Logger Time: {}', 'label_logger_time'),
-    'GSN': ('Serial Number: {}', 'label_serial'),
-    'GFV': ('Firmware Version: {}', 'label_firmware'),
+    'GFV': ('Firmware Version: {}', 'label_firmware')
 }
 
 SENSORS = OrderedDict(
@@ -119,6 +118,14 @@ class TimeUpdate(SimpleUpdate):
         self.widget.setStyleSheet(style)
 
 
+class SerialNumberUpdate(Update):
+    def update(self, query_results):
+        command, data = query_results
+        self.gui.label_serial.setText('Serial Number: {}'.format(data))
+        self.gui.statusbar_serial_number.setText(
+            'Connected to {}  '.format(data))
+
+
 class FileSizeUpdate(Update):
     def update(self, query_results):
         command, data = query_results
@@ -167,7 +174,7 @@ class StatusUpdate(Update):
         self.gui.pushButton_status.setIcon(icon)
         self.gui.pushButton_status.setIconSize(QtCore.QSize(36, 36))
         status = '  Device Running  ' if state else '  Halted  '
-        self.gui.logging_status.setText(status)
+        self.gui.statusbar_logging_status.setText(status)
 
 
 class SensorUpdate(Update):
@@ -208,7 +215,7 @@ class DeploymentUpdate(Update):
                 widget.setText(format_.format(data[tag]))
 
 
-class Connection:
+class ConnectionStatus:
     def __init__(self, gui):
         self.gui = gui
         self.connected_icon = QtGui.QIcon()
@@ -227,4 +234,3 @@ class Connection:
         else:
             self.gui.pushButton_connected.setIcon(self.connected_icon)
             self.gui.label_connected.setText('Connected on USB')
-            self.gui.connection_status.setText('  Connected  ')

@@ -7,7 +7,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
 from datetime import datetime
-from gui.start_stop_updater import Commands, Connection
+from gui.start_stop_updater import Commands, ConnectionStatus
 from queue import Queue
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from PyQt5.QtWidgets import QApplication
@@ -22,9 +22,9 @@ class StartStopFrame(Ui_Frame):
         self.commands = None
         self.logger = None
         self.status_bar = None
-        self.connection_status = QLabel()
-        self.logging_status = QLabel()
-        self.connection = Connection(self)
+        self.statusbar_serial_number = QLabel()
+        self.statusbar_logging_status = QLabel()
+        self.connection_status = ConnectionStatus(self)
 
     def setupUi(self, frame):
         self.frame = frame
@@ -46,8 +46,8 @@ class StartStopFrame(Ui_Frame):
         self.pushButton_stop.clicked.connect(self.stop)
         self.pushButton_connected.clicked.connect(self.reset)
         self.status_bar = self.get_status_bar()
-        self.status_bar.addPermanentWidget(self.connection_status)
-        self.status_bar.addPermanentWidget(self.logging_status)
+        self.status_bar.addPermanentWidget(self.statusbar_serial_number)
+        self.status_bar.addPermanentWidget(self.statusbar_logging_status)
 
     def get_status_bar(self):
         window_children = self.frame.window().children()
@@ -67,7 +67,7 @@ class StartStopFrame(Ui_Frame):
             self.commands.command_handler(query_results)
 
     def connected_slot(self, state):
-        self.connection.update(state)
+        self.connection_status.update(state)
 
     def run(self):
         style_sheet = self.label_logger_time.styleSheet()
