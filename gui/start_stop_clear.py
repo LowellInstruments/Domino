@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 
 DEFAULTS = [
-    ('label_status', 'Not connected'),
-    ('label_connection', 'Not connected'),
+    ('label_connected', 'Not connected'),
+    ('label_status', 'Halted'),
     ('label_file_size', 'File size: --'),
     ('label_sd_free_space', 'SD card free space: --'),
     ('label_sd_total_space', ''),
@@ -12,7 +12,9 @@ DEFAULTS = [
     ('label_firmware', 'Firmware Version: --'),
     ('label_model', 'Model Number: --'),
     ('label_firmware', 'Firmware Version: --'),
-    ('label_deployment', 'Deployment Number: --')
+    ('label_deployment', 'Deployment Number: --'),
+    ('connection_status', '  Not Connected  '),
+    ('logging_status', '  Halted  ')
 ]
 
 

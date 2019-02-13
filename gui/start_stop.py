@@ -4,12 +4,12 @@ import logging
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
 from datetime import datetime
-from gui.start_stop_updater import Commands
+from gui.start_stop_updater import Commands, Connection
 from queue import Queue
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
-from gui.start_stop_clear import clear_gui
 from PyQt5.QtWidgets import QApplication
 
 
@@ -21,6 +21,10 @@ class StartStopFrame(Ui_Frame):
         self.frame = None
         self.commands = None
         self.logger = None
+        self.status_bar = None
+        self.connection_status = QLabel()
+        self.logging_status = QLabel()
+        self.connection = Connection(self)
 
     def setupUi(self, frame):
         self.frame = frame
@@ -40,7 +44,16 @@ class StartStopFrame(Ui_Frame):
             lambda: self.logger.command('sync_time'))
         self.pushButton_start.clicked.connect(self.run)
         self.pushButton_stop.clicked.connect(self.stop)
-        self.pushButton_icon.clicked.connect(self.reset)
+        self.pushButton_connected.clicked.connect(self.reset)
+        self.status_bar = self.get_status_bar()
+        self.status_bar.addPermanentWidget(self.connection_status)
+        self.status_bar.addPermanentWidget(self.logging_status)
+
+    def get_status_bar(self):
+        window_children = self.frame.window().children()
+        for child in window_children:
+            if isinstance(child, QStatusBar):
+                return child
 
     def reset(self):
         modifiers = QApplication.keyboardModifiers()
@@ -54,10 +67,7 @@ class StartStopFrame(Ui_Frame):
             self.commands.command_handler(query_results)
 
     def connected_slot(self, state):
-        if state is False:
-            clear_gui(self)
-        else:
-            self.label_connection.setText('Connected on USB')
+        self.connection.update(state)
 
     def run(self):
         style_sheet = self.label_logger_time.styleSheet()
@@ -130,8 +140,7 @@ class LoggerQueryThread(QThread):
 
     def try_connecting(self):
         try:
-            self.controller.open_port()
-            return True
+            return True if self.controller.open_port() else False
         except RuntimeError:
             return False
 
