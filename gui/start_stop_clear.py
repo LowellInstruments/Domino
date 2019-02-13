@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtGui import QIcon
 
 
 DEFAULTS = [
     ('label_connected', 'Not connected'),
-    ('label_status', 'Halted'),
+    ('label_status', 'Connect for Status'),
     ('label_file_size', 'File size: --'),
     ('label_sd_free_space', 'SD card free space: --'),
     ('label_sd_total_space', ''),
@@ -20,6 +21,7 @@ DEFAULTS = [
 
 def clear_gui(gui):
     _clear_table(gui)
+    gui.pushButton_status.setIcon(QIcon())
     for widget_name, string in DEFAULTS:
         widget = getattr(gui, widget_name)
         widget.setText(string)
