@@ -1,6 +1,7 @@
 from PyQt5.QtGui import (
     QIcon,
-    QPixmap
+    QPixmap,
+    QIcon
 )
 from PyQt5.QtWidgets import (
     QPushButton,
@@ -21,7 +22,7 @@ from gui.version_check import VersionChecker
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.5.2'
+        self.version = '0.5.1'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
@@ -65,6 +66,10 @@ class Container(Ui_MainWindow):
             event.ignore()
 
     def about(self):
+        logo = QIcon()
+        logo.addPixmap(
+            QPixmap(':/icons/icons/lowell_logo_fullsize.png'),
+            QIcon.Normal, QIcon.Off)
         description = \
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
@@ -78,7 +83,8 @@ class Container(Ui_MainWindow):
 
         message = QMessageBox(self.window)
         message.setTextFormat(1)
-        message.setIcon(QMessageBox.Information)
+        message.setIconPixmap(
+            QPixmap(':/icons/icons/lowell_logo_fullsize.png'))
         message.setWindowTitle('About Domino')
         message.setText(description)
         message.exec_()
