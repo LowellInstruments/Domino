@@ -21,7 +21,7 @@ from gui.version_check import VersionChecker
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.5.1'
+        self.version = '0.5.2'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
