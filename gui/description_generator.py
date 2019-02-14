@@ -31,7 +31,7 @@ class DescriptionGenerator:
     def description(self):
         output = self.sample_description() + '\n'
         output += self.start_stop_description() + '\n'
-        output += self.file_size_description()
+        #output += self.file_size_description()
         return output
 
     def sample_description(self):
