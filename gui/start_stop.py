@@ -59,6 +59,8 @@ class StartStopFrame(Ui_Frame):
         modifiers = QApplication.keyboardModifiers()
         if modifiers == Qt.ShiftModifier | Qt.ControlModifier:
             self.logger.command('RST')
+        elif modifiers == Qt.ControlModifier:
+            self.logger.toggle_active()
 
     def query_slot(self, query_results):
         logging.debug(query_results)
@@ -117,21 +119,26 @@ class LoggerQueryThread(QThread):
         self.controller = LoggerControllerUSB()
         logging.debug(self.controller)
         self.queue = Queue()
+        self.is_active = False
 
     def command(self, command):
         self.queue.put(command)
 
     def run(self):
+        self.is_active = True
         while True:
-            if self.try_connecting():
+            if self.is_active and self.try_connecting():
                 self.connected.emit(True)
                 self.start_query_loop()
             else:
                 self.connected.emit(False)
                 self.sleep(1)
 
+    def toggle_active(self):
+        self.is_active = not self.is_active
+
     def start_query_loop(self):
-        while self.controller.is_connected:
+        while self.is_active and self.controller.is_connected:
             next_command = self.get_next_command()
             if next_command:
                 result = self._send_command(next_command)
