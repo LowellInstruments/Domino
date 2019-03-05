@@ -116,8 +116,6 @@ class LoggerQueryThread(QThread):
         super().__init__()
         logging.debug('thread init')
         self.commands = commands
-        self.controller = LoggerControllerUSB()
-        logging.debug(self.controller)
         self.queue = Queue()
         self.is_active = False
 
@@ -126,30 +124,20 @@ class LoggerQueryThread(QThread):
 
     def run(self):
         self.is_active = True
-        while True:
-            if self.is_active and self.try_connecting():
-                self.connected.emit(True)
-                self.start_query_loop()
-            else:
-                self.connected.emit(False)
-                self.sleep(1)
+        with LoggerControllerUSB() as controller:
+            self.connected.emit(True)
+            self.start_query_loop(controller)
 
     def toggle_active(self):
         self.is_active = not self.is_active
 
-    def start_query_loop(self):
-        while self.is_active and self.controller.is_connected:
+    def start_query_loop(self, controller):
+        while self.is_active and controller.is_connected:
             next_command = self.get_next_command()
             if next_command:
-                result = self._send_command(next_command)
+                result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
             self.msleep(10)
-
-    def try_connecting(self):
-        try:
-            return True if self.controller.open_port() else False
-        except RuntimeError:
-            return False
 
     def get_next_command(self):
         if not self.queue.empty():
@@ -164,10 +152,10 @@ class LoggerQueryThread(QThread):
         if not self.queue.empty():
             self._send_command(self.queue.get())
 
-    def _send_command(self, command):
+    def _send_command(self, controller, command):
         try:
             if len(command) == 3:
-                return self.controller.command(command)
-            return getattr(self.controller, command)()
+                return controller.command(command)
+            return getattr(controller, command)()
         except RuntimeError:
             return None
