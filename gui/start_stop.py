@@ -6,11 +6,12 @@ from gui.start_stop_ui import Ui_Frame
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
+from mat.logger_controller import CommunicationError
 from datetime import datetime
 from gui.start_stop_updater import Commands, ConnectionStatus
-from queue import Queue
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from PyQt5.QtWidgets import QApplication
+from queue import Queue
 
 
 TIME_FIELD = 2
@@ -24,7 +25,10 @@ class StartStopFrame(Ui_Frame):
         self.status_bar = None
         self.statusbar_serial_number = QLabel()
         self.statusbar_logging_status = QLabel()
+        self.statusbar_connect_status = QLabel()
         self.connection_status = ConnectionStatus(self)
+        self.queue = Queue()
+        self.try_connecting = True
 
     def setupUi(self, frame):
         self.frame = frame
@@ -32,20 +36,22 @@ class StartStopFrame(Ui_Frame):
         self.tableWidget.horizontalHeader().setSectionResizeMode(
             QHeaderView.Stretch)
         self.commands = Commands(self)
-        self.logger = LoggerQueryThread(self.commands.get_schedule())
+        self.logger = LoggerQueryThread(self.commands.get_schedule(),
+                                        self.queue)
         self.logger.query_update.connect(self.query_slot)
         self.logger.connected.connect(self.connected_slot)
-        logging.debug('Starting logger thread')
         self.logger.start()
         self.time_updater = TimeUpdater()
         self.time_updater.time_signal.connect(self.update_time_slot)
         self.time_updater.start()
         self.pushButton_sync_clock.clicked.connect(
-            lambda: self.logger.command('sync_time'))
+            lambda: self.queue.put('sync_time'))
         self.pushButton_start.clicked.connect(self.run)
         self.pushButton_stop.clicked.connect(self.stop)
         self.pushButton_connected.clicked.connect(self.reset)
         self.status_bar = self.get_status_bar()
+        self.status_bar.addPermanentWidget(self.statusbar_connect_status)
+        self.statusbar_connect_status.setText('  Auto Connect  ')
         self.status_bar.addPermanentWidget(self.statusbar_serial_number)
         self.status_bar.addPermanentWidget(self.statusbar_logging_status)
 
@@ -58,9 +64,16 @@ class StartStopFrame(Ui_Frame):
     def reset(self):
         modifiers = QApplication.keyboardModifiers()
         if modifiers == Qt.ShiftModifier | Qt.ControlModifier:
-            self.logger.command('RST')
+            self.queue.put('RST')
         elif modifiers == Qt.ControlModifier:
-            self.logger.toggle_active()
+            if self.try_connecting == True:
+                self.queue.put('disconnect')
+                self.statusbar_connect_status.setText(
+                    '  Manually Disconnected  ')
+            else:
+                self.logger.start()
+                self.statusbar_connect_status.setText('  Auto Connect  ')
+            self.try_connecting = not(self.try_connecting)
 
     def query_slot(self, query_results):
         logging.debug(query_results)
@@ -79,7 +92,7 @@ class StartStopFrame(Ui_Frame):
 
         self.pushButton_sync_clock.setEnabled(False)
         self.pushButton_start.setEnabled(False)
-        self.logger.command('RUN')
+        self.queue.put('RUN')
 
     def confirm_run_with_different_time(self):
         message = 'Device time differs from computer time by more than 1 ' \
@@ -92,7 +105,7 @@ class StartStopFrame(Ui_Frame):
 
     def stop(self):
         self.pushButton_stop.setEnabled(False)
-        self.logger.command('STP')
+        self.queue.put('STP')
 
     def update_time_slot(self, time_str):
         self.label_computer_time.setText('Computer Time: {}'.format(time_str))
@@ -112,28 +125,32 @@ class LoggerQueryThread(QThread):
     query_update = pyqtSignal(tuple)
     connected = pyqtSignal(bool)
 
-    def __init__(self, commands):
+    def __init__(self, commands, queue):
         super().__init__()
         logging.debug('thread init')
         self.commands = commands
-        self.queue = Queue()
+        self.queue = queue
         self.is_active = False
-
-    def command(self, command):
-        self.queue.put(command)
 
     def run(self):
         self.is_active = True
-        with LoggerControllerUSB() as controller:
-            self.connected.emit(True)
-            self.start_query_loop(controller)
-
-    def toggle_active(self):
-        self.is_active = not self.is_active
+        while self.is_active:
+            self._clear_queue()
+            with LoggerControllerUSB() as controller:
+                if controller is not None:
+                    self.connected.emit(True)
+                    self.start_query_loop(controller)
+                else:
+                    self.connected.emit(False)
+            self.msleep(250)
+        self.connected.emit(False)
 
     def start_query_loop(self, controller):
-        while self.is_active and controller.is_connected:
+        while controller.is_connected:
             next_command = self.get_next_command()
+            if next_command == 'disconnect':
+                self.is_active = False
+                break
             if next_command:
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
@@ -148,10 +165,6 @@ class LoggerQueryThread(QThread):
                 self.commands[i][TIME_FIELD] = now + repeat
                 return command
 
-    def check_user_command(self):
-        if not self.queue.empty():
-            self._send_command(self.queue.get())
-
     def _send_command(self, controller, command):
         try:
             if len(command) == 3:
@@ -159,3 +172,7 @@ class LoggerQueryThread(QThread):
             return getattr(controller, command)()
         except RuntimeError:
             return None
+
+    def _clear_queue(self):
+        with self.queue.mutex:
+            self.queue.queue.clear()
