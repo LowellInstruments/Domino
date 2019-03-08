@@ -123,7 +123,7 @@ class SerialNumberUpdate(Update):
         command, data = query_results
         self.gui.label_serial.setText('Serial Number: {}'.format(data))
         self.gui.statusbar_serial_number.setText(
-            'Connected to {}  '.format(data))
+            '  Connected to {}  '.format(data))
 
 
 class FileSizeUpdate(Update):
