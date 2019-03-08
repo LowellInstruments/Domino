@@ -2,7 +2,6 @@ from setup_file.setup_file import (
     DEFAULT_SETUP,
     INTERVALS,
     INTERVAL_STRING,
-    BURST_FREQUENCY,
     ORIENTATION_BURST_COUNT,
     ORIENTATION_BURST_RATE,
     TEMPERATURE_INTERVAL,
@@ -10,16 +9,16 @@ from setup_file.setup_file import (
     ACCELEROMETER_ENABLED,
     MAGNETOMETER_ENABLED,
     TEMPERATURE_ENABLED,
-    LED_ENABLED,
-    FILE_NAME,
     START_TIME,
     END_TIME
 )
 from setup_file.setup_file import SetupFile
 
 """
-Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 16 Hz for 10 seconds every 60 seconds.
-Logger will begin recording when started and will cease recording when manually stopped.
+Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 
+16 Hz for 10 seconds every 60 seconds.
+Logger will begin recording when started and will cease recording when 
+manually stopped.
 File size: 125.5 MB / month
 """
 
@@ -89,7 +88,8 @@ class DescriptionGenerator:
         return output
 
     def file_size_description(self):
-        return 'File size TBD'
+        is_accel = self.model.value(ACCELEROMETER_ENABLED)
+        is_mag = self.model.value(MAGNETOMETER_ENABLED)
 
     def _interval_to_string(self, seconds):
         index = list(INTERVALS).index(seconds)
