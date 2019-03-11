@@ -170,7 +170,7 @@ class LoggerQueryThread(QThread):
             if len(command) == 3:
                 return controller.command(command)
             return getattr(controller, command)()
-        except RuntimeError:
+        except (RuntimeError, CommunicationError):
             return None
 
     def _clear_queue(self):

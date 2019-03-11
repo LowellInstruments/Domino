@@ -17,12 +17,12 @@ from gui.converter import ConverterFrame
 from gui.setup import SetupFrame
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
-from gui.version_check import VersionChecker
+from mat.version_check import VersionChecker
 
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.5.2'
+        self.version = '0.5.3'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
