@@ -23,6 +23,9 @@ File size: 125.5 MB / month
 """
 
 
+SECONDS_PER_MONTH = 60*60*24*30
+
+
 class DescriptionGenerator:
     def __init__(self, model):
         self.model = model  # type: SetupFile
@@ -30,7 +33,7 @@ class DescriptionGenerator:
     def description(self):
         output = self.sample_description() + '\n'
         output += self.start_stop_description() + '\n'
-        #output += self.file_size_description()
+        output += self.file_size_description()
         return output
 
     def sample_description(self):
@@ -88,8 +91,18 @@ class DescriptionGenerator:
         return output
 
     def file_size_description(self):
-        is_accel = self.model.value(ACCELEROMETER_ENABLED)
-        is_mag = self.model.value(MAGNETOMETER_ENABLED)
+        chan_count = 0
+        chan_count += 1 if self.model.value(ACCELEROMETER_ENABLED) else 0
+        chan_count += 1 if self.model.value(MAGNETOMETER_ENABLED) else 0
+        burst_count = self.model.value(ORIENTATION_BURST_COUNT)
+        orient_interval = self.model.value(ORIENTATION_INTERVAL)
+        orient_bytes = (burst_count*chan_count*2)/orient_interval
+        temp = 1 if self.model.value(TEMPERATURE_ENABLED) else 0
+        temp_interval = self.model.value(TEMPERATURE_INTERVAL)
+        temp_bytes = (temp*2)/temp_interval
+        bytes_per_sec = orient_bytes + temp_bytes
+        mb_per_month = (bytes_per_sec * SECONDS_PER_MONTH)/(1024**2)
+        return 'File size: {:0.1f} MB per month'.format(mb_per_month)
 
     def _interval_to_string(self, seconds):
         index = list(INTERVALS).index(seconds)
