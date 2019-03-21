@@ -13,6 +13,8 @@ from setup_file.setup_file import (
     END_TIME
 )
 from setup_file.setup_file import SetupFile
+from mat.utils import epoch_from_timestamp
+
 
 """
 Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 
@@ -101,8 +103,18 @@ class DescriptionGenerator:
         temp_interval = self.model.value(TEMPERATURE_INTERVAL)
         temp_bytes = (temp*2)/temp_interval
         bytes_per_sec = orient_bytes + temp_bytes
-        mb_per_month = (bytes_per_sec * SECONDS_PER_MONTH)/(1024**2)
-        return 'File size: {:0.1f} MB per month'.format(mb_per_month)
+        run_time, suffix = self._get_run_time()
+        mb_per_month = (bytes_per_sec * run_time)/(1024**2)
+        return 'File size: {:0.1f} MB{}'.format(mb_per_month, suffix)
+
+    def _get_run_time(self):
+        if (self.model.value(START_TIME) == DEFAULT_SETUP[START_TIME] or
+                self.model.value(END_TIME) == DEFAULT_SETUP[END_TIME]):
+            return (SECONDS_PER_MONTH, ' per month.')
+        else:
+            start_seconds = epoch_from_timestamp(self.model.value(START_TIME))
+            end_seconds = epoch_from_timestamp(self.model.value(END_TIME))
+            return (end_seconds - start_seconds, '.')
 
     def _interval_to_string(self, seconds):
         index = list(INTERVALS).index(seconds)
