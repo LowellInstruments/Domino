@@ -94,8 +94,8 @@ class DescriptionGenerator:
 
     def file_size_description(self):
         chan_count = 0
-        chan_count += 1 if self.model.value(ACCELEROMETER_ENABLED) else 0
-        chan_count += 1 if self.model.value(MAGNETOMETER_ENABLED) else 0
+        chan_count += 3 if self.model.value(ACCELEROMETER_ENABLED) else 0
+        chan_count += 3 if self.model.value(MAGNETOMETER_ENABLED) else 0
         burst_count = self.model.value(ORIENTATION_BURST_COUNT)
         orient_interval = self.model.value(ORIENTATION_INTERVAL)
         orient_bytes = (burst_count*chan_count*2)/orient_interval
