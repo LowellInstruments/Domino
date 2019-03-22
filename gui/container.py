@@ -79,7 +79,8 @@ class Container(Ui_MainWindow):
             'Source code for this application is available under ' \
             'the GPLv3 License at ' \
             '<a href="https://github.com/LowellInstruments/Domino">' \
-            'https://github.com/LowellInstruments/Domino</a>'
+            'https://github.com/LowellInstruments/Domino</a><br />' \
+            'Icons by <a href="http://icons8.com">icons8.com</a>'
 
         message = QMessageBox(self.window)
         message.setTextFormat(1)
