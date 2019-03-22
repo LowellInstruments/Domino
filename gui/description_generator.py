@@ -2,7 +2,6 @@ from setup_file.setup_file import (
     DEFAULT_SETUP,
     INTERVALS,
     INTERVAL_STRING,
-    BURST_FREQUENCY,
     ORIENTATION_BURST_COUNT,
     ORIENTATION_BURST_RATE,
     TEMPERATURE_INTERVAL,
@@ -10,18 +9,23 @@ from setup_file.setup_file import (
     ACCELEROMETER_ENABLED,
     MAGNETOMETER_ENABLED,
     TEMPERATURE_ENABLED,
-    LED_ENABLED,
-    FILE_NAME,
     START_TIME,
     END_TIME
 )
 from setup_file.setup_file import SetupFile
+from mat.utils import epoch_from_timestamp
+
 
 """
-Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 16 Hz for 10 seconds every 60 seconds.
-Logger will begin recording when started and will cease recording when manually stopped.
+Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 
+16 Hz for 10 seconds every 60 seconds.
+Logger will begin recording when started and will cease recording when 
+manually stopped.
 File size: 125.5 MB / month
 """
+
+
+SECONDS_PER_MONTH = 60*60*24*30
 
 
 class DescriptionGenerator:
@@ -31,7 +35,7 @@ class DescriptionGenerator:
     def description(self):
         output = self.sample_description() + '\n'
         output += self.start_stop_description() + '\n'
-        #output += self.file_size_description()
+        output += self.file_size_description()
         return output
 
     def sample_description(self):
@@ -89,7 +93,28 @@ class DescriptionGenerator:
         return output
 
     def file_size_description(self):
-        return 'File size TBD'
+        chan_count = 0
+        chan_count += 1 if self.model.value(ACCELEROMETER_ENABLED) else 0
+        chan_count += 1 if self.model.value(MAGNETOMETER_ENABLED) else 0
+        burst_count = self.model.value(ORIENTATION_BURST_COUNT)
+        orient_interval = self.model.value(ORIENTATION_INTERVAL)
+        orient_bytes = (burst_count*chan_count*2)/orient_interval
+        temp = 1 if self.model.value(TEMPERATURE_ENABLED) else 0
+        temp_interval = self.model.value(TEMPERATURE_INTERVAL)
+        temp_bytes = (temp*2)/temp_interval
+        bytes_per_sec = orient_bytes + temp_bytes
+        run_time, suffix = self._get_run_time()
+        mb_per_month = (bytes_per_sec * run_time)/(1024**2)
+        return 'File size: {:0.1f} MB{}'.format(mb_per_month, suffix)
+
+    def _get_run_time(self):
+        if (self.model.value(START_TIME) == DEFAULT_SETUP[START_TIME] or
+                self.model.value(END_TIME) == DEFAULT_SETUP[END_TIME]):
+            return (SECONDS_PER_MONTH, ' per month.')
+        else:
+            start_seconds = epoch_from_timestamp(self.model.value(START_TIME))
+            end_seconds = epoch_from_timestamp(self.model.value(END_TIME))
+            return (end_seconds - start_seconds, '.')
 
     def _interval_to_string(self, seconds):
         index = list(INTERVALS).index(seconds)
