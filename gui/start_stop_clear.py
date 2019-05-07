@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtGui import QIcon
+from PyQt5 import QtGui
 
 
 DEFAULTS = [
@@ -21,7 +22,11 @@ DEFAULTS = [
 
 def clear_gui(gui):
     _clear_table(gui)
-    gui.pushButton_status.setIcon(QIcon())
+    unknown_icon = QtGui.QIcon()
+    unknown_icon.addPixmap(
+        QtGui.QPixmap(':/icons/icons/unknown-status.png'),
+        QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    gui.pushButton_status.setIcon(unknown_icon)
     for widget_name, string in DEFAULTS:
         widget = getattr(gui, widget_name)
         widget.setText(string)
