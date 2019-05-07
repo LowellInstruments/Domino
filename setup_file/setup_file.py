@@ -76,7 +76,8 @@ class SetupFile(QObject):
         super().__init__()
         self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
         self.time_re = compile('^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
-                               '[0-1][0-9]:[0-6][0-9]:[0-6][0-9]$')
+                               '(0?[0-9]|1[0-9]|2[0-3]):'
+                               '[0-5][0-9]:[0-6][0-9]$')
         self.is_continuous = False
         self.is_start_time = False
         self.is_end_time = False
