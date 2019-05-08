@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/unknown-status.png</file>
     <file>icons/lowell_logo_fullsize.png</file>
     <file>icons/icons8-help-48.png</file>
     <file>icons/icons8-year-of-dog-96-white.png</file>
