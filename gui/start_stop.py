@@ -127,7 +127,6 @@ class LoggerQueryThread(QThread):
 
     def __init__(self, commands, queue):
         super().__init__()
-        logging.debug('thread init')
         self.commands = commands
         self.queue = queue
         self.is_active = False
@@ -135,7 +134,8 @@ class LoggerQueryThread(QThread):
     def run(self):
         self.is_active = True
         while self.is_active:
-            self._clear_queue()
+            if self.read_queue() == 'disconnect':
+                self.is_active = False
             with LoggerControllerUSB() as controller:
                 if controller is not None:
                     self.connected.emit(True)
@@ -146,24 +146,29 @@ class LoggerQueryThread(QThread):
         self.connected.emit(False)
 
     def start_query_loop(self, controller):
-        while controller.is_connected:
+        while controller.is_connected and self.is_active:
             next_command = self.get_next_command()
             if next_command == 'disconnect':
                 self.is_active = False
                 break
-            if next_command:
+            elif next_command is not None:
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
             self.msleep(10)
 
     def get_next_command(self):
-        if not self.queue.empty():
-            return self.queue.get()
+        queue = self.read_queue()
+        if queue:
+            return queue
         now = datetime.now().timestamp()
         for i, (command, repeat, next_time) in enumerate(self.commands):
             if now > next_time:
                 self.commands[i][TIME_FIELD] = now + repeat
                 return command
+
+    def read_queue(self):
+        if not self.queue.empty():
+            return self.queue.get()
 
     def _send_command(self, controller, command):
         try:
@@ -174,5 +179,6 @@ class LoggerQueryThread(QThread):
             return None
 
     def _clear_queue(self):
+        # Note sure if this is needed anymore
         with self.queue.mutex:
             self.queue.queue.clear()
