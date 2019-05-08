@@ -108,7 +108,11 @@ class StartStopFrame(Ui_Frame):
         self.queue.put('STP')
 
     def update_time_slot(self, time_str):
-        self.label_computer_time.setText('Computer Time: {}'.format(time_str))
+        if self.logger.is_connected:
+            text = 'Computer Time: {}'.format(time_str)
+        else:
+            text = 'Computer Time: --'
+        self.label_computer_time.setText(text)
 
 
 class TimeUpdater(QThread):
@@ -118,7 +122,7 @@ class TimeUpdater(QThread):
         while True:
             time = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
             self.time_signal.emit(time)
-            self.sleep(1)
+            self.sleep(0.25)
 
 
 class LoggerQueryThread(QThread):
@@ -130,6 +134,7 @@ class LoggerQueryThread(QThread):
         self.commands = commands
         self.queue = queue
         self.is_active = False
+        self.is_connected = False
 
     def run(self):
         self.is_active = True
@@ -138,12 +143,16 @@ class LoggerQueryThread(QThread):
                 self.is_active = False
             with LoggerControllerUSB() as controller:
                 if controller is not None:
-                    self.connected.emit(True)
+                    self._update_connection_status(True)
                     self.start_query_loop(controller)
                 else:
-                    self.connected.emit(False)
+                    self._update_connection_status(False)
             self.msleep(250)
-        self.connected.emit(False)
+        self._update_connection_status(False)
+
+    def _update_connection_status(self, status):
+        self.is_connected = status
+        self.connected.emit(status)
 
     def start_query_loop(self, controller):
         while controller.is_connected and self.is_active:
