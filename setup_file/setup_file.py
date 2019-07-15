@@ -4,7 +4,7 @@ from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import compile, search
 from PyQt5.QtCore import pyqtSignal, QObject
-from mat.sensor import major_interval_bytes
+import mat.sensor
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
@@ -91,7 +91,7 @@ class SetupFile(QObject):
         self.changed_signal.emit((tag, value))
 
     def major_interval_bytes(self):
-        bytes = major_interval_bytes(self._setup_dict)
+        return mat.sensor.major_interval_bytes(self._setup_dict)
 
     def available_intervals(self, sensor):
         """
