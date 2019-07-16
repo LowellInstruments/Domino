@@ -29,7 +29,10 @@ class FileLoader(QThread):
                 'file type.',
             'error_first_page':
                 'The file "{}" could not be loaded because it does not '
-                'contain data.'}
+                'contain data.',
+            'error_header':
+                'The file "{}" could not be loaded because it contains '
+                'a header error.'}
         for file in self.data_file_container:
             status = file.status
             if status.startswith('error'):

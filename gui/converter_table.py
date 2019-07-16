@@ -1,7 +1,6 @@
 from mat import appdata
 from gui.file_management import FileConverter, FileLoader
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox
 from gui.data_file import DataFileContainer
 from PyQt5 import QtWidgets, QtCore
 from gui.progress_dialog import ProgressDialog
