@@ -116,9 +116,20 @@ class ConverterTable:
             self.progress_dialog.conversion_complete)
         self.conversion.conversion_complete.connect(
             lambda: self.refresh_table())
-
+        self.conversion.conversion_complete.connect(
+            self._check_for_errors_after_conversion)
         self.progress_dialog.show()
         self.conversion.start()
+
+    def _check_for_errors_after_conversion(self):
+        success = True
+        for file in self.data_file_container:
+            if file.status != 'converted':
+                success = False
+        if not success:
+            error_str = 'One or more files could not be converted.'
+            QtWidgets.QMessageBox.warning(self.parent, 'Conversion Error',
+                                          error_str)
 
     def confirm_quit(self):
         if len(self.data_file_container) == 0:
