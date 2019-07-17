@@ -1,7 +1,6 @@
 from mat import appdata
 from gui.file_management import FileConverter, FileLoader
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox
 from gui.data_file import DataFileContainer
 from PyQt5 import QtWidgets, QtCore
 from gui.progress_dialog import ProgressDialog
@@ -117,9 +116,20 @@ class ConverterTable:
             self.progress_dialog.conversion_complete)
         self.conversion.conversion_complete.connect(
             lambda: self.refresh_table())
-
+        self.conversion.conversion_complete.connect(
+            self._check_for_errors_after_conversion)
         self.progress_dialog.show()
         self.conversion.start()
+
+    def _check_for_errors_after_conversion(self):
+        success = True
+        for file in self.data_file_container:
+            if file.status != 'converted':
+                success = False
+        if not success:
+            error_str = 'One or more files could not be converted.'
+            QtWidgets.QMessageBox.warning(self.parent, 'Conversion Error',
+                                          error_str)
 
     def confirm_quit(self):
         if len(self.data_file_container) == 0:

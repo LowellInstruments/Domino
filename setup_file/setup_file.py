@@ -3,8 +3,8 @@ from mat.utils import parse_tags
 from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import compile, search
-from setup_file.utils import date_string_to_datetime
 from PyQt5.QtCore import pyqtSignal, QObject
+import mat.sensor
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
@@ -87,7 +87,11 @@ class SetupFile(QObject):
 
     def update_value(self, tag, value):
         self._setup_dict[tag] = value
+        self.major_interval_bytes()
         self.changed_signal.emit((tag, value))
+
+    def major_interval_bytes(self):
+        return mat.sensor.major_interval_bytes(self._setup_dict)
 
     def available_intervals(self, sensor):
         """

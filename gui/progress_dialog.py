@@ -9,6 +9,7 @@ class ProgressDialog(QDialog):
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('File Conversion Progress')
+        self.ui.label_status.setText('')
 
     def update_progress(self, percent, overall_percent):
         self.ui.progressBar_file.setValue(percent)
