@@ -204,7 +204,8 @@ class ConverterFrame(Ui_Frame):
                                                          'iso8601')
         parameters['average'] = application_data.get('average_bursts', True)
 
-        split_size = application_data.get('split')
+        split_size = application_data.get('split',
+                                          'Do not split output files')
         if split_size != 'Do not split output files':
             parameters['split'] = int(split_size.split(' ')[0])
 
