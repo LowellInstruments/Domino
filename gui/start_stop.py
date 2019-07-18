@@ -122,7 +122,7 @@ class TimeUpdater(QThread):
         while True:
             time = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
             self.time_signal.emit(time)
-            self.sleep(0.25)
+            self.msleep(250)
 
 
 class LoggerQueryThread(QThread):
