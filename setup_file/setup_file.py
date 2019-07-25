@@ -87,7 +87,6 @@ class SetupFile(QObject):
 
     def update_value(self, tag, value):
         self._setup_dict[tag] = value
-        self.major_interval_bytes()
         self.changed_signal.emit((tag, value))
 
     def major_interval_bytes(self):
