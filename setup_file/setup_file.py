@@ -5,6 +5,7 @@ from pathlib import Path
 from re import compile, search
 import mat.sensor
 
+
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
 TYPE_BOOL = ('ACL', 'LED', 'MGN', 'TMP', 'PRS', 'PHD')
 WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
@@ -67,7 +68,6 @@ def _convert_to_type(setup_dict):
     return setup_dict
 
 
-# noinspection PyStubPackagesCompatibility
 class SetupFile:
     def __init__(self, setup_dict=None):
         super().__init__()
