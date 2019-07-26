@@ -330,7 +330,11 @@ class SetupFrame(Ui_Frame):
         path = QFileDialog.getSaveFileName(self.frame, 'Save File', file_name)
         if not path[0]:
             return
-        if not self.check_mat_cfg(os.path.basename(path[0])):
+        if not path[0].endswith('MAT.cfg'):
+            message = 'Filename must be MAT.cfg. File not saved. ' \
+                      'Please save again.'
+            error_message(self.frame, 'File name error', message)
+            self.save_file()
             return
         directory = os.path.dirname(path[0])
         appdata.set_userdata('domino.dat', 'setup_file_directory', directory)
@@ -340,12 +344,3 @@ class SetupFrame(Ui_Frame):
         QMessageBox.information(self.frame,
                                 'File Saved',
                                 'File saved successfully')
-
-    def check_mat_cfg(self, filename):
-        if filename == 'MAT.cfg':
-            return True
-        else:
-            QMessageBox.information(self.frame,
-                                    'File name error',
-                                    'File name must be MAT.cfg')
-            return False
