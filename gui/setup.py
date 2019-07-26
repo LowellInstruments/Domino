@@ -318,11 +318,11 @@ class SetupFrame(Ui_Frame):
         self.redraw()
         if self.setup_file.major_interval_bytes() > 32000:
             message = 'The current logging parameters exceed the logger ' \
-                      'buffer size. Large, or greatly disproportionate, ' \
-                      'sampling intervals can often cause this problem. ' \
-                      'The configuration file was not generated. See the ' \
-                      'user guide for more details.'
-            error_message(self.frame, 'Invalid settings', message)
+                      'buffer size. This can usually be corrected by ' \
+                      'reducing the temperature recording interval. The ' \
+                      'configuration file was not generated. See the user ' \
+                      'guide for more details.'
+            QMessageBox.information(self.frame, 'Invalid settings', message)
             return
         application_data = appdata.get_userdata('domino.dat')
         directory = application_data.get('setup_file_directory', '')
