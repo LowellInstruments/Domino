@@ -5,7 +5,7 @@ pytest>=3.6
 pytest-cov
 pytest-xvfb
 pyinstaller
-numpy
+numpy<1.17
 h5py
 #PyQt5
 PyQt5==5.9.2
