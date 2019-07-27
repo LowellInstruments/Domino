@@ -140,12 +140,8 @@ class TestSetupFile(TestCase):
         with self.assertRaises(ValueError):
             setup.set_time(END_TIME, end_time)
 
-    def test_unknown_time_position(self):
-        setup = SetupFile()
-        with self.assertRaises(ValueError):
-            setup.set_time('middle', '2018-10-15 14:20:00')
-
     def test_wrong_date_format(self):
         setup = SetupFile()
         with self.assertRaises(ValueError):
             setup.set_time(START_TIME, '2018/10/15 14:20:00')
+
