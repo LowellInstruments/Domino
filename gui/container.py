@@ -22,7 +22,7 @@ from mat.version_check import VersionChecker
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.5.8'
+        self.version = '0.5.9'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
