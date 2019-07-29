@@ -95,6 +95,8 @@ class FileConverter(QThread):
             file.status = 'converted'
         except (FileNotFoundError, TypeError, ValueError):
             file.status = 'failed'
+        finally:
+            self.converter.source_file.close()
 
     def cancel(self):
         self._is_running = False
