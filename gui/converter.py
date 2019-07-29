@@ -84,7 +84,6 @@ class ConverterFrame(Ui_Frame):
         self.errors['declination'] = error_state
         show_error(self.lineEdit_declination, error_state)
 
-
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == 'Current':
             self.comboBox_tilt_tables.setEnabled(True)

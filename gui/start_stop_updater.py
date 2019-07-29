@@ -218,6 +218,7 @@ class DeploymentUpdate(Update):
 class ConnectionStatus:
     def __init__(self, gui):
         self.gui = gui
+        self.last_state = None
         self.connected_icon = QtGui.QIcon()
         self.connected_icon.addPixmap(
             QtGui.QPixmap(':/icons/icons/icons8-usb-connected-48.png'),
@@ -228,6 +229,14 @@ class ConnectionStatus:
             QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
     def update(self, state):
+        buttons = [self.gui.pushButton_sync_clock,
+                   self.gui.pushButton_start,
+                   self.gui.pushButton_stop]
+        if state == self.last_state:
+            return
+        self.last_state = state
+        for button in buttons:
+            button.setEnabled(state)
         if state is False:
             clear_gui(self.gui)
             self.gui.pushButton_connected.setIcon(self.not_connected_icon)
