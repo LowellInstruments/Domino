@@ -40,6 +40,7 @@ class FileLoader(QThread):
                 self.load_error_signal.emit(error_str)
         self.data_file_container.remove_error_files()
 
+
 class FileConverter(QThread):
     progress_signal = pyqtSignal(int, int)
     conversion_status_signal = pyqtSignal(str, int, int)

@@ -8,9 +8,10 @@ import os
 
 
 FILE_NAME = 0
-FOLDER = 1
+STATUS = 1
 SIZE = 2
 START_TIME = 3
+FOLDER = 4
 
 
 class ConverterTable:
@@ -21,11 +22,11 @@ class ConverterTable:
         self.file_loader = FileLoader(self.data_file_container)
         self.tableWidget.setSelectionMode(1)
         self.tableWidget.setSelectionBehavior(1)
-        self.tableWidget.setColumnWidth(0, 200)
-        self.tableWidget.setColumnWidth(1, 300)
-        self.tableWidget.setColumnWidth(2, 100)
-        self.tableWidget.setColumnWidth(3, 140)
-        self.tableWidget.setColumnWidth(4, 140)
+        self.tableWidget.setColumnWidth(FILE_NAME, 200)
+        self.tableWidget.setColumnWidth(STATUS, 100)
+        self.tableWidget.setColumnWidth(SIZE, 100)
+        self.tableWidget.setColumnWidth(START_TIME, 140)
+        self.tableWidget.setColumnWidth(FOLDER, 300)
         self.file_loader.load_complete_signal.connect(
             lambda: self.refresh_table())
         self.file_loader.load_error_signal.connect(

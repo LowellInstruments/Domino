@@ -70,12 +70,13 @@ class ConverterFrame(Ui_Frame):
         self.buttonGroup.buttonToggled.connect(
             self.toggle_output_file_button_group)
         self.comboBox_output_type.currentIndexChanged.connect(
-            self.change_ouput_type)
+            self.change_output_type_slot)
         self.pushButton_help.clicked.connect(
             lambda: AboutDeclination(self.frame).show())
-        self.lineEdit_declination.textEdited.connect(self.declination_changed)
+        self.lineEdit_declination.textEdited.connect(
+            self.declination_changed_slot)
 
-    def declination_changed(self):
+    def declination_changed_slot(self):
         declination = self.lineEdit_declination.text()
         if is_float(declination) and -180 <= float(declination) <= 180:
             error_state = False
@@ -84,7 +85,7 @@ class ConverterFrame(Ui_Frame):
         self.errors['declination'] = error_state
         show_error(self.lineEdit_declination, error_state)
 
-    def change_ouput_type(self):
+    def change_output_type_slot(self):
         if self.comboBox_output_type.currentText() == 'Current':
             self.comboBox_tilt_tables.setEnabled(True)
         else:
