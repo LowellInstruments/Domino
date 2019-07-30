@@ -94,6 +94,8 @@ class ConverterFrame(Ui_Frame):
     def _check_for_errors_after_conversion(self):
         success = True
         for file in self.data_file_container:
+            if file.status != 'unconverted':
+                continue
             if file.status != 'converted':
                 success = False
         if not success:
@@ -129,7 +131,7 @@ class ConverterFrame(Ui_Frame):
         self.conversion.conversion_complete.connect(
             self.progress_dialog.conversion_complete)
         self.conversion.conversion_complete.connect(
-            lambda: self.converter_table.refresh())
+            self.converter_table.refresh)
         self.conversion.conversion_complete.connect(
             self._check_for_errors_after_conversion)
         self.progress_dialog.show()
@@ -268,8 +270,6 @@ class ConverterFrame(Ui_Frame):
                                           'Do not split output files')
         if split_size != 'Do not split output files':
             parameters['split'] = int(split_size.split(' ')[0])
-
-        output_format = application_data.get('output_format', 'discrete')
 
         if self.comboBox_output_type.currentText() == 'Current':
             parameters['output_type'] = 'current'

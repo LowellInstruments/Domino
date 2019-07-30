@@ -52,20 +52,26 @@ class FileConverter(QThread):
         self.data_file_container = data_file_container
         self.parameters = parameters
         self.current_file_ind = 0
-        self.file_sizes = [file.size for file in data_file_container]
+        self.file_sizes = [file.size if file.status == 'unconverted' else 0
+                           for file in data_file_container]
         self.total_mb = sum(self.file_sizes)
         self._is_running = False
         self.converter = None
 
     def run(self):
         self._is_running = True
+        count = 0
         for i, file in enumerate(self.data_file_container):
             if not self._is_running:
                 break
+            if file.status != 'unconverted':
+                continue
+            count += 1
             self.current_file_ind = i
-            self.conversion_status_signal.emit(file.filename,
-                                               i+1,
-                                               len(self.data_file_container))
+            self.conversion_status_signal.emit(
+                file.filename,
+                count,
+                sum([1 for x in self.file_sizes if x != 0]))
             if not os.path.isfile(file.path):
                 file.status = 'file_not_found'
                 continue
@@ -93,7 +99,9 @@ class FileConverter(QThread):
             self.converter = DataConverter(file.path, conversion_parameters)
             self.converter.register_observer(self.update_progress)
             self.converter.convert()
-            file.status = 'converted'
+            if self.converter._is_running:
+                # Make sure canceled conversion isn't marked converted
+                file.status = 'converted'
         except (FileNotFoundError, TypeError, ValueError):
             file.status = 'failed'
         finally:
