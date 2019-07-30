@@ -13,6 +13,9 @@ from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox
 from mat.calibration_factories import make_from_calibration_file
 from gui.gui_utils import show_error, is_float, error_message
+from gui.data_file import DataFileContainer
+from gui.file_management import FileConverter, FileLoader
+from gui.progress_dialog import ProgressDialog
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -20,48 +23,30 @@ OUTPUT_TYPE = {'Current': 'current',
                'Yaw/Pitch/Roll': 'ypr'}
 
 
-class AboutDeclination:
-    TEXT = 'Magnetic declination is the angle between magnetic north and ' \
-           'true north. This angle varies depending on position on the ' \
-           'Earth\'s surface.' \
-           '<br><br>In order for current and compass data to ' \
-           'be converted to geographic coordinates, you must enter the ' \
-           'declination at your deployment site, otherwise the heading and ' \
-           'velocity components will be relative to magnetic north.' \
-           '<br><br>Declination can be found using a calculator such as ' \
-           '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
-           'Calculator</a><br /><br />' \
-           'Values must be in the range [-180, 180]<br /> East is positive.'
-
-    def __init__(self, parent):
-        self.parent = parent
-
-    def show(self):
-        message = QMessageBox(self.parent)
-        message.setTextFormat(1)
-        message.setIcon(QMessageBox.Information)
-        message.setWindowTitle('About Declination')
-        message.setText(self.TEXT)
-        message.exec_()
-
-
 class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
         self.converter_table = None
         self.errors = {'declination': False}
+        self.data_file_container = DataFileContainer()
+        self.file_loader = FileLoader(self.data_file_container)
+        self.conversion = None
+        self.progress_dialog = None
 
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
-        self.converter_table = ConverterTable(self.tableWidget, frame)
+        self.converter_table = ConverterTable(self.tableWidget,
+                                              self.data_file_container)
         self.populate_tilt_curves()
         self._connect_signals_to_slots()
         self.restore_last_session()
 
     def _connect_signals_to_slots(self):
-        self.pushButton_add.clicked.connect(self.converter_table.add_row)
-        self.pushButton_remove.clicked.connect(self.converter_table.delete_row)
+        self.pushButton_add.clicked.connect(
+            self.add_row)
+        self.pushButton_remove.clicked.connect(
+            self.converter_table.delete_selected_rows)
         self.pushButton_clear.clicked.connect(self.converter_table.clear_table)
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_convert.clicked.connect(self.convert_files)
@@ -75,6 +60,94 @@ class ConverterFrame(Ui_Frame):
             lambda: AboutDeclination(self.frame).show())
         self.lineEdit_declination.textEdited.connect(
             self.declination_changed_slot)
+        self.file_loader.load_complete_signal.connect(
+            lambda: self.converter_table.refresh())
+        self.file_loader.load_error_signal.connect(
+            self.load_error_slot)
+
+    def add_row(self):
+        file_paths = self._open_file()
+        if not file_paths[0]:
+            return
+        self._update_recent_directory_appdata(file_paths[0][0])
+        self.file_loader.load_files(file_paths[0])
+
+    def _open_file(self):
+        application_data = appdata.get_userdata('domino.dat')
+        last_directory = (application_data['last_directory']
+                          if 'last_directory' in application_data else '')
+        file_paths = QtWidgets.QFileDialog.getOpenFileNames(
+            self.tableWidget.window(),
+            'Open Lowell Instruments Data File',
+            last_directory,
+            'Data Files (*.lid *.lis)')
+        return file_paths
+
+    def _update_recent_directory_appdata(self, file_path):
+        directory = os.path.dirname(file_path)
+        appdata.set_userdata('domino.dat', 'last_directory', directory)
+
+    def load_error_slot(self, error_str):
+        QtWidgets.QMessageBox.warning(self.frame, 'File Load Error',
+                                      error_str)
+
+    def _check_for_errors_after_conversion(self):
+        success = True
+        for file in self.data_file_container:
+            if file.status != 'converted':
+                success = False
+        if not success:
+            error_str = 'One or more files could not be converted.'
+            QtWidgets.QMessageBox.warning(self.frame, 'Conversion Error',
+                                          error_str)
+
+    def convert_files(self):
+        if any(self.errors.values()):
+            error_message(self.frame, 'Error',
+                          'Please correct highlighted error(s)')
+            return
+        self.save_session()
+        parameters = self._read_conversion_parameters()
+        if parameters['output_directory'] == 'error':
+            return
+        if parameters['calibration'] and not self.confirm_custom_cal():
+            return
+        if len(self.data_file_container) == 0:
+            return
+
+        self.conversion = FileConverter(self.data_file_container, parameters)
+        self.progress_dialog = ProgressDialog(self.tableWidget.window())
+        self.progress_dialog.ui.pushButton.clicked.connect(
+            self.conversion.cancel)
+        self.progress_dialog.ui.pushButton.clicked.connect(
+            self.progress_dialog.click_cancel)
+
+        self.conversion.progress_signal.connect(
+            self.progress_dialog.update_progress)
+        self.conversion.conversion_status_signal.connect(
+            self.progress_dialog.update_status)
+        self.conversion.conversion_complete.connect(
+            self.progress_dialog.conversion_complete)
+        self.conversion.conversion_complete.connect(
+            lambda: self.converter_table.refresh())
+        self.conversion.conversion_complete.connect(
+            self._check_for_errors_after_conversion)
+        self.progress_dialog.show()
+        self.conversion.start()
+
+    def confirm_quit(self):
+        if len(self.data_file_container) == 0:
+            return True
+        status = [file.status for file in self.data_file_container]
+        if any([True for s in status if s == 'unconverted']):
+            reply = QtWidgets.QMessageBox.question(
+                self.tableWidget.window(),
+                'Confirm Quit',
+                'There are unconverted files in the queue. '
+                'Are you sure you want to quit?')
+            return reply == QtWidgets.QMessageBox.Yes
+        else:
+            return True
 
     def declination_changed_slot(self):
         declination = self.lineEdit_declination.text()
@@ -182,19 +255,6 @@ class ConverterFrame(Ui_Frame):
         msgbox.addButton(QtWidgets.QMessageBox.Ok)
         msgbox.exec()
 
-    def convert_files(self):
-        if any(self.errors.values()):
-            error_message(self.frame, 'Error',
-                          'Please correct highlighted error(s)')
-            return
-        self.save_session()
-        parameters = self._read_conversion_parameters()
-        if parameters['output_directory'] == 'error':
-            return
-        if parameters['calibration'] and not self.confirm_custom_cal():
-            return
-        self.converter_table.convert_files(parameters)
-
     def _read_conversion_parameters(self):
         parameters = default_parameters()
         application_data = appdata.get_userdata('domino.dat')
@@ -209,7 +269,7 @@ class ConverterFrame(Ui_Frame):
         if split_size != 'Do not split output files':
             parameters['split'] = int(split_size.split(' ')[0])
 
-        output_format = application_data.get('output_format')
+        output_format = application_data.get('output_format', 'discrete')
 
         if self.comboBox_output_type.currentText() == 'Current':
             parameters['output_type'] = 'current'
@@ -217,7 +277,8 @@ class ConverterFrame(Ui_Frame):
                 self.comboBox_tilt_tables.currentData())
         else:
             output_type = OUTPUT_TYPE.get(
-                self.comboBox_output_type.currentText(), 'discrete')
+                self.comboBox_output_type.currentText(),
+                'discrete')
             parameters['output_type'] = output_type
 
         parameters['output_format'] = application_data.get('output_format',
@@ -265,5 +326,27 @@ class ConverterFrame(Ui_Frame):
                     QMessageBox.Yes | QMessageBox.Cancel)
         return answer == QMessageBox.Yes
 
-    def confirm_quit(self):
-        return self.converter_table.confirm_quit()
+
+class AboutDeclination:
+    TEXT = 'Magnetic declination is the angle between magnetic north and ' \
+           'true north. This angle varies depending on position on the ' \
+           'Earth\'s surface.' \
+           '<br><br>In order for current and compass data to ' \
+           'be converted to geographic coordinates, you must enter the ' \
+           'declination at your deployment site, otherwise the heading and ' \
+           'velocity components will be relative to magnetic north.' \
+           '<br><br>Declination can be found using a calculator such as ' \
+           '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
+           'Calculator</a><br /><br />' \
+           'Values must be in the range [-180, 180]<br /> East is positive.'
+
+    def __init__(self, parent):
+        self.parent = parent
+
+    def show(self):
+        message = QMessageBox(self.parent)
+        message.setTextFormat(1)
+        message.setIcon(QMessageBox.Information)
+        message.setWindowTitle('About Declination')
+        message.setText(self.TEXT)
+        message.exec_()
