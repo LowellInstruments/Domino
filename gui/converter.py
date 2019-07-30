@@ -61,7 +61,7 @@ class ConverterFrame(Ui_Frame):
         self.lineEdit_declination.textEdited.connect(
             self.declination_changed_slot)
         self.file_loader.load_complete_signal.connect(
-            lambda: self.converter_table.refresh())
+            self.converter_table.refresh)
         self.file_loader.load_error_signal.connect(
             self.load_error_slot)
 
@@ -94,7 +94,7 @@ class ConverterFrame(Ui_Frame):
     def _check_for_errors_after_conversion(self):
         success = True
         for file in self.data_file_container:
-            if file.status != 'unconverted':
+            if file.status == 'unconverted':
                 continue
             if file.status != 'converted':
                 success = False
@@ -116,6 +116,10 @@ class ConverterFrame(Ui_Frame):
             return
         if len(self.data_file_container) == 0:
             return
+        if not any([True for file in self.data_file_container if
+                   file.status == 'unconverted']):
+            if not self.prompt_mark_unconverted():
+                return
 
         self.conversion = FileConverter(self.data_file_container, parameters)
         self.progress_dialog = ProgressDialog(self.tableWidget.window())
@@ -134,8 +138,23 @@ class ConverterFrame(Ui_Frame):
             self.converter_table.refresh)
         self.conversion.conversion_complete.connect(
             self._check_for_errors_after_conversion)
+        self.conversion.file_converted_signal.connect(
+            self.converter_table.refresh)
         self.progress_dialog.show()
         self.conversion.start()
+
+    def prompt_mark_unconverted(self):
+        text = 'All items in the queue have been converted. Would you like ' \
+               'to mark them unconverted?'
+        answer = QtWidgets.QMessageBox.warning(
+                    self.frame,
+                    'All items converted',
+                    text,
+                    QMessageBox.Yes | QMessageBox.Cancel)
+        if answer == QMessageBox.Yes:
+            self.data_file_container.reset_converted()
+            self.converter_table.refresh()
+            return True
 
     def confirm_quit(self):
         if len(self.data_file_container) == 0:

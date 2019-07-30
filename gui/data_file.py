@@ -62,6 +62,11 @@ class DataFileContainer:
         self._data_files = [file for file in self._data_files if
                             not file.status.startswith('error')]
 
+    def reset_converted(self):
+        for file in self._data_files:
+            if file.status == 'converted':
+                file.status = 'unconverted'
+
     def __getitem__(self, index):
         return self._data_files[index]
 

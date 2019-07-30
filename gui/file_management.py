@@ -44,6 +44,7 @@ class FileLoader(QThread):
 class FileConverter(QThread):
     progress_signal = pyqtSignal(int, int)
     conversion_status_signal = pyqtSignal(str, int, int)
+    file_converted_signal = pyqtSignal()
     conversion_complete = pyqtSignal()
 
     def __init__(self, data_file_container, parameters):
@@ -76,6 +77,7 @@ class FileConverter(QThread):
                 file.status = 'file_not_found'
                 continue
             self._convert_file(file)
+            self.file_converted_signal.emit()
         self.conversion_complete.emit()
 
     def update_progress(self, percent_done):
