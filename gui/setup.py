@@ -324,6 +324,8 @@ class SetupFrame(Ui_Frame):
                       'guide for more details.'
             QMessageBox.information(self.frame, 'Invalid settings', message)
             return
+        if not self.check_temp_compensated_sensors():
+            return
         application_data = appdata.get_userdata('domino.dat')
         directory = application_data.get('setup_file_directory', '')
         file_name = os.path.join(directory, 'MAT.cfg')
@@ -344,3 +346,22 @@ class SetupFrame(Ui_Frame):
         QMessageBox.information(self.frame,
                                 'File Saved',
                                 'File saved successfully')
+
+    def check_temp_compensated_sensors(self):
+        if self.setup_file.value(MAGNETOMETER_ENABLED):
+            if self.setup_file.value(TEMPERATURE_ENABLED):
+                return False
+
+        text = 'The magnetometer is a temperature compensated sensor and ' \
+               'it may not perform well if temperature is disabled. It is ' \
+               'recommended that you enable temperature logging. Would ' \
+               'you like to continue?'
+        answer = QMessageBox.warning(
+            self.frame,
+            'Temperature compensated sensor',
+            text,
+            QMessageBox.Yes | QMessageBox.Cancel)
+        if answer == QMessageBox.Yes:
+            return True
+        return False
+
