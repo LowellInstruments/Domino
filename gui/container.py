@@ -20,6 +20,9 @@ from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
 
 
+RICH_TEXT = 1
+
+
 class Container(Ui_MainWindow):
     def __init__(self, window):
         self.version = '0.6.0.1'
@@ -74,7 +77,7 @@ class Container(Ui_MainWindow):
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
             'Domino' + '&trade; ' + self.version + '<br /><br />' \
-            'Copyright 2018-2019 by Lowell Instruments, some ' \
+            'Copyright 2018-2019 by Lowell Instruments LLC, some ' \
             'rights reserved. <br />' \
             'Source code for this application is available under ' \
             'the GPLv3 License at ' \
@@ -83,7 +86,7 @@ class Container(Ui_MainWindow):
             'Icons by <a href="http://icons8.com">icons8.com</a>'
 
         message = QMessageBox(self.window)
-        message.setTextFormat(1)
+        message.setTextFormat(RICH_TEXT)
         message.setIconPixmap(
             QPixmap(':/icons/icons/lowell_logo_fullsize.png'))
         message.setWindowTitle('About Domino')
@@ -96,7 +99,7 @@ class Container(Ui_MainWindow):
                '<a href="https://lowellinstruments.com/downloads/">' \
                'downloads</a> page for the latest version.'
         message = QMessageBox(self.window)
-        message.setTextFormat(1)
+        message.setTextFormat(RICH_TEXT)
         message.setIcon(QMessageBox.Information)
         message.setWindowTitle('Update Available')
         message.setText(text)
