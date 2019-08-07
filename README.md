@@ -1,10 +1,10 @@
-![Lowell Instruments LLC Logo](/LowellInstrumentsLLC_Logo.png)
+![Lowell Instruments LLC Logo](/images/LowellInstrumentsLLC_Logo.png)
 
 # Domino
 ## Introduction
 [Domino](https://lowellinstruments.com/products/domino/) is the unified application for data logging hardware from [Lowell Instruments LLC](https://lowellinstruments.com).  Domino is a user friendly tool for communicating with Lowell Instruments data loggers and current meters.
 
-![Domino Status Screen](/Status_Screen.jpg)
+![Domino Status Screen](/images/Status_Screen.jpg)
 
 ## Major features
 * Set recording parameters, enable/disable channels, set start/stop times etc.
