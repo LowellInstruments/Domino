@@ -25,7 +25,7 @@ RICH_TEXT = 1
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.6.0.1'
+        self.version = '0.6.1 candidate'
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
