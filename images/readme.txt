@@ -1,1 +1,1 @@
-Images in this directory are stored for documentation purposes.
+Photos and screenshots are stored here for documentation purposes.
