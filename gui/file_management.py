@@ -1,5 +1,4 @@
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
 from mat.data_converter import DataConverter, default_parameters
 import os
 
@@ -46,10 +45,13 @@ class FileConverter(QThread):
     conversion_status_signal = pyqtSignal(str, int, int)
     file_converted_signal = pyqtSignal()
     conversion_complete = pyqtSignal()
+    ask_overwrite_signal = pyqtSignal(str)
 
     def __init__(self, data_file_container, parameters):
         # parameters is a dict of parameters required by FileConverter
         super().__init__()
+        self.mutex = QMutex()
+        self.wait_condition = QWaitCondition()
         self.data_file_container = data_file_container
         self.parameters = parameters
         self.current_file_ind = 0
@@ -58,6 +60,7 @@ class FileConverter(QThread):
         self.total_mb = sum(self.file_sizes)
         self._is_running = False
         self.converter = None
+        self.overwrite = None
 
     def run(self):
         self._is_running = True
@@ -95,19 +98,52 @@ class FileConverter(QThread):
 
     def _convert_file(self, file):
         self.current_file = file
+        repeat = False
         try:
             conversion_parameters = default_parameters()
             conversion_parameters.update(self.parameters)
             self.converter = DataConverter(file.path, conversion_parameters)
             self.converter.register_observer(self.update_progress)
+            self.converter.overwrite = self._process_overwrite()
             self.converter.convert()
             if self.converter._is_running:
                 # Make sure canceled conversion isn't marked converted
                 file.status = 'converted'
         except (FileNotFoundError, TypeError, ValueError):
             file.status = 'failed'
+        except FileExistsError as message:
+            self.ask_overwrite(file.filename)
+            if self.overwrite in ['once', 'yes_to_all']:
+                repeat = True
         finally:
             self.converter.source_file.close()
+        if repeat:
+            self._convert_file(file)
+
+    def _process_overwrite(self):
+        if self.overwrite == 'once':
+            self.overwrite = None
+            return True
+        elif self.overwrite == 'yes_to_all':
+            return True
+        elif self.overwrite == 'no':
+            self.overwrite = None
+            return False
+        elif self.overwrite == 'no_to_all':
+            return False
+        else:
+            return False
+
+    def ask_overwrite(self, filename):
+        if self.overwrite is None:
+            self.ask_overwrite_signal.emit(str(filename))
+            self.mutex.lock()
+            self.wait_condition.wait(self.mutex)
+            self.mutex.unlock()
+
+    def set_overwrite(self, state):
+        self.overwrite = state
+        self.wait_condition.wakeAll()
 
     def cancel(self):
         self._is_running = False

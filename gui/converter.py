@@ -65,6 +65,24 @@ class ConverterFrame(Ui_Frame):
         self.file_loader.load_error_signal.connect(
             self.load_error_slot)
 
+    def ask_overwrite_slot(self, filename):
+        buttons_actions = [
+            (QMessageBox.Yes, 'once'),
+            (QMessageBox.YesToAll, 'yes_to_all'),
+            (QMessageBox.No, 'no'),
+            (QMessageBox.NoToAll, 'no_to_all')
+        ]
+        button_val = 0
+        for button, _ in buttons_actions:
+            button_val = button_val | button
+        message = 'Converting {} will overwrite files in the output ' \
+                  'directory. Would you like to continue?'.format(filename)
+        answer = QMessageBox.question(self.frame, 'Overwrite file?',
+                                      message, button_val)
+        for button, action in buttons_actions:
+            if answer == button:
+                self.conversion.set_overwrite(action)
+
     def add_row(self):
         file_paths = self._open_file()
         if not file_paths[0]:
@@ -140,6 +158,8 @@ class ConverterFrame(Ui_Frame):
             self._check_for_errors_after_conversion)
         self.conversion.file_converted_signal.connect(
             self.converter_table.refresh)
+        self.conversion.ask_overwrite_signal.connect(
+            self.ask_overwrite_slot)
         self.progress_dialog.show()
         self.conversion.start()
 
