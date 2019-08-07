@@ -353,14 +353,14 @@ class SetupFrame(Ui_Frame):
                 return False
 
         text = 'The magnetometer is a temperature compensated sensor and ' \
-               'it may not perform well if temperature is disabled. It is ' \
-               'recommended that you enable temperature logging. Would ' \
-               'you like to continue?'
+               'it may not perform well if temperature logging is disabled. ' \
+               'It is recommended that you enable temperature logging. Would ' \
+               'you like to continue anyway?'
         answer = QMessageBox.warning(
             self.frame,
             'Temperature compensated sensor',
             text,
-            QMessageBox.Yes | QMessageBox.Cancel)
+            QMessageBox.Yes | QMessageBox.No)
         if answer == QMessageBox.Yes:
             return True
         return False
