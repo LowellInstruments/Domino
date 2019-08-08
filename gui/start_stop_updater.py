@@ -4,6 +4,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from numpy import ndarray
 from collections import OrderedDict
 from datetime import datetime
+from gui.start_stop_clear import clear_gui
 
 
 # [Command, repeat interval, class]
@@ -15,7 +16,7 @@ COMMANDS = [
     ['FSZ', 5, 'FileSizeUpdate'],
     ['CTS', 10, 'FileSizeUpdate'],
     ['CFS', 10, 'FileSizeUpdate'],
-    ['GSN', 10, 'SimpleUpdate'],
+    ['GSN', 10, 'SerialNumberUpdate'],
     ['GFV', 10, 'SimpleUpdate']
 ]
 
@@ -27,8 +28,7 @@ FILE_SIZE = {
 
 SIMPLE_FIELD = {
     'GTM': ('Logger Time: {}', 'label_logger_time'),
-    'GSN': ('Serial Number: {}', 'label_serial'),
-    'GFV': ('Firmware Version: {}', 'label_firmware'),
+    'GFV': ('Firmware Version: {}', 'label_firmware')
 }
 
 SENSORS = OrderedDict(
@@ -118,6 +118,14 @@ class TimeUpdate(SimpleUpdate):
         self.widget.setStyleSheet(style)
 
 
+class SerialNumberUpdate(Update):
+    def update(self, query_results):
+        command, data = query_results
+        self.gui.label_serial.setText('Serial Number: {}'.format(data))
+        self.gui.statusbar_serial_number.setText(
+            '  Connected to {}  '.format(data))
+
+
 class FileSizeUpdate(Update):
     def update(self, query_results):
         command, data = query_results
@@ -151,7 +159,7 @@ class StatusUpdate(Update):
         return False if status_code & 1 else True
 
     def description(self, status_code):
-        running = 'running' if self._running(status_code) else 'stopped'
+        running = 'running' if self._running(status_code) else 'halted'
         status_str = 'Device is {}'.format(running)
         for value, string in ERROR_CODES:
             if status_code & value:
@@ -163,8 +171,10 @@ class StatusUpdate(Update):
         self.gui.pushButton_stop.setEnabled(state)
         self.gui.pushButton_sync_clock.setEnabled(not state)
         icon = self.rabbit_icon if state is True else self.stopped_icon
-        self.gui.pushButton_icon.setIcon(icon)
-        self.gui.pushButton_icon.setIconSize(QtCore.QSize(36, 36))
+        self.gui.pushButton_status.setIcon(icon)
+        self.gui.pushButton_status.setIconSize(QtCore.QSize(36, 36))
+        status = '  Device Running  ' if state else '  Halted  '
+        self.gui.statusbar_logging_status.setText(status)
 
 
 class SensorUpdate(Update):
@@ -203,3 +213,33 @@ class DeploymentUpdate(Update):
                 format_, widget_name = LOGGER_INFO[tag]
                 widget = getattr(self.gui, widget_name)
                 widget.setText(format_.format(data[tag]))
+
+
+class ConnectionStatus:
+    def __init__(self, gui):
+        self.gui = gui
+        self.last_state = None
+        self.connected_icon = QtGui.QIcon()
+        self.connected_icon.addPixmap(
+            QtGui.QPixmap(':/icons/icons/icons8-usb-connected-48.png'),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.not_connected_icon = QtGui.QIcon()
+        self.not_connected_icon.addPixmap(
+            QtGui.QPixmap(':/icons/icons/icons8-usb-disconnected-48.png'),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+    def update(self, state):
+        buttons = [self.gui.pushButton_sync_clock,
+                   self.gui.pushButton_start,
+                   self.gui.pushButton_stop]
+        if state == self.last_state:
+            return
+        self.last_state = state
+        for button in buttons:
+            button.setEnabled(state)
+        if state is False:
+            clear_gui(self.gui)
+            self.gui.pushButton_connected.setIcon(self.not_connected_icon)
+        else:
+            self.gui.pushButton_connected.setIcon(self.connected_icon)
+            self.gui.label_connected.setText('Connected on USB')

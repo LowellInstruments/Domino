@@ -29,7 +29,10 @@ class FileLoader(QThread):
                 'file type.',
             'error_first_page':
                 'The file "{}" could not be loaded because it does not '
-                'contain data.'}
+                'contain data.',
+            'error_header':
+                'The file "{}" could not be loaded because it contains '
+                'a header error.'}
         for file in self.data_file_container:
             status = file.status
             if status.startswith('error'):
@@ -100,6 +103,8 @@ class FileConverter(QThread):
             file.status = 'converted'
         except (FileNotFoundError, TypeError, ValueError):
             file.status = 'failed'
+        finally:
+            self.converter.source_file.close()
 
     def cancel(self):
         self._is_running = False

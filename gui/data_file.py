@@ -1,5 +1,5 @@
 from pathlib import Path
-from mat.data_file_factory import load_data_file
+from mat.data_file_factory import load_data_file, WrongFileTypeError
 from datetime import datetime
 
 
@@ -16,9 +16,14 @@ class DataFile:
     def query_file(self):
         try:
             data_file = load_data_file(self.path)
-        except ValueError:
+            data_file.page_times()
+        except WrongFileTypeError:
             self.status = 'error_type'
             return
+        except (KeyError, ValueError):
+            self.status = 'error_header'
+            return
+
         if len(data_file.page_times()) == 0:
             self.status = 'error_first_page'
             return

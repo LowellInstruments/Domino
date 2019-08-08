@@ -3,8 +3,7 @@ from mat.utils import parse_tags
 from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import compile, search
-from setup_file.utils import date_string_to_datetime
-from PyQt5.QtCore import pyqtSignal, QObject
+import mat.sensor
 
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
@@ -69,14 +68,13 @@ def _convert_to_type(setup_dict):
     return setup_dict
 
 
-class SetupFile(QObject):
-    changed_signal = pyqtSignal(tuple)
-
+class SetupFile:
     def __init__(self, setup_dict=None):
         super().__init__()
         self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
-        self.time_re = compile('^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
-                               '[0-1][0-9]:[0-6][0-9]:[0-6][0-9]$')
+        self.time_re = compile(r'^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
+                               '(0?[0-9]|1[0-9]|2[0-3]):'
+                               '[0-5][0-9]:[0-6][0-9]$')
         self.is_continuous = False
         self.is_start_time = False
         self.is_end_time = False
@@ -84,15 +82,18 @@ class SetupFile(QObject):
     def value(self, tag):
         return self._setup_dict[tag]
 
-    def update_value(self, tag, value):
+    def update(self, tag, value):
         self._setup_dict[tag] = value
-        self.changed_signal.emit((tag, value))
+
+    def major_interval_bytes(self):
+        return mat.sensor.major_interval_bytes(self._setup_dict)
 
     def available_intervals(self, sensor):
         """
         Available orientation and temperature intervals must be calculated
         in coordination with each other.
-        Logical array (mask) of available orientation or temperature intervals
+        Returns a logical array (mask) of available orientation or temperature
+        intervals
         """
         if sensor not in [TEMPERATURE_INTERVAL, ORIENTATION_INTERVAL]:
             raise ValueError('Unknown sensor {}'.format(sensor))
@@ -115,15 +116,15 @@ class SetupFile(QObject):
     def set_filename(self, filename):
         if not search(r'^[a-zA-Z0-9_\-]{1,11}\.lid$', filename):
             raise ValueError('Filename error')
-        self.update_value(FILE_NAME, filename)
+        self.update(FILE_NAME, filename)
 
     def set_channel_enabled(self, sensor, state):
         self._confirm_bool(state)
-        self.update_value(sensor, state)
+        self.update(sensor, state)
 
     def _set_accelmag_enabled(self, sensor, state):
         self._confirm_bool(state)
-        self.update_value(sensor, state)
+        self.update(sensor, state)
 
     def orient_enabled(self):
         return (self.value(ACCELEROMETER_ENABLED) or
@@ -134,7 +135,7 @@ class SetupFile(QObject):
             raise ValueError('Invalid interval value')
         if channel == ORIENTATION_INTERVAL:
             self._check_continuous()
-        self.update_value(channel, value)
+        self.update(channel, value)
         max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
             self.set_orient_burst_count(max_burst_count)
@@ -144,9 +145,9 @@ class SetupFile(QObject):
     def set_orient_burst_rate(self, value):
         if value not in BURST_FREQUENCY:
             raise ValueError('Invalid burst rate')
-        self.update_value(ORIENTATION_BURST_RATE, value)
+        self.update(ORIENTATION_BURST_RATE, value)
         if self.is_continuous:
-            self.update_value(ORIENTATION_BURST_COUNT, value)
+            self.update(ORIENTATION_BURST_COUNT, value)
 
     def set_orient_burst_count(self, value):
         max_burst_count = (self.value(ORIENTATION_INTERVAL) *
@@ -157,20 +158,21 @@ class SetupFile(QObject):
         if self.is_continuous and (self.value(ORIENTATION_BURST_COUNT) !=
                                    self.value(ORIENTATION_BURST_RATE)):
             raise ValueError('Invalid burst count while in continuous mode')
-        self.update_value(ORIENTATION_BURST_COUNT, value)
+        self.update(ORIENTATION_BURST_COUNT, value)
 
     def set_time(self, occasion, time):
-        if occasion not in [START_TIME, END_TIME]:
-            raise ValueError('position must be STM or ETM')
         if not self.time_re.search(time):
             raise ValueError('Incorrectly formatted time string')
         time_dict = {START_TIME: self.value(START_TIME),
                      END_TIME: self.value(END_TIME)}
         time_dict[occasion] = time
-        self._check_time(time_dict)
-        self.update_value(occasion, time)
+        self._validate_time(time_dict)
+        self.update(occasion, time)
 
-    def _check_time(self, time_dict):
+    def _validate_time(self, time_dict):
+        for key in time_dict:
+            time_dict[key] = datetime.strptime(time_dict[key],
+                                               '%Y-%m-%d %H:%M:%S')
         if time_dict[END_TIME] <= time_dict[START_TIME]:
             raise ValueError('start time and end time must be in '
                              'correct order')
@@ -192,10 +194,9 @@ class SetupFile(QObject):
         self._confirm_bool(state)
         self.is_continuous = state
         if state is True:
-            self.update_value(ORIENTATION_INTERVAL, 1)
+            self.update(ORIENTATION_INTERVAL, 1)
             burst_rate = self.value(ORIENTATION_BURST_RATE)
-            self.update_value(ORIENTATION_BURST_COUNT, burst_rate)
-        self.changed_signal.emit(('continuous', state))
+            self.update(ORIENTATION_BURST_COUNT, burst_rate)
 
 
 class ConfigFileWriter:

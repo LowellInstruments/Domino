@@ -31,7 +31,7 @@ class AboutDeclination:
            '<br><br>Declination can be found using a calculator such as ' \
            '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
            'Calculator</a><br /><br />' \
-           'Values must be in the range [-180, 180]'
+           'Values must be in the range [-180, 180]<br /> East is positive.'
 
     def __init__(self, parent):
         self.parent = parent
@@ -83,7 +83,6 @@ class ConverterFrame(Ui_Frame):
             error_state = True
         self.errors['declination'] = error_state
         show_error(self.lineEdit_declination, error_state)
-
 
     def change_ouput_type(self):
         if self.comboBox_output_type.currentText() == 'Current':
@@ -204,7 +203,8 @@ class ConverterFrame(Ui_Frame):
                                                          'iso8601')
         parameters['average'] = application_data.get('average_bursts', True)
 
-        split_size = application_data.get('split')
+        split_size = application_data.get('split',
+                                          'Do not split output files')
         if split_size != 'Do not split output files':
             parameters['split'] = int(split_size.split(' ')[0])
 
