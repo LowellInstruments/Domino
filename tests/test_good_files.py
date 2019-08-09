@@ -3,10 +3,27 @@ from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QFrame
 from PyQt5.QtCore import Qt
 import sys
-from mock import patch, Mock
-from contextlib import contextmanager
 import pytest
 from tests.utils import compare_files
+
+
+PARAMETERS = [
+    (
+        'ScenarioA.lid',
+        ['AccelMag', 'Temperature'],
+        {'average_bursts': False}),
+    (
+        'ScenarioA.lid',
+        ['AccelMag', 'Temperature'],
+        {'average_bursts': False, 'time_format': 'elapsed'}),
+    (
+        'ScenarioB.lid',
+        ['Temperature'],
+        {'average_bursts': False}
+    )
+]
+
+
 
 app = QApplication(sys.argv)
 
@@ -68,28 +85,41 @@ def compare(reference_file, test_file):
     compare_files(ref_path, test_path)
 
 
-def test_scenarioA_heading_posix(new_ui, qtbot, app_data):
-    app_data['time_format'] = 'posix'
-    app_data['output_type'] = 'Compass Heading'
+@pytest.mark.parametrize('input,types,params', PARAMETERS)
+def test_parameters(input, types, params, new_ui, qtbot, app_data):
+    app_data.update(params)
     ui = new_ui(app_data)
-    load_and_convert_file('ScenarioA.lid', ui, qtbot)
-    compare('ScenarioA_Heading.expect', 'ScenarioA_Heading.csv')
-    compare('ScenarioA_T_POSIX.expect', 'ScenarioA_Temperature.csv')
+    load_and_convert_file(input, ui, qtbot)
+    for t in types:
+        expect = input[:-4] + '_' + t + '.expect'
+        converted = input[:-4] + '_' + t + '.csv'
+        compare(expect, converted)
 
-def test_ScenarioA_t_elapsed(new_ui, qtbot, app_data):
-    app_data['time_format'] = 'elapsed'
-    ui = new_ui(app_data)
-    load_and_convert_file('ScenarioA.lid', ui, qtbot)
-    compare('ScenarioA_T_Elapsed.expect', 'ScenarioA_Temperature.csv')
-
-def test_ScenarioA_t_iso(new_ui, qtbot, app_data):
-    app_data['time_format'] = 'iso8601'
-    ui = new_ui(app_data)
-    load_and_convert_file('ScenarioA.lid', ui, qtbot)
-    compare('ScenarioA_T_ISO.expect', 'ScenarioA_Temperature.csv')
-
-def test_ScenarioA_t_legacy(new_ui, qtbot, app_data):
-    app_data['time_format'] = 'legacy'
-    ui = new_ui(app_data)
-    load_and_convert_file('ScenarioA.lid', ui, qtbot)
-    compare('ScenarioA_T_legacy.expect', 'ScenarioA_Temperature.csv')
+# def test_scenarioA_heading_posix(new_ui, qtbot, app_data):
+#     app_data['time_format'] = 'posix'
+#     app_data['output_type'] = 'Compass Heading'
+#     ui = new_ui(app_data)
+#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
+#     compare('ScenarioA_Heading.expect', 'ScenarioA_Heading.csv')
+#     compare('ScenarioA_T_POSIX.expect', 'ScenarioA_Temperature.csv')
+#
+#
+# def test_ScenarioA_t_elapsed(new_ui, qtbot, app_data):
+#     app_data['time_format'] = 'elapsed'
+#     ui = new_ui(app_data)
+#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
+#     compare('ScenarioA_T_Elapsed.expect', 'ScenarioA_Temperature.csv')
+#
+#
+# def test_ScenarioA_t_iso(new_ui, qtbot, app_data):
+#     app_data['time_format'] = 'iso8601'
+#     ui = new_ui(app_data)
+#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
+#     compare('ScenarioA_T_ISO.expect', 'ScenarioA_Temperature.csv')
+#
+#
+# def test_ScenarioA_t_legacy(new_ui, qtbot, app_data):
+#     app_data['time_format'] = 'legacy'
+#     ui = new_ui(app_data)
+#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
+#     compare('ScenarioA_T_legacy.expect', 'ScenarioA_Temperature.csv')
