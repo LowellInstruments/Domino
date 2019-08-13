@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import Qt
 
 
 FILE_NAME = 0
@@ -19,6 +20,8 @@ class ConverterTable:
         self.tableWidget.setColumnWidth(SIZE, 100)
         self.tableWidget.setColumnWidth(START_TIME, 140)
         self.tableWidget.setColumnWidth(FOLDER, 300)
+        self.tableWidget.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        self.tableWidget.horizontalHeader().setFixedHeight(30)
 
     def delete_selected_rows(self):
         row_objects = self.tableWidget.selectionModel().selectedRows()
