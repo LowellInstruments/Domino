@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
 
 
@@ -19,7 +19,7 @@ class ConverterTable:
         self.tableWidget.setColumnWidth(STATUS, 100)
         self.tableWidget.setColumnWidth(SIZE, 100)
         self.tableWidget.setColumnWidth(START_TIME, 140)
-        self.tableWidget.setColumnWidth(FOLDER, 300)
+        self.tableWidget.setColumnWidth(FOLDER, 450)
         self.tableWidget.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.tableWidget.horizontalHeader().setFixedHeight(30)
 
@@ -52,4 +52,8 @@ class ConverterTable:
     def _table_item(self, string):
         item = QtWidgets.QTableWidgetItem(string)
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        font = QtGui.QFont()
+        state = True if string == 'converted' else False
+        font.setBold(state)
+        item.setFont(font)
         return item
