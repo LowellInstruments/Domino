@@ -1,3 +1,4 @@
+from gui._version import __version__
 from PyQt5.QtGui import (
     QIcon,
     QPixmap,
@@ -18,11 +19,13 @@ from gui.setup import SetupFrame
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
+from mat import appdata
 
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.6.0'
+        self.version = __version__
+        self.appdata_version_check()
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
@@ -47,9 +50,13 @@ class Container(Ui_MainWindow):
         self.pushButton1.clicked.connect(self.about)
         self.old_resize = self.window.resizeEvent
         self.window.resizeEvent = self.resizeEvent
-        self.start_version_check()
+        self.check_for_updates()
 
-    def start_version_check(self):
+    def appdata_version_check(self):
+        appdata.delete_if_version_not_equal('domino.dat', self.version)
+        appdata.set_userdata('domino.dat', 'version', self.version)
+
+    def check_for_updates(self):
         self.version_check = VersionCheckerThread(self.window, self.version)
         self.version_check.new_version_signal.connect(self.new_version_found)
         self.version_check.start()
