@@ -53,6 +53,8 @@ class DescriptionGenerator:
         interval = self._interval_to_string(
             self.model.value(ORIENTATION_INTERVAL))
         rate = str(self.model.value(ORIENTATION_BURST_RATE)) + ' Hz'
+        if not self.model.orient_enabled():
+            return 'Do not sample accelerometer and magnetometer.'
         output = self._active_channels()
         if self.model.value(ORIENTATION_BURST_COUNT) == 1:
             output += 'a single time every {}'.format(interval)
@@ -67,8 +69,6 @@ class DescriptionGenerator:
         return output
 
     def _active_channels(self):
-        if not self.model.orient_enabled():
-            return 'Do not sample accelerometer and magnetometer.'
         output = 'Sample '
         is_accel = self.model.value(ACCELEROMETER_ENABLED)
         is_mag = self.model.value(MAGNETOMETER_ENABLED)
