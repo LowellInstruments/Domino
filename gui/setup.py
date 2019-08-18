@@ -22,6 +22,7 @@ from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
 from gui.description_generator import DescriptionGenerator
+from gui import popups
 from mat import appdata
 from gui.gui_utils import error_message, set_enabled
 import os
@@ -317,14 +318,13 @@ class SetupFrame(Ui_Frame):
     def save_file(self):
         self.redraw()
         if self.setup_file.major_interval_bytes() > 32000:
-            message = 'The current logging parameters exceed the logger ' \
-                      'buffer size. This can usually be corrected by ' \
-                      'reducing the temperature recording interval. The ' \
-                      'configuration file was not generated. See the user ' \
-                      'guide for more details.'
-            QMessageBox.information(self.frame, 'Invalid settings', message)
+            popups.major_interval_warning(self.frame)
             return
         if not self.save_without_temperature():
+            return
+        end_time = self.dateTimeEdit_end_time.dateTime()
+        if QDateTime.currentDateTime() > end_time:
+            popups.end_time_in_past(self.frame)
             return
         application_data = appdata.get_userdata('domino.dat')
         directory = application_data.get('setup_file_directory', '')
