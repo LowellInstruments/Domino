@@ -318,20 +318,12 @@ class SetupFrame(Ui_Frame):
 
     def save_file(self):
         self.redraw()
-        if self.setup_file.major_interval_bytes() > 32000:
-            popups.major_interval_warning(self.frame)
-            return
-        if not self.save_without_temperature():
-            return
-        end_time = self.setup_file.value(END_TIME)
-        end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
-        if QDateTime.currentDateTime().toPyDateTime() > end_time:
-            popups.end_time_in_past(self.frame)
+        if not self.pre_save_check():
             return
         application_data = appdata.get_userdata('domino.dat')
         directory = application_data.get('setup_file_directory', '')
         file_name = os.path.join(directory, 'MAT.cfg')
-        path = QFileDialog.getSaveFileName(self.frame, 'Save File', file_name)
+        path = QFileDialog.getSaveFileName(self.frame, 'Save File', 'c:/test.txt')
         if not path[0]:
             return
         if not path[0].endswith('MAT.cfg'):
@@ -349,22 +341,23 @@ class SetupFrame(Ui_Frame):
                                 'File Saved',
                                 'File saved successfully')
 
-    def save_without_temperature(self):
+    def pre_save_check(self):
+        passed = True
+        if self.setup_file.major_interval_bytes() > 32000:
+            popups.major_interval_warning(self.frame)
+            passed = False
+        if not self.temp_compensated_okay_to_save():
+            passed = False
+        end_time = self.setup_file.value(END_TIME)
+        end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+        if QDateTime.currentDateTime().toPyDateTime() > end_time:
+            popups.end_time_in_past(self.frame)
+            passed = False
+        return passed
+
+    def temp_compensated_okay_to_save(self):
+        save = True
         if self.setup_file.value(MAGNETOMETER_ENABLED):
-            if self.setup_file.value(TEMPERATURE_ENABLED):
-                # both are enabled, so no problem
-                return True
-
-        text = 'The magnetometer is a temperature compensated sensor and ' \
-               'it may not perform well if temperature logging is disabled. ' \
-               'It is recommended that you enable temperature logging. Would ' \
-               'you like to continue anyway?'
-        answer = QMessageBox.warning(
-            self.frame,
-            'Temperature compensated sensor',
-            text,
-            QMessageBox.Yes | QMessageBox.No)
-        if answer == QMessageBox.Yes:
-            return True
-        return False
-
+            if not self.setup_file.value(TEMPERATURE_ENABLED):
+                save = popups.temp_compensated_sensor_warning(self.frame)
+        return save

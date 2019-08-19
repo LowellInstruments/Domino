@@ -15,6 +15,22 @@ def end_time_in_past(parent):
               'a time in the future.'
     QMessageBox.warning(parent, 'End time in past', message)
 
+
 def file_conversion_error(parent):
     message = 'One or more files could not be converted.'
     QMessageBox.warning(parent, 'Conversion Error', message)
+
+
+def temp_compensated_sensor_warning(parent):
+    text = 'The magnetometer is a temperature compensated sensor and ' \
+           'it may not perform well if temperature logging is disabled. ' \
+           'It is recommended that you enable temperature logging. Would ' \
+           'you like to continue anyway?'
+    answer = QMessageBox.warning(
+        parent,
+        'Temperature compensated sensor',
+        text,
+        QMessageBox.Yes | QMessageBox.No)
+    if answer == QMessageBox.Yes:
+        return True
+    return False
