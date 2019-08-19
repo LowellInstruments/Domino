@@ -121,18 +121,15 @@ class FileConverter(QThread):
             self._convert_file(file)
 
     def _process_overwrite(self):
-        if self.overwrite == 'once':
-            self.overwrite = None
-            return True
-        elif self.overwrite == 'yes_to_all':
-            return True
-        elif self.overwrite == 'no':
-            self.overwrite = None
-            return False
-        elif self.overwrite == 'no_to_all':
-            return False
-        else:
-            return False
+        action_map = {
+            'once': (None, True),
+            'yes_to_all': ('yes_to_all', True),
+            'no': (None, False),
+            'no_to_all': ('no_to_all', False)
+        }
+        self.overwrite, overwrite_status = action_map.get(self.overwrite,
+                                                          (None, False))
+        return overwrite_status
 
     def ask_overwrite(self, filename):
         if self.overwrite is None:
