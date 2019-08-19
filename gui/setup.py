@@ -26,6 +26,7 @@ from gui import popups
 from mat import appdata
 from gui.gui_utils import error_message, set_enabled
 import os
+from datetime import datetime
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -322,8 +323,9 @@ class SetupFrame(Ui_Frame):
             return
         if not self.save_without_temperature():
             return
-        end_time = self.dateTimeEdit_end_time.dateTime()
-        if QDateTime.currentDateTime() > end_time:
+        end_time = self.setup_file.value(END_TIME)
+        end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+        if QDateTime.currentDateTime().toPyDateTime() > end_time:
             popups.end_time_in_past(self.frame)
             return
         application_data = appdata.get_userdata('domino.dat')
