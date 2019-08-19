@@ -50,26 +50,14 @@ class DescriptionGenerator:
             return 'Do not sample temperature. '
 
     def orient_description(self):
-        interval = self._interval_to_string(
-            self.model.value(ORIENTATION_INTERVAL))
-        rate = str(self.model.value(ORIENTATION_BURST_RATE)) + ' Hz'
         if not self.model.orient_enabled():
             return 'Do not sample accelerometer and magnetometer.'
-        output = self._active_channels()
-        if self.model.value(ORIENTATION_BURST_COUNT) == 1:
-            output += 'a single time every {}'.format(interval)
-        elif self.model.is_continuous:
-            output += 'continuously at {}.'.format(rate)
-        else:
-            seconds = (self.model.value(ORIENTATION_BURST_COUNT)
-                       // self.model.value(ORIENTATION_BURST_RATE))
-            plural = 's' if seconds > 1 else ''
-            output += 'at {} for {} second{} '.format(rate, seconds, plural)
-            output += 'every {}.'.format(interval)
-        return output
+        return ('Sample '
+                + self._active_channels()
+                + self._orient_duration_rate())
 
     def _active_channels(self):
-        output = 'Sample '
+        output = ''
         is_accel = self.model.value(ACCELEROMETER_ENABLED)
         is_mag = self.model.value(MAGNETOMETER_ENABLED)
         if is_accel:
@@ -78,6 +66,22 @@ class DescriptionGenerator:
             output += 'and '
         if is_mag:
             output += 'magnetometer '
+        return output
+
+    def _orient_duration_rate(self):
+        interval = self._interval_to_string(
+            self.model.value(ORIENTATION_INTERVAL))
+        rate = str(self.model.value(ORIENTATION_BURST_RATE)) + ' Hz'
+        if self.model.value(ORIENTATION_BURST_COUNT) == 1:
+            output = 'a single time every {}'.format(interval)
+        elif self.model.is_continuous:
+            output = 'continuously at {}.'.format(rate)
+        else:
+            seconds = (self.model.value(ORIENTATION_BURST_COUNT)
+                       // self.model.value(ORIENTATION_BURST_RATE))
+            plural = 's' if seconds > 1 else ''
+            output = 'at {} for {} second{} '.format(rate, seconds, plural)
+            output += 'every {}.'.format(interval)
         return output
 
     def start_stop_description(self):
