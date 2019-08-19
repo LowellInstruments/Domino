@@ -14,3 +14,7 @@ def end_time_in_past(parent):
     message = 'The specified end time is in the past. Please select ' \
               'a time in the future.'
     QMessageBox.warning(parent, 'End time in past', message)
+
+def file_conversion_error(parent):
+    message = 'One or more files could not be converted.'
+    QMessageBox.warning(parent, 'Conversion Error', message)

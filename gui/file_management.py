@@ -77,7 +77,7 @@ class FileConverter(QThread):
                 count,
                 sum([1 for x in self.file_sizes if x != 0]))
             if not os.path.isfile(file.path):
-                file.status = 'file_not_found'
+                file.status = 'not found'
                 continue
             self._convert_file(file)
             self.file_converted_signal.emit()

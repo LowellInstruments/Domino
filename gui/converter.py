@@ -16,6 +16,7 @@ from gui.gui_utils import show_error, is_float, error_message
 from gui.data_file import DataFileContainer
 from gui.file_management import FileConverter, FileLoader
 from gui.progress_dialog import ProgressDialog
+from gui import popups
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -110,16 +111,9 @@ class ConverterFrame(Ui_Frame):
                                       error_str)
 
     def _check_for_errors_after_conversion(self):
-        success = True
-        for file in self.data_file_container:
-            if file.status == 'unconverted':
-                continue
-            if file.status != 'converted':
-                success = False
-        if not success:
-            error_str = 'One or more files could not be converted.'
-            QtWidgets.QMessageBox.warning(self.frame, 'Conversion Error',
-                                          error_str)
+        errors = ['failed', 'not found']
+        if any([file.status in errors for file in self.data_file_container]):
+            popups.file_conversion_error(self.frame)
 
     def convert_files(self):
         if any(self.errors.values()):
