@@ -2,7 +2,6 @@
 # Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 from gui.converter_ui import Ui_Frame
 from gui.options_dialog import OptionsDialog
-from gui.converter_table import ConverterTable
 from mat import appdata, tiltcurve
 import os
 import sys
@@ -12,10 +11,12 @@ from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from mat.calibration_factories import make_from_calibration_file
 from gui.gui_utils import show_error, is_float, error_message
-from gui.data_file import DataFileContainer
-from gui.file_management import FileConverter, FileLoader
+from gui.converter.model import DataFileContainer
+from gui.converter.file_converter import FileConverter
 from gui.progress_dialog import ProgressDialog
-from gui import popups
+from gui import dialogs
+from gui.converter.controller import TableController
+from gui.converter import view, file_loader
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -26,28 +27,33 @@ OUTPUT_TYPE = {'Current': 'current',
 class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
-        self.converter_table = None
+        self.table_controller = None
         self.errors = {'declination': False}
         self.data_file_container = DataFileContainer()
-        self.file_loader = FileLoader(self.data_file_container)
         self.conversion = None
         self.progress_dialog = None
+        self.file_loader = file_loader.LoaderController(
+            self.data_file_container)
 
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
-        self.converter_table = ConverterTable(self.tableWidget,
-                                              self.data_file_container)
+        self.table_view = view.ConverterTable(self.tableWidget)
+        self.table_controller = TableController(self.data_file_container,
+                                                self.table_view)
+        self.data_file_container.add_observer(self.table_view.refresh)
+
         self.populate_tilt_curves()
         self._connect_signals_to_slots()
         self.restore_last_session()
 
     def _connect_signals_to_slots(self):
         self.pushButton_add.clicked.connect(
-            self.add_row)
+            self.file_loader.add_row)
         self.pushButton_remove.clicked.connect(
-            self.converter_table.delete_selected_rows)
-        self.pushButton_clear.clicked.connect(self.converter_table.clear_table)
+            self.table_controller.delete_selected_rows)
+        self.pushButton_clear.clicked.connect(self.table_controller.clear)
+
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_convert.clicked.connect(self.convert_files)
         self.pushButton_output_options.clicked.connect(
@@ -57,11 +63,9 @@ class ConverterFrame(Ui_Frame):
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_output_type_slot)
         self.pushButton_help.clicked.connect(
-            lambda: AboutDeclination(self.frame).show())
+            lambda: dialogs.about_declination())
         self.lineEdit_declination.textEdited.connect(
             self.declination_changed_slot)
-        self.file_loader.load_complete_signal.connect(
-            self.converter_table.refresh)
         self.file_loader.load_error_signal.connect(
             self.load_error_slot)
 
@@ -83,28 +87,6 @@ class ConverterFrame(Ui_Frame):
             if answer == button:
                 self.conversion.set_overwrite(action)
 
-    def add_row(self):
-        file_paths = self._open_file()
-        if not file_paths[0]:
-            return
-        self._update_recent_directory_appdata(file_paths[0][0])
-        self.file_loader.load_files(file_paths[0])
-
-    def _open_file(self):
-        application_data = appdata.get_userdata('domino.dat')
-        last_directory = (application_data['last_directory']
-                          if 'last_directory' in application_data else '')
-        file_paths = QFileDialog.getOpenFileNames(
-            self.tableWidget.window(),
-            'Open Lowell Instruments Data File',
-            last_directory,
-            'Data Files (*.lid *.lis)')
-        return file_paths
-
-    def _update_recent_directory_appdata(self, file_path):
-        directory = os.path.dirname(file_path)
-        appdata.set_userdata('domino.dat', 'last_directory', directory)
-
     def load_error_slot(self, error_str):
         QMessageBox.warning(self.frame, 'File Load Error',
                                       error_str)
@@ -112,7 +94,7 @@ class ConverterFrame(Ui_Frame):
     def _check_for_errors_after_conversion(self):
         errors = ['failed', 'not found']
         if any([file.status in errors for file in self.data_file_container]):
-            popups.file_conversion_error(self.frame)
+            dialogs.file_conversion_error(self.frame)
 
     def convert_files(self):
         if any(self.errors.values()):
@@ -357,28 +339,3 @@ class ConverterFrame(Ui_Frame):
                     text,
                     QMessageBox.Yes | QMessageBox.Cancel)
         return answer == QMessageBox.Yes
-
-
-class AboutDeclination:
-    TEXT = 'Magnetic declination is the angle between magnetic north and ' \
-           'true north. This angle varies depending on position on the ' \
-           'Earth\'s surface.' \
-           '<br><br>In order for current and compass data to ' \
-           'be converted to geographic coordinates, you must enter the ' \
-           'declination at your deployment site, otherwise the heading and ' \
-           'velocity components will be relative to magnetic north.' \
-           '<br><br>Declination can be found using a calculator such as ' \
-           '<a href="http://ngdc.noaa.gov/geomag-web">NOAA\'s Declination ' \
-           'Calculator</a><br /><br />' \
-           'Values must be in the range [-180, 180]<br /> East is positive.'
-
-    def __init__(self, parent):
-        self.parent = parent
-
-    def show(self):
-        message = QMessageBox(self.parent)
-        message.setTextFormat(1)
-        message.setIcon(QMessageBox.Information)
-        message.setWindowTitle('About Declination')
-        message.setText(self.TEXT)
-        message.exec_()

@@ -10,9 +10,8 @@ FOLDER = 4
 
 
 class ConverterTable:
-    def __init__(self, tableWidget, data_file_container):
-        self.tableWidget = tableWidget
-        self.data_file_container = data_file_container
+    def __init__(self, table_widget):
+        self.tableWidget = table_widget
         self.tableWidget.setSelectionMode(1)
         self.tableWidget.setSelectionBehavior(1)
         self.tableWidget.setColumnWidth(FILE_NAME, 200)
@@ -23,21 +22,9 @@ class ConverterTable:
         self.tableWidget.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.tableWidget.horizontalHeader().setFixedHeight(30)
 
-    def delete_selected_rows(self):
-        row_objects = self.tableWidget.selectionModel().selectedRows()
-        for row in row_objects:
-            self.data_file_container.delete(row.row())
-        self.refresh()
-
-    def clear_table(self):
-        if len(self.data_file_container) == 0:
-            return
-        self.data_file_container.clear()
-        self.refresh()
-
-    def refresh(self):
-        self.tableWidget.setRowCount(len(self.data_file_container))
-        for i, data_file in enumerate(self.data_file_container):
+    def refresh(self, model):
+        self.tableWidget.setRowCount(len(model))
+        for i, data_file in enumerate(model):
             self.tableWidget.setItem(i, FILE_NAME,
                                      self._table_item(data_file.filename))
             self.tableWidget.setItem(i, STATUS,
