@@ -1,6 +1,15 @@
-from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
+from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, QObject
 from mat.data_converter import DataConverter, default_parameters
 import os
+
+
+class ConversionController(QObject):
+
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.file_converter = FileConverter()
+
 
 
 class FileConverter(QThread):

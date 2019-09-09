@@ -20,13 +20,7 @@ class Parent:
         cls._id = _id
 
 
-def open_lid_file(directory):
-    file_paths = QFileDialog.getOpenFileNames(
-        Parent.id(),
-        'Open Lowell Instruments Data File',
-        directory,
-        'Data Files (*.lid *.lis)')
-    return file_paths
+
 
 
 def major_interval_warning():
@@ -64,6 +58,17 @@ def temp_compensated_sensor_warning():
     return False
 
 
+# Converter window dialogs
+
+def open_lid_file(directory):
+    file_paths = QFileDialog.getOpenFileNames(
+        Parent.id(),
+        'Open Lowell Instruments Data File',
+        directory,
+        'Data Files (*.lid *.lis)')
+    return file_paths
+
+
 def about_declination():
     text = 'Magnetic declination is the angle between magnetic north and ' \
            'true north. This angle varies depending on position on the ' \
@@ -83,3 +88,37 @@ def about_declination():
     message.setWindowTitle('About Declination')
     message.setText(text)
     message.exec_()
+
+
+def ask_overwrite(filename):
+    buttons_actions = [
+        (QMessageBox.Yes, 'once'),
+        (QMessageBox.YesToAll, 'yes_to_all'),
+        (QMessageBox.No, 'no'),
+        (QMessageBox.NoToAll, 'no_to_all')
+    ]
+    button_val = 0
+    for button, _ in buttons_actions:
+        button_val = button_val | button
+    message = 'Converting {} will overwrite files in the output ' \
+              'directory. Would you like to continue?'.format(filename)
+    answer = QMessageBox.question(Parent.id(), 'Overwrite file?',
+                                  message, button_val)
+    for button, action in buttons_actions:
+        if answer == button:
+            return answer
+
+
+def prompt_mark_unconverted(self):
+    text = 'All items in the queue have been converted. Would you like ' \
+           'to mark them unconverted?'
+    answer = QMessageBox.warning(
+                self.frame,
+                'All items converted',
+                text,
+                QMessageBox.Yes | QMessageBox.Cancel)
+    if answer == QMessageBox.Yes:
+        self.data_file_container.reset_converted()
+        self.converter_table.refresh()
+        return True
+

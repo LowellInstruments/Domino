@@ -69,24 +69,6 @@ class ConverterFrame(Ui_Frame):
         self.file_loader.load_error_signal.connect(
             self.load_error_slot)
 
-    def ask_overwrite_slot(self, filename):
-        buttons_actions = [
-            (QMessageBox.Yes, 'once'),
-            (QMessageBox.YesToAll, 'yes_to_all'),
-            (QMessageBox.No, 'no'),
-            (QMessageBox.NoToAll, 'no_to_all')
-        ]
-        button_val = 0
-        for button, _ in buttons_actions:
-            button_val = button_val | button
-        message = 'Converting {} will overwrite files in the output ' \
-                  'directory. Would you like to continue?'.format(filename)
-        answer = QMessageBox.question(self.frame, 'Overwrite file?',
-                                      message, button_val)
-        for button, action in buttons_actions:
-            if answer == button:
-                self.conversion.set_overwrite(action)
-
     def load_error_slot(self, error_str):
         QMessageBox.warning(self.frame, 'File Load Error',
                                       error_str)
@@ -137,19 +119,6 @@ class ConverterFrame(Ui_Frame):
             self.ask_overwrite_slot)
         self.progress_dialog.show()
         self.conversion.start()
-
-    def prompt_mark_unconverted(self):
-        text = 'All items in the queue have been converted. Would you like ' \
-               'to mark them unconverted?'
-        answer = QMessageBox.warning(
-                    self.frame,
-                    'All items converted',
-                    text,
-                    QMessageBox.Yes | QMessageBox.Cancel)
-        if answer == QMessageBox.Yes:
-            self.data_file_container.reset_converted()
-            self.converter_table.refresh()
-            return True
 
     def confirm_quit(self):
         if len(self.data_file_container) == 0:
