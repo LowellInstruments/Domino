@@ -3,11 +3,10 @@ from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from gui.converter.table_model import DataFile
 import os
 from gui import dialogs
+from gui.gui_utils import error_message
 
 
 class LoaderController(QObject):
-    load_error_signal = pyqtSignal(str)
-
     def __init__(self, model):
         super().__init__()
         #  model is the same object as TableController
@@ -57,7 +56,9 @@ class LoaderController(QObject):
                 'a header error.'}
         if data_file.status.startswith('error'):
             error_str = error_map[data_file.status].format(data_file.filename)
-            self.load_error_signal.emit(error_str)
+            error_message(dialogs.Parent.id(),
+                          'Load error',
+                          error_str)
 
 
 class FileLoader(QThread):

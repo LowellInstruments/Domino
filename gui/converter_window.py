@@ -25,6 +25,8 @@ from gui.converter import (
     declination_view,
     declination_controller
 )
+from gui.converter.session import restore_last_session, save_session
+
 
 OUTPUT_TYPE = {'Current': 'current',
                'Compass Heading': 'compass',
@@ -63,7 +65,7 @@ class ConverterFrame(Ui_Frame):
 
         self.populate_tilt_curves()
         self._connect_signals_to_slots()
-        self.restore_last_session()
+        restore_last_session(self)
 
     def _connect_signals_to_slots(self):
         self.pushButton_add.clicked.connect(self.file_loader.add_row)
@@ -80,11 +82,7 @@ class ConverterFrame(Ui_Frame):
             self.toggle_output_file_button_group)
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_output_type_slot)
-        self.pushButton_help.clicked.connect(
-            lambda: dialogs.about_declination())
-
-        self.file_loader.load_error_signal.connect(
-            self.load_error_slot)
+        self.pushButton_help.clicked.connect(dialogs.about_declination)
 
     def load_error_slot(self, error_str):
         QMessageBox.warning(self.frame, 'File Load Error', error_str)
@@ -108,7 +106,7 @@ class ConverterFrame(Ui_Frame):
         if self.check_terminate_conditions(terminate_conditions):
             return
 
-        self.save_session()
+        save_session(self)
         self.converter = file_converter.ConverterController(
             self.data_file_container, parameters)
         self.converter.convert()
@@ -121,7 +119,7 @@ class ConverterFrame(Ui_Frame):
 
     def check_for_unconverted(self):
         status = True
-        if not self.data_file_container.unconverted():
+        if self.data_file_container.unconverted() == 0:
             status = False
             if dialogs.prompt_mark_unconverted():
                 self.data_file_container.reset_converted()
@@ -171,40 +169,6 @@ class ConverterFrame(Ui_Frame):
                 '{} - {} ballast - {} water'.format(model, ballast, salinity),
                 path)
 
-    def save_session(self):
-        appdata.set_userdata('domino.dat',
-                             'output_type',
-                             self.comboBox_output_type.currentText())
-        appdata.set_userdata('domino.dat',
-                             'meter_model',
-                             self.comboBox_tilt_tables.currentText())
-        appdata.set_userdata('domino.dat',
-                             'same_directory',
-                             self.radioButton_output_same.isChecked())
-        appdata.set_userdata('domino.dat',
-                             'output_directory',
-                             self.lineEdit_output_folder.text())
-
-        appdata.set_userdata('domino.dat', 'declination', self._declination())
-
-    def restore_last_session(self):
-        app_data = appdata.get_userdata('domino.dat')
-        output_type = app_data.get('output_type', 'Discrete Channels')
-        self.set_combobox(self.comboBox_output_type, output_type)
-
-        tilt_curve = app_data.get('meter_model', '')
-        self.set_combobox(self.comboBox_tilt_tables, tilt_curve)
-
-        same_directory = app_data.get('same_directory', True)
-        if same_directory:
-            self.radioButton_output_same.setChecked(True)
-        else:
-            self.radioButton_output_directory.setChecked(True)
-        self.lineEdit_output_folder.setText(
-            app_data.get('output_directory', ''))
-        self.dec_model.declination = str(app_data.get('declination', 0.0))
-        appdata.set_userdata('domino.dat', 'custom_cal', '')
-
     def set_combobox(self, combobox, value):
         ind = combobox.findText(value)
         ind = 0 if ind == -1 else ind
@@ -241,11 +205,7 @@ class ConverterFrame(Ui_Frame):
             parameters['output_type'] = output_type
 
         parameters['output_format'] = app_data.get('output_format', 'csv')
-        if not self.dec_model.error_state:
-            declination = self.dec_model.declination
-        else:
-            declination = 0
-        parameters['declination'] = declination
+        parameters['declination'] = self._declination()
         parameters['calibration'] = self._load_calibration_file(
             app_data.get('custom_cal', None))
         return parameters
@@ -258,6 +218,12 @@ class ConverterFrame(Ui_Frame):
         except ValueError:
             calibration = None
         return calibration
+
+    def _declination(self):
+        if self.dec_model.error_state:
+            return 0
+        else:
+            return float(self.dec_model.declination)
 
     def _get_output_directory(self):
         if self.radioButton_output_directory.isChecked():

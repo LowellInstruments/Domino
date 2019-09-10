@@ -62,6 +62,7 @@ class FileConverter(QThread):
         self.current_file_ind = 0
         self.file_sizes = [file.size if file.status == 'unconverted' else 0
                            for file in data_file_container]
+        self.unconverted_files = self.data_file_container.unconverted()
         self.total_mb = sum(self.file_sizes)
         self._is_running = False
         self.converter = None
@@ -78,32 +79,16 @@ class FileConverter(QThread):
             count += 1
             self.current_file_ind = i
             self.conversion_status_signal.emit(
-                file.filename,
-                count,
-                sum([1 for x in self.file_sizes if x != 0]))
-            if not os.path.isfile(file.path):
-                file.status = 'not found'
-                continue
+                file.filename, count, self.unconverted_files)
+            # if not os.path.isfile(file.path):
+            #     file.status = 'not found'
+            #     continue
             self._convert_file(file)
             self.file_converted_signal.emit()
         self.conversion_complete.emit()
 
-    def update_progress(self, percent_done):
-        # This is an observer function that gets notified when a data
-        # page is parsed
-        if not self._is_running:
-            self.converter.cancel_conversion()
-        cumulative_mb = sum([size for size
-                             in self.file_sizes[:self.current_file_ind]])
-        cumulative_mb += (self.data_file_container[self.current_file_ind].size
-                          * (percent_done/100))
-        overall_percent = cumulative_mb / self.total_mb
-        overall_percent *= 100
-        self.progress_signal.emit(percent_done, overall_percent)
-
     def _convert_file(self, file):
         self.current_file = file
-        repeat = False
         try:
             conversion_parameters = default_parameters()
             conversion_parameters.update(self.parameters)
@@ -117,7 +102,7 @@ class FileConverter(QThread):
         except FileExistsError as message:
             self.ask_overwrite(file.filename)
             if self.overwrite in ['once', 'yes_to_all']:
-                repeat = True
+                self._convert_file(file)
         finally:
             self.converter.source_file.close()
 
@@ -125,8 +110,18 @@ class FileConverter(QThread):
         if not self.converter._is_running:
             file.status = 'unconverted'
 
-        if repeat:
-            self._convert_file(file)
+    def update_progress(self, percent_done):
+        # This is an observer function that gets notified when a data
+        # page is parsed
+        if not self._is_running:
+            self.converter.cancel_conversion()
+        cumulative_mb = sum([size for size
+                             in self.file_sizes[:self.current_file_ind]])
+        cumulative_mb += (self.data_file_container[self.current_file_ind].size
+                          * (percent_done/100))
+        overall_percent = cumulative_mb / self.total_mb
+        overall_percent *= 100
+        self.progress_signal.emit(percent_done, overall_percent)
 
     def _process_overwrite(self):
         action_map = {

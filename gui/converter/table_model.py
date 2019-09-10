@@ -78,9 +78,9 @@ class DataFileContainer:
         self.notify_observers()
 
     def unconverted(self):
-        # returns True if there are unconverted files
-        status = [True for f in self._data_files if f.status == 'unconverted']
-        return any(status)
+        # returns the number of unconverted files
+        status = [1 for f in self._data_files if f.status == 'unconverted']
+        return sum(status)
 
     def __getitem__(self, index):
         return self._data_files[index]
