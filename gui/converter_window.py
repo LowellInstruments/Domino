@@ -94,27 +94,45 @@ class ConverterFrame(Ui_Frame):
             dialogs.file_conversion_error()
 
     def convert_files(self):
-        if self.dec_model.error_state:
-            error_message(self.frame, 'Error',
-                          'Please correct declination')
-            return
-        self.save_session()
         parameters = self._read_conversion_parameters()
-        if parameters['output_directory'] == 'error':
+        terminate_conditions = [
+            lambda: self.check_error_states(),
+            lambda: parameters['output_directory'] == 'error',
+            lambda: (parameters['calibration'] is not None
+                     and not dialogs.confirm_custom_cal()),
+            lambda: len(self.data_file_container) == 0,
+            lambda: not self.check_for_unconverted()
+        ]
+
+        if self.check_terminate_conditions(terminate_conditions):
             return
-        if parameters['calibration'] and not dialogs.confirm_custom_cal():
-            return
-        if len(self.data_file_container) == 0:
-            return
-        if not any([True for file in self.data_file_container if
-                   file.status == 'unconverted']):
-            if not dialogs.prompt_mark_unconverted():
-                return
-            else:
-                self.data_file_container.reset_converted()
+
+        self.save_session()
         self.converter = file_converter.ConverterController(
             self.data_file_container, parameters)
         self.converter.convert()
+
+    def check_terminate_conditions(self, conditions):
+        for condition in conditions:
+            if condition():
+                return True
+        return False
+
+    def check_for_unconverted(self):
+        status = True
+        if not self.data_file_container.unconverted():
+            status = False
+            if dialogs.prompt_mark_unconverted():
+                self.data_file_container.reset_converted()
+                status = True
+        return status
+
+    def check_error_states(self):
+        if self.dec_model.error_state:
+            error_message(self.frame, 'Error',
+                          'Please correct declination')
+            return True
+        return False
 
     def change_output_type_slot(self):
         state = self.comboBox_output_type.currentText() == 'Current'
