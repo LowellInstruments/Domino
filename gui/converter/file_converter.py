@@ -111,9 +111,7 @@ class FileConverter(QThread):
             self.converter.register_observer(self.update_progress)
             self.converter.overwrite = self._process_overwrite()
             self.converter.convert()
-            if self.converter._is_running:
-                # Make sure canceled conversion isn't marked converted
-                file.status = 'converted'
+            file.status = 'converted'
         except (FileNotFoundError, TypeError, ValueError):
             file.status = 'failed'
         except FileExistsError as message:
@@ -122,6 +120,11 @@ class FileConverter(QThread):
                 repeat = True
         finally:
             self.converter.source_file.close()
+
+        # check for the case that the conversion was canceled
+        if not self.converter._is_running:
+            file.status = 'unconverted'
+
         if repeat:
             self._convert_file(file)
 
