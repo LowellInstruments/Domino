@@ -70,9 +70,10 @@ class ConverterFrame(Ui_Frame):
         self.pushButton_remove.clicked.connect(
             self.table_controller.delete_selected_rows)
         self.pushButton_clear.clicked.connect(self.table_controller.clear)
+        self.pushButton_convert.clicked.connect(self.convert_files)
 
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
-        self.pushButton_convert.clicked.connect(self.convert_files)
+
         self.pushButton_output_options.clicked.connect(
             lambda: OptionsDialog(self.frame).exec_())
         self.buttonGroup.buttonToggled.connect(
@@ -219,13 +220,6 @@ class ConverterFrame(Ui_Frame):
         self.lineEdit_output_folder.setEnabled(state)
         self.pushButton_browse.setEnabled(state)
 
-    def file_warning(self, file):
-        msgbox = QMessageBox(self.frame)
-        msgbox.setIcon(QMessageBox.Warning)
-        msgbox.setText('File error while scanning ' + file)
-        msgbox.addButton(QMessageBox.Ok)
-        msgbox.exec()
-
     def _read_conversion_parameters(self):
         parameters = default_parameters()
         app_data = appdata.get_userdata('domino.dat')
@@ -247,7 +241,11 @@ class ConverterFrame(Ui_Frame):
             parameters['output_type'] = output_type
 
         parameters['output_format'] = app_data.get('output_format', 'csv')
-        parameters['declination'] = self._declination()
+        if not self.dec_model.error_state:
+            declination = self.dec_model.declination
+        else:
+            declination = 0
+        parameters['declination'] = declination
         parameters['calibration'] = self._load_calibration_file(
             app_data.get('custom_cal', None))
         return parameters
@@ -260,12 +258,6 @@ class ConverterFrame(Ui_Frame):
         except ValueError:
             calibration = None
         return calibration
-
-    def _declination(self):
-        if self.dec_model.error_state:
-            return 0
-        else:
-            return float(self.dec_model.declination)
 
     def _get_output_directory(self):
         if self.radioButton_output_directory.isChecked():
