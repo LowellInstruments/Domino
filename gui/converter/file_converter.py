@@ -1,6 +1,48 @@
-from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
+from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, QObject
 from mat.data_converter import DataConverter, default_parameters
+from gui.progress_dialog import ProgressDialog
+from gui import dialogs
 import os
+
+
+class ConverterController(QObject):
+    conversion_complete = pyqtSignal()
+
+    def __init__(self, model, parameters):
+        super().__init__()
+        self.model = model
+        self.parameters = parameters
+        self.progress_dialog = ProgressDialog(dialogs.Parent.id())
+
+    def convert(self):
+        if len(self.model) == 0:
+            return
+        self.converter = FileConverter(self.model, self.parameters)
+        self.progress_dialog.ui.pushButton.clicked.connect(
+            self.converter.cancel)
+        self.progress_dialog.ui.pushButton.clicked.connect(
+            self.progress_dialog.click_cancel)
+        self.converter.progress_signal.connect(
+            self.progress_dialog.update_progress)
+        self.converter.conversion_status_signal.connect(
+            self.progress_dialog.update_status)
+        self.converter.conversion_complete.connect(
+            self.progress_dialog.conversion_complete)
+        self.converter.conversion_complete.connect(
+            self.model.notify_observers)
+        self.converter.conversion_complete.connect(self.finished)
+        self.converter.ask_overwrite_signal.connect(self.ask_overwrite)
+        self.progress_dialog.show()
+        self.converter.start()
+
+    # slot
+    def ask_overwrite(self, filename):
+        response = dialogs.ask_overwrite(filename)
+        self.converter.set_overwrite(response)
+
+    # slot
+    def finished(self):
+        self.conversion_complete.emit()
 
 
 class FileConverter(QThread):

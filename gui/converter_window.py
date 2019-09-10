@@ -58,7 +58,6 @@ class ConverterFrame(Ui_Frame):
             self.data_file_container, self.table_view)
         self.dec_controller = declination_controller.DeclinationController(
             self.dec_model, self.dec_view)
-
         self.file_loader = file_loader.LoaderController(
             self.data_file_container)
 
@@ -111,7 +110,11 @@ class ConverterFrame(Ui_Frame):
                    file.status == 'unconverted']):
             if not dialogs.prompt_mark_unconverted():
                 return
-
+            else:
+                self.data_file_container.reset_converted()
+        self.converter = file_converter.ConverterController(
+            self.data_file_container, parameters)
+        self.converter.convert()
 
 
     def change_output_type_slot(self):

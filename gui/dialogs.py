@@ -104,20 +104,18 @@ def ask_overwrite(filename):
                                   message, button_val)
     for button, action in buttons_actions:
         if answer == button:
-            return answer
+            return action
 
 
 def prompt_mark_unconverted():
     text = 'All items in the queue have been converted. Would you like ' \
            'to mark them unconverted?'
     answer = QMessageBox.warning(
-                self.frame,
+                Parent.id(),
                 'All items converted',
                 text,
                 QMessageBox.Yes | QMessageBox.Cancel)
     if answer == QMessageBox.Yes:
-        self.data_file_container.reset_converted()
-        self.converter_table.refresh()
         return True
 
 
