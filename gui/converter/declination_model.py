@@ -2,7 +2,7 @@ from gui.gui_utils import is_float
 
 
 class Declination:
-    def __init__(self, declination='0'):
+    def __init__(self, declination=0):
         self._declination = declination
         self.error_state = False
         self.enabled = True

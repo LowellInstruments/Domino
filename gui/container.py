@@ -20,7 +20,7 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
 from mat import appdata
-from gui.dialogs import Parent
+from gui import dialogs
 
 
 RICH_TEXT = 1
@@ -33,7 +33,7 @@ class Container(Ui_MainWindow):
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
-        Parent.set_id(self.window)
+        dialogs.Parent.set_id(self.window)
         self.converter_frame = ConverterFrame()
         self.converter_frame.setupUi(self.frame_convert)
         self.setup_frame = SetupFrame()

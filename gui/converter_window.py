@@ -35,7 +35,6 @@ class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
         self.table_controller = None
-        self.errors = {'declination': False}
 
         self.conversion = None
         self.progress_dialog = None
@@ -68,8 +67,7 @@ class ConverterFrame(Ui_Frame):
         self.restore_last_session()
 
     def _connect_signals_to_slots(self):
-        self.pushButton_add.clicked.connect(
-            self.file_loader.add_row)
+        self.pushButton_add.clicked.connect(self.file_loader.add_row)
         self.pushButton_remove.clicked.connect(
             self.table_controller.delete_selected_rows)
         self.pushButton_clear.clicked.connect(self.table_controller.clear)
@@ -89,18 +87,17 @@ class ConverterFrame(Ui_Frame):
             self.load_error_slot)
 
     def load_error_slot(self, error_str):
-        QMessageBox.warning(self.frame, 'File Load Error',
-                                      error_str)
+        QMessageBox.warning(self.frame, 'File Load Error', error_str)
 
     def _check_for_errors_after_conversion(self):
         errors = ['failed', 'not found']
         if any([file.status in errors for file in self.data_file_container]):
-            dialogs.file_conversion_error(self.frame)
+            dialogs.file_conversion_error()
 
     def convert_files(self):
-        if any(self.errors.values()):
+        if self.dec_model.error_state:
             error_message(self.frame, 'Error',
-                          'Please correct highlighted error(s)')
+                          'Please correct declination')
             return
         self.save_session()
         parameters = self._read_conversion_parameters()
@@ -115,43 +112,7 @@ class ConverterFrame(Ui_Frame):
             if not dialogs.prompt_mark_unconverted():
                 return
 
-        self.conversion = FileConverter(self.data_file_container, parameters)
-        self.progress_dialog = ProgressDialog(self.tableWidget.window())
-        self.progress_dialog.ui.pushButton.clicked.connect(
-            self.conversion.cancel)
-        self.progress_dialog.ui.pushButton.clicked.connect(
-            self.progress_dialog.click_cancel)
 
-        self.conversion.progress_signal.connect(
-            self.progress_dialog.update_progress)
-        self.conversion.conversion_status_signal.connect(
-            self.progress_dialog.update_status)
-        self.conversion.conversion_complete.connect(
-            self.progress_dialog.conversion_complete)
-        self.conversion.conversion_complete.connect(
-            self.converter_table.refresh)
-        self.conversion.conversion_complete.connect(
-            self._check_for_errors_after_conversion)
-        self.conversion.file_converted_signal.connect(
-            self.converter_table.refresh)
-        self.conversion.ask_overwrite_signal.connect(
-            self.ask_overwrite_slot)
-        self.progress_dialog.show()
-        self.conversion.start()
-
-    def confirm_quit(self):
-        if len(self.data_file_container) == 0:
-            return True
-        status = [file.status for file in self.data_file_container]
-        if any([True for s in status if s == 'unconverted']):
-            reply = QMessageBox.question(
-                self.tableWidget.window(),
-                'Confirm Quit',
-                'There are unconverted files in the queue. '
-                'Are you sure you want to quit?')
-            return reply == QMessageBox.Yes
-        else:
-            return True
 
     def change_output_type_slot(self):
         state = self.comboBox_output_type.currentText() == 'Current'
@@ -159,7 +120,6 @@ class ConverterFrame(Ui_Frame):
 
         state = self.comboBox_output_type.currentText() != 'Discrete Channels'
         self.dec_model.set_enabled(state)
-
 
     def populate_tilt_curves(self):
         try:
@@ -207,22 +167,21 @@ class ConverterFrame(Ui_Frame):
         appdata.set_userdata('domino.dat', 'declination', self._declination())
 
     def restore_last_session(self):
-        application_data = appdata.get_userdata('domino.dat')
-        output_type = application_data.get('output_type', 'Discrete Channels')
+        app_data = appdata.get_userdata('domino.dat')
+        output_type = app_data.get('output_type', 'Discrete Channels')
         self.set_combobox(self.comboBox_output_type, output_type)
 
-        tilt_curve = application_data.get('meter_model', '')
+        tilt_curve = app_data.get('meter_model', '')
         self.set_combobox(self.comboBox_tilt_tables, tilt_curve)
 
-        same_directory = application_data.get('same_directory', True)
+        same_directory = app_data.get('same_directory', True)
         if same_directory:
             self.radioButton_output_same.setChecked(True)
         else:
             self.radioButton_output_directory.setChecked(True)
         self.lineEdit_output_folder.setText(
-            application_data.get('output_directory', ''))
-        self.lineEdit_declination.setText(
-            str(application_data.get('declination', 0.0)))
+            app_data.get('output_directory', ''))
+        self.dec_model.declination = str(app_data.get('declination', 0.0))
         appdata.set_userdata('domino.dat', 'custom_cal', '')
 
     def set_combobox(self, combobox, value):
@@ -249,15 +208,11 @@ class ConverterFrame(Ui_Frame):
 
     def _read_conversion_parameters(self):
         parameters = default_parameters()
-        application_data = appdata.get_userdata('domino.dat')
-
+        app_data = appdata.get_userdata('domino.dat')
         parameters['output_directory'] = self._get_output_directory()
-        parameters['time_format'] = application_data.get('time_format',
-                                                         'iso8601')
-        parameters['average'] = application_data.get('average_bursts', True)
-
-        split_size = application_data.get('split',
-                                          'Do not split output files')
+        parameters['time_format'] = app_data.get('time_format', 'iso8601')
+        parameters['average'] = app_data.get('average_bursts', True)
+        split_size = app_data.get('split', 'Do not split output files')
         if split_size != 'Do not split output files':
             parameters['split'] = int(split_size.split(' ')[0])
 
@@ -271,11 +226,10 @@ class ConverterFrame(Ui_Frame):
                 'discrete')
             parameters['output_type'] = output_type
 
-        parameters['output_format'] = application_data.get('output_format',
-                                                           'csv')
+        parameters['output_format'] = app_data.get('output_format', 'csv')
         parameters['declination'] = self._declination()
         parameters['calibration'] = self._load_calibration_file(
-            application_data.get('custom_cal', None))
+            app_data.get('custom_cal', None))
         return parameters
 
     def _load_calibration_file(self, path):
@@ -288,11 +242,10 @@ class ConverterFrame(Ui_Frame):
         return calibration
 
     def _declination(self):
-        try:
-            declination = float(self.lineEdit_declination.text())
-        except ValueError:
-            declination = 0
-        return declination
+        if self.dec_model.error_state:
+            return 0
+        else:
+            return float(self.dec_model.declination)
 
     def _get_output_directory(self):
         if self.radioButton_output_directory.isChecked():
@@ -304,3 +257,12 @@ class ConverterFrame(Ui_Frame):
                                     'You must select a valid output path')
                 return 'error'
             return directory
+
+    def confirm_quit(self):
+        if len(self.data_file_container) == 0:
+            return True
+        status = [file.status for file in self.data_file_container]
+        if any([True for s in status if s == 'unconverted']):
+            return dialogs.confirm_quit()
+        else:
+            return True

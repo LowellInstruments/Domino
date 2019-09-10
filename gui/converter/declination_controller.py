@@ -7,4 +7,3 @@ class DeclinationController:
 
     def changed(self, new_value):
         self.model.declination = new_value
-

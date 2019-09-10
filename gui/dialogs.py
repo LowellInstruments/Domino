@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 # TODO Move all the text, dialog types, etc into a yaml file
 
+
 class Parent:
     """
     The GUI must set parent id at the beginning of the session
@@ -18,9 +19,6 @@ class Parent:
     @classmethod
     def set_id(cls, _id):
         cls._id = _id
-
-
-
 
 
 def major_interval_warning():
@@ -109,7 +107,7 @@ def ask_overwrite(filename):
             return answer
 
 
-def prompt_mark_unconverted(self):
+def prompt_mark_unconverted():
     text = 'All items in the queue have been converted. Would you like ' \
            'to mark them unconverted?'
     answer = QMessageBox.warning(
@@ -122,7 +120,8 @@ def prompt_mark_unconverted(self):
         self.converter_table.refresh()
         return True
 
-def confirm_custom_cal(self):
+
+def confirm_custom_cal():
     text = 'You currently have a custom calibration file selected. ' \
            'This calibration will be applied to all the files in the ' \
            'conversion queue. Are you sure you want to apply it?'
@@ -132,3 +131,12 @@ def confirm_custom_cal(self):
                 text,
                 QMessageBox.Yes | QMessageBox.Cancel)
     return answer == QMessageBox.Yes
+
+
+def confirm_quit():
+    reply = QMessageBox.question(
+            Parent.id(),
+            'Confirm Quit',
+            'There are unconverted files in the queue. '
+            'Are you sure you want to quit?')
+    return reply
