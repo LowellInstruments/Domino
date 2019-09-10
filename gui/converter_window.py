@@ -10,14 +10,21 @@ from operator import itemgetter
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from mat.calibration_factories import make_from_calibration_file
-from gui.gui_utils import show_error, is_float, error_message
-from gui.converter.model import DataFileContainer
+from gui.gui_utils import error_message
+
 from gui.converter.file_converter import FileConverter
 from gui.progress_dialog import ProgressDialog
 from gui import dialogs
-from gui.converter.controller import TableController
-from gui.converter import view, file_loader
-
+from gui.converter import (
+    table_model,
+    table_view,
+    table_controller,
+    file_loader,
+    file_converter,
+    declination_model,
+    declination_view,
+    declination_controller
+)
 
 OUTPUT_TYPE = {'Current': 'current',
                'Compass Heading': 'compass',
@@ -29,19 +36,32 @@ class ConverterFrame(Ui_Frame):
         self.frame = None
         self.table_controller = None
         self.errors = {'declination': False}
-        self.data_file_container = DataFileContainer()
+
         self.conversion = None
         self.progress_dialog = None
-        self.file_loader = file_loader.LoaderController(
-            self.data_file_container)
+
 
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
-        self.table_view = view.ConverterTable(self.tableWidget)
-        self.table_controller = TableController(self.data_file_container,
-                                                self.table_view)
-        self.data_file_container.add_observer(self.table_view.refresh)
+
+        # Models
+        self.data_file_container = table_model.DataFileContainer()
+        self.dec_model = declination_model.Declination()
+
+        # Views
+        self.table_view = table_view.ConverterTable(self.tableWidget)
+        self.dec_view = declination_view.DeclinationView(
+            self.lineEdit_declination)
+
+        # Controllers
+        self.table_controller = table_controller.TableController(
+            self.data_file_container, self.table_view)
+        self.dec_controller = declination_controller.DeclinationController(
+            self.dec_model, self.dec_view)
+
+        self.file_loader = file_loader.LoaderController(
+            self.data_file_container)
 
         self.populate_tilt_curves()
         self._connect_signals_to_slots()
@@ -64,8 +84,7 @@ class ConverterFrame(Ui_Frame):
             self.change_output_type_slot)
         self.pushButton_help.clicked.connect(
             lambda: dialogs.about_declination())
-        self.lineEdit_declination.textEdited.connect(
-            self.declination_changed_slot)
+
         self.file_loader.load_error_signal.connect(
             self.load_error_slot)
 
@@ -87,13 +106,13 @@ class ConverterFrame(Ui_Frame):
         parameters = self._read_conversion_parameters()
         if parameters['output_directory'] == 'error':
             return
-        if parameters['calibration'] and not self.confirm_custom_cal():
+        if parameters['calibration'] and not dialogs.confirm_custom_cal():
             return
         if len(self.data_file_container) == 0:
             return
         if not any([True for file in self.data_file_container if
                    file.status == 'unconverted']):
-            if not self.prompt_mark_unconverted():
+            if not dialogs.prompt_mark_unconverted():
                 return
 
         self.conversion = FileConverter(self.data_file_container, parameters)
@@ -134,25 +153,13 @@ class ConverterFrame(Ui_Frame):
         else:
             return True
 
-    def declination_changed_slot(self):
-        declination = self.lineEdit_declination.text()
-        if is_float(declination) and -180 <= float(declination) <= 180:
-            error_state = False
-        else:
-            error_state = True
-        self.errors['declination'] = error_state
-        show_error(self.lineEdit_declination, error_state)
-
     def change_output_type_slot(self):
-        if self.comboBox_output_type.currentText() == 'Current':
-            self.comboBox_tilt_tables.setEnabled(True)
-        else:
-            self.comboBox_tilt_tables.setEnabled(False)
+        state = self.comboBox_output_type.currentText() == 'Current'
+        self.comboBox_tilt_tables.setEnabled(state)
 
-        if self.comboBox_output_type.currentText() == 'Discrete Channels':
-            self.lineEdit_declination.setEnabled(False)
-        else:
-            self.lineEdit_declination.setEnabled(True)
+        state = self.comboBox_output_type.currentText() != 'Discrete Channels'
+        self.dec_model.set_enabled(state)
+
 
     def populate_tilt_curves(self):
         try:
@@ -297,14 +304,3 @@ class ConverterFrame(Ui_Frame):
                                     'You must select a valid output path')
                 return 'error'
             return directory
-
-    def confirm_custom_cal(self):
-        text = 'You currently have a custom calibration file selected. ' \
-               'This calibration will be applied to all the files in the ' \
-               'conversion queue. Are you sure you want to apply it?'
-        answer = QMessageBox.warning(
-                    self.frame,
-                    'Confirm Custom Calibration',
-                    text,
-                    QMessageBox.Yes | QMessageBox.Cancel)
-        return answer == QMessageBox.Yes

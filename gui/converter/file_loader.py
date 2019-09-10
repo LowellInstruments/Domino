@@ -1,6 +1,6 @@
 from mat import appdata
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
-from gui.converter.model import DataFile
+from gui.converter.table_model import DataFile
 import os
 from gui import dialogs
 

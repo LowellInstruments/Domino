@@ -122,3 +122,13 @@ def prompt_mark_unconverted(self):
         self.converter_table.refresh()
         return True
 
+def confirm_custom_cal(self):
+    text = 'You currently have a custom calibration file selected. ' \
+           'This calibration will be applied to all the files in the ' \
+           'conversion queue. Are you sure you want to apply it?'
+    answer = QMessageBox.warning(
+                Parent.id(),
+                'Confirm Custom Calibration',
+                text,
+                QMessageBox.Yes | QMessageBox.Cancel)
+    return answer == QMessageBox.Yes

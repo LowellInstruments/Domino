@@ -2,6 +2,7 @@ class TableController:
     def __init__(self, model, view):
         self.model = model
         self.view = view
+        model.add_observer(self.view.refresh)
 
     # slot
     def delete_selected_rows(self):
