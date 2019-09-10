@@ -116,7 +116,6 @@ class ConverterFrame(Ui_Frame):
             self.data_file_container, parameters)
         self.converter.convert()
 
-
     def change_output_type_slot(self):
         state = self.comboBox_output_type.currentText() == 'Current'
         self.comboBox_tilt_tables.setEnabled(state)

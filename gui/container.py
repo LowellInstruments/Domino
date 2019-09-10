@@ -42,6 +42,12 @@ class Container(Ui_MainWindow):
         self.start_stop_frame.setupUi(self.frame_start_stop)
         self.window.setWindowTitle('Lowell Instruments - Domino {}'
                                    .format(self.version))
+        self.show_about_button()
+        self.old_resize = self.window.resizeEvent
+        self.window.resizeEvent = self.resizeEvent
+        self.check_for_updates()
+
+    def show_about_button(self):
         self.pushButton1 = QPushButton(self.centralwidget)
         x_pos = self.window.width() - 60
         self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
@@ -53,9 +59,6 @@ class Container(Ui_MainWindow):
         self.pushButton1.setFlat(True)
         self.pushButton1.setObjectName('about')
         self.pushButton1.clicked.connect(self.about)
-        self.old_resize = self.window.resizeEvent
-        self.window.resizeEvent = self.resizeEvent
-        self.check_for_updates()
 
     def appdata_version_check(self):
         appdata.delete_if_version_not_equal('domino.dat', self.version)
