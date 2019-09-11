@@ -6,7 +6,7 @@ class TableController:
 
     # slot
     def delete_selected_rows(self):
-        row_objects = self.view.selectionModel().selectedRows()
+        row_objects = self.view.selected_row()
         for row in row_objects:
             self.model.delete(row.row())
 

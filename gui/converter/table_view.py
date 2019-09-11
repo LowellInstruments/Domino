@@ -22,6 +22,9 @@ class ConverterTable:
         self.tableWidget.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.tableWidget.horizontalHeader().setFixedHeight(30)
 
+    def selected_row(self):
+        return self.tableWidget.selectionModel().selectedRows()
+
     def refresh(self, model):
         self.tableWidget.setRowCount(len(model))
         for i, data_file in enumerate(model):
