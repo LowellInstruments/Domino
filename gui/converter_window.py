@@ -92,10 +92,12 @@ class ConverterFrame(Ui_Frame):
         terminate_conditions = [
             lambda: self.check_error_states(),
             lambda: parameters['output_directory'] == 'error',
+            lambda: len(self.data_file_container) == 0,
             lambda: (parameters['calibration'] is not None
                      and not dialogs.confirm_custom_cal()),
-            lambda: len(self.data_file_container) == 0,
-            lambda: not self.check_for_unconverted()
+            lambda: (self.data_file_container.unconverted() == 0
+                     and not self.reset_converted()),
+            lambda: not self.remove_error_files()
         ]
 
         if self.check_terminate_conditions(terminate_conditions):
@@ -112,14 +114,20 @@ class ConverterFrame(Ui_Frame):
                 return True
         return False
 
-    def check_for_unconverted(self):
-        status = True
-        if self.data_file_container.unconverted() == 0:
-            status = False
+    def reset_converted(self):
+        if self.data_file_container.convertable() > 0:
             if dialogs.prompt_mark_unconverted():
                 self.data_file_container.reset_converted()
-                status = True
-        return status
+                return True
+        return False
+
+    def remove_error_files(self):
+        if self.data_file_container.errors():
+            answer = dialogs.ask_remove_error_files()
+            if answer:
+                self.data_file_container.remove_error_files()
+            return answer
+        return True
 
     def check_error_states(self):
         if self.dec_model.error_state:

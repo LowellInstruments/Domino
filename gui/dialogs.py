@@ -143,7 +143,9 @@ def conversion_error(model):
         'error_failed':
             'File structure error',
         'error_no_data':
-            'The file contains no data'
+            'The file contains no data',
+        'error_sensor_missing':
+            'The output type selected depends on sensors that were disabled'
     }
     UNKNOWN = 'An unknown error occurred'
     message = 'There were errors during the file conversion'
@@ -159,3 +161,14 @@ def conversion_error(model):
     msg_box.setText(message)
     msg_box.setDetailedText(detailed_text)
     msg_box.exec_()
+
+
+def ask_remove_error_files():
+    text = 'Before conversion begins, files with errors will be removed ' \
+           'from the queue. Proceed?'
+    answer = QMessageBox.warning(
+        Parent.id(),
+        'Remove files',
+        text,
+        QMessageBox.Yes | QMessageBox.Cancel)
+    return answer == QMessageBox.Yes

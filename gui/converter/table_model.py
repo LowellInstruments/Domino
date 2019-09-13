@@ -82,6 +82,16 @@ class DataFileContainer:
         status = [1 for f in self._data_files if f.status == 'unconverted']
         return sum(status)
 
+    def convertable(self):
+        convertable = 0
+        for file in self._data_files:
+            if not(file.status.startswith('error')):
+                convertable += 1
+        return convertable
+
+    def errors(self):
+        return sum([1 for f in self if f.status.startswith('error')])
+
     def __getitem__(self, index):
         return self._data_files[index]
 

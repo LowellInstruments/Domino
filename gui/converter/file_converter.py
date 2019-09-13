@@ -45,7 +45,6 @@ class ConverterController(QObject):
     def finished(self):
         if self.check_for_errors():
             dialogs.conversion_error(self.model)
-            self.model.remove_error_files()
         self.conversion_complete.emit()
 
     def check_for_errors(self):
@@ -110,8 +109,11 @@ class FileConverter(QThread):
             self.ask_overwrite(file.filename)
             if self.overwrite in ['once', 'yes_to_all']:
                 self._convert_file(file)
-        except (FileNotFoundError, TypeError, ValueError):
-            file.status = 'error_failed'
+        except (FileNotFoundError, TypeError, ValueError) as m:
+            if str(m) == 'Not all required sensors present':
+                file.status = 'error_sensor_missing'
+            else:
+                file.status = 'error_failed'
         except NoDataError:
             file.status = 'error_no_data'
         finally:
