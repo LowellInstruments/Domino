@@ -15,7 +15,7 @@ from PyQt5.QtCore import (
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop import StartStopFrame
 from gui.converter_window import ConverterFrame
-from gui.setup import SetupFrame
+from gui.setup_window import SetupFrame
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
