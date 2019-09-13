@@ -1,5 +1,6 @@
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, QObject
 from mat.data_converter import DataConverter, default_parameters
+from mat.sensor_data_file import NoDataError
 from gui.progress_dialog import ProgressDialog
 from gui import dialogs
 import os
@@ -42,7 +43,15 @@ class ConverterController(QObject):
 
     # slot
     def finished(self):
+        if self.check_for_errors():
+            dialogs.conversion_error(self.model)
+            self.model.remove_error_files()
         self.conversion_complete.emit()
+
+    def check_for_errors(self):
+        if any([file.status.startswith('error') for file in self.model]):
+            return True
+        return False
 
 
 class FileConverter(QThread):
@@ -97,12 +106,14 @@ class FileConverter(QThread):
             self.converter.overwrite = self._process_overwrite()
             self.converter.convert()
             file.status = 'converted'
-        except (FileNotFoundError, TypeError, ValueError):
-            file.status = 'failed'
         except FileExistsError as message:
             self.ask_overwrite(file.filename)
             if self.overwrite in ['once', 'yes_to_all']:
                 self._convert_file(file)
+        except (FileNotFoundError, TypeError, ValueError):
+            file.status = 'error_failed'
+        except NoDataError:
+            file.status = 'error_no_data'
         finally:
             self.converter.source_file.close()
 

@@ -59,6 +59,7 @@ class LoaderController(QObject):
             error_message(dialogs.Parent.id(),
                           'Load error',
                           error_str)
+            return True
 
 
 class FileLoader(QThread):

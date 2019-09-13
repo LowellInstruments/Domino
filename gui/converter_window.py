@@ -87,11 +87,6 @@ class ConverterFrame(Ui_Frame):
     def load_error_slot(self, error_str):
         QMessageBox.warning(self.frame, 'File Load Error', error_str)
 
-    def _check_for_errors_after_conversion(self):
-        errors = ['failed', 'not found']
-        if any([file.status in errors for file in self.data_file_container]):
-            dialogs.file_conversion_error()
-
     def convert_files(self):
         parameters = self._read_conversion_parameters()
         terminate_conditions = [

@@ -36,11 +36,6 @@ def end_time_in_past():
     QMessageBox.warning(Parent.id(), 'End time in past', message)
 
 
-def file_conversion_error():
-    message = 'One or more files could not be converted.'
-    QMessageBox.warning(Parent.id(), 'Conversion Error', message)
-
-
 def temp_compensated_sensor_warning():
     text = 'The magnetometer is a temperature compensated sensor and ' \
            'it may not perform well if temperature logging is disabled. ' \
@@ -57,7 +52,7 @@ def temp_compensated_sensor_warning():
 
 def no_channels_warning():
     text = 'At lease one channel must be enabled.'
-    QMessageBox.information(Parent.id(), 'Invalid settings', text)
+    QMessageBox.warning(Parent.id(), 'Invalid settings', text)
 
 
 # Converter window dialogs
@@ -142,3 +137,25 @@ def confirm_quit():
             'There are unconverted files in the queue. '
             'Are you sure you want to quit?')
     return reply
+
+def conversion_error(model):
+    error_map = {
+        'error_failed':
+            'File structure error',
+        'error_no_data':
+            'The file contains no data'
+    }
+    UNKNOWN = 'An unknown error occurred'
+    message = 'There were errors during the file conversion'
+    detailed_text = ''
+    for file in model:
+        if file.status.startswith('error'):
+            error = error_map.get(file.status, UNKNOWN)
+            error_str = '{}: {}\n'.format(file.filename, error)
+            detailed_text += error_str
+    msg_box = QMessageBox(Parent.id())
+    msg_box.setIcon(QMessageBox.Warning)
+    msg_box.setWindowTitle('Conversion Error')
+    msg_box.setText(message)
+    msg_box.setDetailedText(detailed_text)
+    msg_box.exec_()
