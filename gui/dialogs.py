@@ -55,6 +55,10 @@ def temp_compensated_sensor_warning():
         return True
     return False
 
+def no_channels_warning():
+    text = 'At lease one channel must be enabled.'
+    QMessageBox.information(Parent.id(), 'Invalid settings', text)
+
 
 # Converter window dialogs
 

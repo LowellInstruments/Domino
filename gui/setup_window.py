@@ -323,7 +323,7 @@ class SetupFrame(Ui_Frame):
         application_data = appdata.get_userdata('domino.dat')
         directory = application_data.get('setup_file_directory', '')
         file_name = os.path.join(directory, 'MAT.cfg')
-        path = QFileDialog.getSaveFileName(self.frame, 'Save File', 'c:/test.txt')
+        path = QFileDialog.getSaveFileName(self.frame, 'Save File', file_name)
         if not path[0]:
             return
         if not path[0].endswith('MAT.cfg'):
@@ -343,15 +343,22 @@ class SetupFrame(Ui_Frame):
 
     def pre_save_check(self):
         passed = True
+        channels = self.setup_file.value(ACCELEROMETER_ENABLED) \
+                   or self.setup_file.value(MAGNETOMETER_ENABLED) \
+                   or self.setup_file.value(TEMPERATURE_ENABLED)
+        if not channels:
+            dialogs.no_channels_warning()
+            passed = False
+
         if self.setup_file.major_interval_bytes() > 32000:
-            dialogs.major_interval_warning(self.frame)
+            dialogs.major_interval_warning()
             passed = False
         if not self.temp_compensated_okay_to_save():
             passed = False
         end_time = self.setup_file.value(END_TIME)
         end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
         if QDateTime.currentDateTime().toPyDateTime() > end_time:
-            dialogs.end_time_in_past(self.frame)
+            dialogs.end_time_in_past()
             passed = False
         return passed
 
@@ -359,5 +366,5 @@ class SetupFrame(Ui_Frame):
         save = True
         if self.setup_file.value(MAGNETOMETER_ENABLED):
             if not self.setup_file.value(TEMPERATURE_ENABLED):
-                save = dialogs.temp_compensated_sensor_warning(self.frame)
+                save = dialogs.temp_compensated_sensor_warning()
         return save
