@@ -88,6 +88,7 @@ class ConverterFrame(Ui_Frame):
         QMessageBox.warning(self.frame, 'File Load Error', error_str)
 
     def convert_files(self):
+        self.remove_error_files()
         parameters = self._read_conversion_parameters()
         terminate_conditions = [
             lambda: self.check_error_states(),
@@ -96,8 +97,7 @@ class ConverterFrame(Ui_Frame):
             lambda: (parameters['calibration'] is not None
                      and not dialogs.confirm_custom_cal()),
             lambda: (self.data_file_container.unconverted() == 0
-                     and not self.reset_converted()),
-            lambda: not self.remove_error_files()
+                     and not self.reset_converted())
         ]
 
         if self.check_terminate_conditions(terminate_conditions):
@@ -124,10 +124,10 @@ class ConverterFrame(Ui_Frame):
     def remove_error_files(self):
         if self.data_file_container.errors():
             answer = dialogs.ask_remove_error_files()
-            if answer:
+            if answer == 'Remove':
                 self.data_file_container.remove_error_files()
-            return answer
-        return True
+            elif answer == 'Retry':
+                self.data_file_container.reset_errors()
 
     def check_error_states(self):
         if self.dec_model.error_state:

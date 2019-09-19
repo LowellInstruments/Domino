@@ -77,9 +77,15 @@ class DataFileContainer:
                 file.status = 'unconverted'
         self.notify_observers()
 
+    def reset_errors(self):
+        for file in self._data_files:
+            if file.status.startswith('error'):
+                file.status = 'unconverted'
+        self.notify_observers()
+
     def unconverted(self):
         # returns the number of unconverted files
-        status = [1 for f in self._data_files if f.status == 'unconverted']
+        status = [1 for f in self._data_files if f.status != 'converted']
         return sum(status)
 
     def convertable(self):

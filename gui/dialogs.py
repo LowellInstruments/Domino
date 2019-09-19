@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QAbstractButton
 
 
 # TODO Move all the text, dialog types, etc into a yaml file
@@ -107,8 +107,8 @@ def ask_overwrite(filename):
 
 
 def prompt_mark_unconverted():
-    text = 'All items in the queue have been converted. Would you like ' \
-           'to mark them unconverted?'
+    text = 'All items in the queue have previously been converted. ' \
+           'Would you like to mark them unconverted?'
     answer = QMessageBox.warning(
                 Parent.id(),
                 'All items converted',
@@ -136,7 +136,7 @@ def confirm_quit():
             'Confirm Quit',
             'There are unconverted files in the queue. '
             'Are you sure you want to quit?')
-    return reply
+    return reply == QMessageBox.Yes
 
 def conversion_error(model):
     error_map = {
@@ -164,11 +164,19 @@ def conversion_error(model):
 
 
 def ask_remove_error_files():
-    text = 'Before conversion begins, files with errors will be removed ' \
-           'from the queue. Proceed?'
-    answer = QMessageBox.warning(
-        Parent.id(),
-        'Remove files',
-        text,
-        QMessageBox.Yes | QMessageBox.Cancel)
-    return answer == QMessageBox.Yes
+    dialog = RemoveDiscardDialog(Parent.id())
+    dialog.exec_()
+    return dialog.clickedButton().text()
+
+
+class RemoveDiscardDialog(QMessageBox):
+    def __init__(self, *args):
+        super().__init__(*args)
+        text = 'Some files in the queue previously failed to convert. ' \
+               'Would you like to remove them from the queue or ' \
+               'retry conversion?'
+        self.setIcon(QMessageBox.Warning)
+        self.setWindowTitle('Error Files')
+        self.setText(text)
+        self.addButton('Remove', QMessageBox.AcceptRole)
+        self.addButton('Retry', QMessageBox.AcceptRole)
