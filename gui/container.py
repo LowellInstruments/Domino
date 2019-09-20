@@ -1,3 +1,4 @@
+from gui._version import __version__
 from PyQt5.QtGui import (
     QIcon,
     QPixmap,
@@ -13,19 +14,26 @@ from PyQt5.QtCore import (
 )
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop import StartStopFrame
-from gui.converter import ConverterFrame
-from gui.setup import SetupFrame
+from gui.converter_window import ConverterFrame
+from gui.setup_window import SetupFrame
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
+from mat import appdata
+from gui import dialogs
+
+
+RICH_TEXT = 1
 
 
 class Container(Ui_MainWindow):
     def __init__(self, window):
-        self.version = '0.6.0.1'
+        self.version = __version__
+        self.appdata_version_check()
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
+        dialogs.Parent.set_id(self.window)
         self.converter_frame = ConverterFrame()
         self.converter_frame.setupUi(self.frame_convert)
         self.setup_frame = SetupFrame()
@@ -34,6 +42,12 @@ class Container(Ui_MainWindow):
         self.start_stop_frame.setupUi(self.frame_start_stop)
         self.window.setWindowTitle('Lowell Instruments - Domino {}'
                                    .format(self.version))
+        self.show_about_button()
+        self.old_resize = self.window.resizeEvent
+        self.window.resizeEvent = self.resizeEvent
+        self.check_for_updates()
+
+    def show_about_button(self):
         self.pushButton1 = QPushButton(self.centralwidget)
         x_pos = self.window.width() - 60
         self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
@@ -45,11 +59,12 @@ class Container(Ui_MainWindow):
         self.pushButton1.setFlat(True)
         self.pushButton1.setObjectName('about')
         self.pushButton1.clicked.connect(self.about)
-        self.old_resize = self.window.resizeEvent
-        self.window.resizeEvent = self.resizeEvent
-        self.start_version_check()
 
-    def start_version_check(self):
+    def appdata_version_check(self):
+        appdata.delete_if_version_not_equal('domino.dat', self.version)
+        appdata.set_userdata('domino.dat', 'version', self.version)
+
+    def check_for_updates(self):
         self.version_check = VersionCheckerThread(self.window, self.version)
         self.version_check.new_version_signal.connect(self.new_version_found)
         self.version_check.start()
@@ -74,7 +89,7 @@ class Container(Ui_MainWindow):
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
             'Domino' + '&trade; ' + self.version + '<br /><br />' \
-            'Copyright 2018-2019 by Lowell Instruments, some ' \
+            'Copyright 2018-2019 by Lowell Instruments LLC, some ' \
             'rights reserved. <br />' \
             'Source code for this application is available under ' \
             'the GPLv3 License at ' \
@@ -83,7 +98,7 @@ class Container(Ui_MainWindow):
             'Icons by <a href="http://icons8.com">icons8.com</a>'
 
         message = QMessageBox(self.window)
-        message.setTextFormat(1)
+        message.setTextFormat(RICH_TEXT)
         message.setIconPixmap(
             QPixmap(':/icons/icons/lowell_logo_fullsize.png'))
         message.setWindowTitle('About Domino')
@@ -96,7 +111,7 @@ class Container(Ui_MainWindow):
                '<a href="https://lowellinstruments.com/downloads/">' \
                'downloads</a> page for the latest version.'
         message = QMessageBox(self.window)
-        message.setTextFormat(1)
+        message.setTextFormat(RICH_TEXT)
         message.setIcon(QMessageBox.Information)
         message.setWindowTitle('Update Available')
         message.setText(text)

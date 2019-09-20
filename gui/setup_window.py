@@ -22,9 +22,11 @@ from PyQt5.QtCore import QDateTime
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
 from gui.description_generator import DescriptionGenerator
+from gui import dialogs
 from mat import appdata
 from gui.gui_utils import error_message, set_enabled
 import os
+from datetime import datetime
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -316,13 +318,7 @@ class SetupFrame(Ui_Frame):
 
     def save_file(self):
         self.redraw()
-        if self.setup_file.major_interval_bytes() > 32000:
-            message = 'The current logging parameters exceed the logger ' \
-                      'buffer size. This can usually be corrected by ' \
-                      'reducing the temperature recording interval. The ' \
-                      'configuration file was not generated. See the user ' \
-                      'guide for more details.'
-            QMessageBox.information(self.frame, 'Invalid settings', message)
+        if not self.pre_save_check():
             return
         application_data = appdata.get_userdata('domino.dat')
         directory = application_data.get('setup_file_directory', '')
@@ -344,3 +340,31 @@ class SetupFrame(Ui_Frame):
         QMessageBox.information(self.frame,
                                 'File Saved',
                                 'File saved successfully')
+
+    def pre_save_check(self):
+        passed = True
+        channels = self.setup_file.value(ACCELEROMETER_ENABLED) \
+                   or self.setup_file.value(MAGNETOMETER_ENABLED) \
+                   or self.setup_file.value(TEMPERATURE_ENABLED)
+        if not channels:
+            dialogs.no_channels_warning()
+            passed = False
+
+        if self.setup_file.major_interval_bytes() > 32000:
+            dialogs.major_interval_warning()
+            passed = False
+        if not self.temp_compensated_okay_to_save():
+            passed = False
+        end_time = self.setup_file.value(END_TIME)
+        end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+        if QDateTime.currentDateTime().toPyDateTime() > end_time:
+            dialogs.end_time_in_past()
+            passed = False
+        return passed
+
+    def temp_compensated_okay_to_save(self):
+        save = True
+        if self.setup_file.value(MAGNETOMETER_ENABLED):
+            if not self.setup_file.value(TEMPERATURE_ENABLED):
+                save = dialogs.temp_compensated_sensor_warning()
+        return save

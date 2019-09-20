@@ -38,29 +38,65 @@ class DataFile:
 class DataFileContainer:
     def __init__(self):
         self._data_files = []
+        self._observers = []
 
-    def add_files(self, paths):
-        for path in paths:
-            if self._check_for_duplicate(path):
-                continue
-            data_file = DataFile(path)
-            data_file.query_file()
-            self._data_files.append(data_file)
+    def add_observer(self, observer):
+        self._observers.append(observer)
 
-    def _check_for_duplicate(self, path):
-        if path in [file.path for file in self._data_files]:
+    def notify_observers(self):
+        for observer in self._observers:
+            observer(self)
+
+    def add_file(self, data_file):
+        if self._check_for_duplicate(data_file):
+            return
+        self._data_files.append(data_file)
+        self.notify_observers()
+
+    def _check_for_duplicate(self, data_file):
+        if data_file.path in [file.path for file in self._data_files]:
             return True
         return False
 
     def clear(self):
         self._data_files.clear()
+        self.notify_observers()
 
     def delete(self, index):
         del self._data_files[index]
+        self.notify_observers()
 
     def remove_error_files(self):
         self._data_files = [file for file in self._data_files if
                             not file.status.startswith('error')]
+        self.notify_observers()
+
+    def reset_converted(self):
+        for file in self._data_files:
+            if file.status == 'converted':
+                file.status = 'unconverted'
+        self.notify_observers()
+
+    def reset_errors(self):
+        for file in self._data_files:
+            if file.status.startswith('error'):
+                file.status = 'unconverted'
+        self.notify_observers()
+
+    def unconverted(self):
+        # returns the number of unconverted files
+        status = [1 for f in self._data_files if f.status != 'converted']
+        return sum(status)
+
+    def convertable(self):
+        convertable = 0
+        for file in self._data_files:
+            if not(file.status.startswith('error')):
+                convertable += 1
+        return convertable
+
+    def errors(self):
+        return sum([1 for f in self if f.status.startswith('error')])
 
     def __getitem__(self, index):
         return self._data_files[index]

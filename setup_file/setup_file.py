@@ -202,7 +202,9 @@ class SetupFile:
 class ConfigFileWriter:
     def __init__(self, path, setup_dict):
         self.path = path
-        self.setup_dict = setup_dict
+        # make a copy because we may change values in the fix function
+        self.setup_dict = dict(setup_dict)
+        self._fix_ori_tri()
 
     def write_file(self):
         directory = Path(self.path)
@@ -222,6 +224,19 @@ class ConfigFileWriter:
             value = self.setup_dict[tag]
             value = self._bool_to_string(tag, value)
             yield '{} {}\n'.format(tag, value)
+
+    def _fix_ori_tri(self):
+        """
+        If TMP is 0, set TRI to 0
+        If ACL and MGN are 0, set ORI to 0, BMR to 2, and BMN to 0
+        """
+        if not self.setup_dict[TEMPERATURE_ENABLED]:
+            self.setup_dict[TEMPERATURE_INTERVAL] = 0
+        if (not self.setup_dict[ACCELEROMETER_ENABLED]
+                and not self.setup_dict[MAGNETOMETER_ENABLED]):
+            self.setup_dict[ORIENTATION_INTERVAL] = 0
+            self.setup_dict[ORIENTATION_BURST_RATE] = 2
+            self.setup_dict[ORIENTATION_BURST_COUNT] = 0
 
     def _bool_to_string(self, tag, value):
         if tag in TYPE_BOOL:
