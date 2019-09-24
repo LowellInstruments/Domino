@@ -33,7 +33,8 @@ class ConverterTable:
             status = data_file.status
             if data_file.status.startswith('error'):
                 status = 'error'
-            self.tableWidget.setItem(i, STATUS, self._table_item(status))
+            self.tableWidget.setItem(i, STATUS,
+                                     self._table_item(status.capitalize()))
             self.tableWidget.setItem(i, FOLDER,
                                      self._table_item(data_file.folder))
             self.tableWidget.setItem(i, SIZE,
