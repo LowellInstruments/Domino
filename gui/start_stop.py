@@ -135,6 +135,7 @@ class LoggerQueryThread(QThread):
         self.queue = queue
         self.is_active = False
         self.is_connected = False
+        self.time_count = 0
 
     def run(self):
         self.is_active = True
@@ -155,6 +156,7 @@ class LoggerQueryThread(QThread):
         self.connected.emit(status)
 
     def start_query_loop(self, controller):
+        self.time_count = 0
         while controller.is_connected and self.is_active:
             next_command = self.get_next_command()
             if next_command == 'disconnect':
@@ -164,12 +166,13 @@ class LoggerQueryThread(QThread):
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
             self.msleep(10)
+            self.time_count += 0.01
 
     def get_next_command(self):
         queue = self.read_queue()
         if queue:
             return queue
-        now = datetime.now().timestamp()
+        now = self.time_count
         for i, (command, repeat, next_time) in enumerate(self.commands):
             if now > next_time:
                 self.commands[i][TIME_FIELD] = now + repeat
