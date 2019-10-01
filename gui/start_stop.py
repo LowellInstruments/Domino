@@ -1,6 +1,7 @@
 # GPLv3 License
 # Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 import logging
+import time
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
@@ -78,7 +79,7 @@ class StartStopFrame(Ui_Frame):
     def query_slot(self, query_results):
         logging.debug(query_results)
         command, data = query_results
-        if data:
+        if data is not None:
             self.commands.command_handler(query_results)
 
     def connected_slot(self, state):
@@ -135,7 +136,7 @@ class LoggerQueryThread(QThread):
         self.queue = queue
         self.is_active = False
         self.is_connected = False
-        self.time_count = 0
+        self.time = time.monotonic()
 
     def run(self):
         self.is_active = True
@@ -156,7 +157,6 @@ class LoggerQueryThread(QThread):
         self.connected.emit(status)
 
     def start_query_loop(self, controller):
-        self.time_count = 0
         while controller.is_connected and self.is_active:
             next_command = self.get_next_command()
             if next_command == 'disconnect':
@@ -166,13 +166,12 @@ class LoggerQueryThread(QThread):
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
             self.msleep(10)
-            self.time_count += 0.01
 
     def get_next_command(self):
         queue = self.read_queue()
         if queue:
             return queue
-        now = self.time_count
+        now = time.monotonic()
         for i, (command, repeat, next_time) in enumerate(self.commands):
             if now > next_time:
                 self.commands[i][TIME_FIELD] = now + repeat
