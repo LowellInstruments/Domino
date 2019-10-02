@@ -53,7 +53,10 @@ class LoaderController(QObject):
                 'contain data.',
             'error_header':
                 'The file "{}" could not be loaded because it contains '
-                'a header error.'}
+                'a header error.',
+            'error_no_data':
+                'The file "{}" could not be loaded because it does not ' \
+                'contain data.'}
         if data_file.status.startswith('error'):
             error_str = error_map[data_file.status].format(data_file.filename)
             error_message(dialogs.Parent.id(),

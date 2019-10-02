@@ -196,8 +196,8 @@ class TimeUpdate(SimpleUpdate):
         return ['GTM']
 
     def update(self, query_results):
-        command, data = query_results
         super().update(query_results)
+        command, data = query_results
         logger_time = datetime.strptime(data, '%Y/%m/%d %H:%M:%S')
         computer_time = datetime.now()
         diff = abs(logger_time - computer_time).total_seconds()

@@ -46,7 +46,7 @@ class ConverterTable:
         item = QtWidgets.QTableWidgetItem(string)
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         font = QtGui.QFont()
-        state = True if string in ['converted', 'error'] else False
+        state = True if string.lower() in ['converted', 'error'] else False
         font.setBold(state)
         item.setFont(font)
         return item
