@@ -24,5 +24,5 @@ checks:
   return-statements:
     config:
       threshold: 4
-  exclude_patterns:
-  - "designer_files/"
+exclude_patterns:
+- "designer_files/"
