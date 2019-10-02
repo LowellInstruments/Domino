@@ -30,6 +30,7 @@ class LoaderController(QObject):
         # receives data_file as a signal from the file_loader thread
         if self._check_for_errors(data_file):
             return
+        self._warn_bad_pages(data_file)
         self.model.add_file(data_file)
 
     def _open_file(self):
@@ -64,6 +65,16 @@ class LoaderController(QObject):
                           error_str)
             return True
 
+    def _warn_bad_pages(self, data_file):
+        if data_file.header_error:
+            good, ideal = data_file.header_error
+            percent = good/ideal*100
+            message = 'The file "{}" encountered corruption at {:.0f}%. ' \
+                      'The good portion of the file will be ' \
+                      'converted.'.format(data_file.filename, percent)
+            error_message(dialogs.Parent.id(),
+                          'File Corruption',
+                          message)
 
 class FileLoader(QThread):
     load_complete_signal = pyqtSignal(DataFile)

@@ -13,11 +13,12 @@ class DataFile:
         self.size_str = None
         self.start_time = None
         self.status = None
+        self.header_error = None
 
     def query_file(self):
         try:
             data_file = load_data_file(self.path)
-            data_file.page_times()
+            self.header_error = data_file.header_error
         except WrongFileTypeError:
             self.status = 'error_type'
             return
