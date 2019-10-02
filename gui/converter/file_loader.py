@@ -76,6 +76,7 @@ class LoaderController(QObject):
                           'File Corruption',
                           message)
 
+
 class FileLoader(QThread):
     load_complete_signal = pyqtSignal(DataFile)
 

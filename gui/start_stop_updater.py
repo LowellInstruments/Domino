@@ -14,7 +14,7 @@ from enum import Enum
 COMMANDS = [
     ('GTM', 1),
     ('STS', 1),
-    ('get_logger_settings', 10),
+    ('get_logger_settings', 5),
     ('get_sensor_readings', 1),
     ('logger_info', 10),
     ('FSZ', 5),
@@ -198,7 +198,10 @@ class TimeUpdate(SimpleUpdate):
     def update(self, query_results):
         super().update(query_results)
         command, data = query_results
-        logger_time = datetime.strptime(data, '%Y/%m/%d %H:%M:%S')
+        try:
+            logger_time = datetime.strptime(data, '%Y/%m/%d %H:%M:%S')
+        except ValueError:
+            return
         computer_time = datetime.now()
         diff = abs(logger_time - computer_time).total_seconds()
         if diff > 60:

@@ -1,5 +1,6 @@
 from datetime import datetime
 from mat.utils import parse_tags
+from mat.header import Header
 from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import compile, search
@@ -86,7 +87,10 @@ class SetupFile:
         self._setup_dict[tag] = value
 
     def major_interval_bytes(self):
-        return mat.sensor.major_interval_bytes(self._setup_dict)
+        header = Header('')
+        header._header = self._setup_dict
+        interval, bytes = mat.sensor.major_interval_info(header)
+        return bytes
 
     def available_intervals(self, sensor):
         """
