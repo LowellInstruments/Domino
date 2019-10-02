@@ -25,4 +25,6 @@ checks:
     config:
       threshold: 4
 exclude_patterns:
+- "**/*_ui.py"
+- "**/*_rc.py"
 - "designer_files/"
