@@ -30,7 +30,8 @@ from gui.converter.session import restore_last_session, save_session
 
 OUTPUT_TYPE = {'Current': 'current',
                'Compass Heading': 'compass',
-               'Yaw/Pitch/Roll': 'ypr'}
+               'Yaw/Pitch/Roll': 'ypr',
+               'Cable Attitude': 'cable'}
 
 
 class ConverterFrame(Ui_Frame):
