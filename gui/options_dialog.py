@@ -30,7 +30,17 @@ class OptionsDialog(QDialog):
                                'hdf5': 'radioButton_hdf5'}
         self.ui.buttonGroup_calibration.buttonToggled.connect(
             self.calibration_file_type_slot)
+        self.ui.buttonGroup_output_format.buttonToggled.connect(
+            self.output_type_changed)
         self.load_saved()
+
+    #PyQt slot
+    def output_type_changed(self, val):
+        hdf_state = self.ui.radioButton_hdf5.isChecked() is True
+        self.ui.comboBox_split.setEnabled(not hdf_state)
+        self.ui.label.setEnabled(not hdf_state)
+        for button in self.ui.buttonGroup.buttons():
+            button.setEnabled(not hdf_state)
 
     def alert_bad_cal_file(self):
         QMessageBox.warning(self, 'Calibration File Error',
