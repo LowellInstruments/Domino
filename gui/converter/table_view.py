@@ -33,7 +33,8 @@ class ConverterTable:
             status = data_file.status
             if data_file.status.startswith('error'):
                 status = 'error'
-            self.tableWidget.setItem(i, STATUS, self._table_item(status))
+            self.tableWidget.setItem(i, STATUS,
+                                     self._table_item(status.capitalize()))
             self.tableWidget.setItem(i, FOLDER,
                                      self._table_item(data_file.folder))
             self.tableWidget.setItem(i, SIZE,
@@ -45,7 +46,7 @@ class ConverterTable:
         item = QtWidgets.QTableWidgetItem(string)
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         font = QtGui.QFont()
-        state = True if string in ['converted', 'error'] else False
+        state = True if string.lower() in ['converted', 'error'] else False
         font.setBold(state)
         item.setFont(font)
         return item

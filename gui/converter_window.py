@@ -30,7 +30,8 @@ from gui.converter.session import restore_last_session, save_session
 
 OUTPUT_TYPE = {'Current': 'current',
                'Compass Heading': 'compass',
-               'Yaw/Pitch/Roll': 'ypr'}
+               'Yaw/Pitch/Roll': 'ypr',
+               'Cable Attitude': 'cable'}
 
 
 class ConverterFrame(Ui_Frame):
@@ -140,8 +141,9 @@ class ConverterFrame(Ui_Frame):
         state = self.comboBox_output_type.currentText() == 'Current'
         self.comboBox_tilt_tables.setEnabled(state)
 
-        state = self.comboBox_output_type.currentText() != 'Discrete Channels'
-        self.dec_model.set_enabled(state)
+        disabled = ['Discrete Channels', 'Cable Attitude']
+        state = self.comboBox_output_type.currentText() in disabled
+        self.dec_model.set_enabled(not state)
 
     def populate_tilt_curves(self):
         try:

@@ -100,9 +100,9 @@ class FileConverter(QThread):
         try:
             conversion_parameters = default_parameters()
             conversion_parameters.update(self.parameters)
+            conversion_parameters['overwrite'] = self._process_overwrite()
             self.converter = DataConverter(file.path, conversion_parameters)
             self.converter.register_observer(self.update_progress)
-            self.converter.overwrite = self._process_overwrite()
             self.converter.convert()
             file.status = 'converted'
         except FileExistsError as message:
@@ -143,8 +143,7 @@ class FileConverter(QThread):
             'no': (None, False),
             'no_to_all': ('no_to_all', False)
         }
-        self.overwrite, overwrite_status = action_map.get(self.overwrite,
-                                                          (None, False))
+        _, overwrite_status = action_map.get(self.overwrite, (None, False))
         return overwrite_status
 
     def ask_overwrite(self, filename):

@@ -142,8 +142,6 @@ def conversion_error(model):
     error_map = {
         'error_failed':
             'File structure error',
-        'error_no_data':
-            'The file contains no data',
         'error_sensor_missing':
             'The output type selected depends on sensors that were disabled'
     }

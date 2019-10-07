@@ -43,7 +43,7 @@
         <rect>
          <x>20</x>
          <y>180</y>
-         <width>201</width>
+         <width>301</width>
          <height>17</height>
         </rect>
        </property>
@@ -88,7 +88,7 @@
       </widget>
       <widget class="QRadioButton" name="radioButton_hdf5">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
@@ -347,8 +347,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_calibration"/>
-  <buttongroup name="buttonGroup_output_format"/>
   <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_output_format"/>
+  <buttongroup name="buttonGroup_calibration"/>
  </buttongroups>
 </ui>

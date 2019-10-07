@@ -1,6 +1,7 @@
 from pathlib import Path
 from mat.data_file_factory import load_data_file, WrongFileTypeError
 from datetime import datetime
+from mat.sensor_data_file import NoDataError
 
 
 class DataFile:
@@ -12,16 +13,20 @@ class DataFile:
         self.size_str = None
         self.start_time = None
         self.status = None
+        self.header_error = None
 
     def query_file(self):
         try:
             data_file = load_data_file(self.path)
-            data_file.page_times()
+            self.header_error = data_file.header_error
         except WrongFileTypeError:
             self.status = 'error_type'
             return
         except (KeyError, ValueError):
             self.status = 'error_header'
+            return
+        except NoDataError:
+            self.status = 'error_no_data'
             return
 
         if len(data_file.page_times()) == 0:
