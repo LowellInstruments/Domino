@@ -9,6 +9,7 @@ from mat.calibration_factories import make_from_calibration_file
 class OptionsDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('File Output Options')
@@ -29,7 +30,7 @@ class OptionsDialog(QDialog):
                                'csv': 'radioButton_csv',
                                'hdf5': 'radioButton_hdf5'}
         self.ui.buttonGroup_calibration.buttonToggled.connect(
-            self.calibration_file_type_slot)
+            self.calibration_type_changed)
         self.ui.buttonGroup_output_format.buttonToggled.connect(
             self.output_type_changed)
         self.load_saved()
@@ -64,7 +65,8 @@ class OptionsDialog(QDialog):
             self.ui.lineEdit_custom_cal.setText('')
             self.ui.radioButton_factory_cal.setChecked(True)
 
-    def calibration_file_type_slot(self):
+    # PyQt slot
+    def calibration_type_changed(self):
         state = self.ui.radioButton_custom_cal.isChecked()
         self.ui.lineEdit_custom_cal.setEnabled(state)
         self.ui.pushButton_browse.setEnabled(state)
@@ -83,10 +85,10 @@ class OptionsDialog(QDialog):
         split_size = application_data.get('split',
                                           'Do not split output files')
         self.ui.comboBox_split.setCurrentText(split_size)
-        calibration = application_data.get('custom_cal', None)
-        if calibration:
-            self.ui.radioButton_custom_cal.setChecked(True)
-            self.ui.lineEdit_custom_cal.setText(calibration)
+        # calibration = application_data.get('custom_cal', None)
+        # if calibration:
+        #     self.ui.radioButton_custom_cal.setChecked(True)
+        #     self.ui.lineEdit_custom_cal.setText(calibration)
 
     def save(self):
         button_name = self.ui.buttonGroup.checkedButton().objectName()
@@ -104,9 +106,9 @@ class OptionsDialog(QDialog):
         appdata.set_userdata('domino.dat',
                              'split',
                              self.ui.comboBox_split.currentText())
-        appdata.set_userdata('domino.dat',
-                             'custom_cal',
-                             self.ui.lineEdit_custom_cal.text())
+        # appdata.set_userdata('domino.dat',
+        #                      'custom_cal',
+        #                      self.ui.lineEdit_custom_cal.text())
         self.hide()
 
     def cancel(self):
