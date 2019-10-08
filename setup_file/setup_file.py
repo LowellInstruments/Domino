@@ -126,10 +126,6 @@ class SetupFile:
         self._confirm_bool(state)
         self.update(sensor, state)
 
-    def _set_accelmag_enabled(self, sensor, state):
-        self._confirm_bool(state)
-        self.update(sensor, state)
-
     def orient_enabled(self):
         return (self.value(ACCELEROMETER_ENABLED) or
                 self.value(MAGNETOMETER_ENABLED))
@@ -159,7 +155,7 @@ class SetupFile:
         if 0 <= value > max_burst_count:
             raise ValueError('Burst count must be > 0 and <= orient interval '
                              'multiplied by orient burst rate.')
-        if self.is_continuous and (self.value(ORIENTATION_BURST_COUNT) !=
+        if self.is_continuous and (value !=
                                    self.value(ORIENTATION_BURST_RATE)):
             raise ValueError('Invalid burst count while in continuous mode')
         self.update(ORIENTATION_BURST_COUNT, value)
