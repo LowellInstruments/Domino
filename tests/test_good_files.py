@@ -1,4 +1,4 @@
-from gui import converter
+from gui import converter_window
 from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QFrame
 from PyQt5.QtCore import Qt
@@ -22,7 +22,6 @@ PARAMETERS = [
         {'average_bursts': False}
     )
 ]
-
 
 
 app = QApplication(sys.argv)
@@ -50,31 +49,30 @@ def app_data():
 
 @pytest.fixture
 def mocked_get_userdata(mocker):
-    return mocker.patch('gui.converter.appdata.get_userdata')
+    return mocker.patch('gui.converter_window.appdata.get_userdata')
 
 
 @pytest.fixture
 def mocked_set_userdata(mocker):
-    return mocker.patch('gui.converter.appdata.set_userdata')
+    return mocker.patch('gui.converter_window.appdata.set_userdata')
 
 
 @pytest.fixture
 def new_ui(mocked_get_userdata, mocked_set_userdata):
     def _appdata(this_appdata):
         mocked_get_userdata.return_value = this_appdata
-        ui = converter.ConverterFrame()
+        ui = converter_window.ConverterFrame()
         frame = QFrame()
         ui.setupUi(frame)
         return ui
     return _appdata
 
 
-def load_and_convert_file(file, ui, bot):
-    file = full_path(file)
-    load_signal = ui.converter_table.file_loader.load_complete_signal
+def load_and_convert_file(ui, bot):
+    load_signal = ui.file_loader.file_loader.load_complete_signal
     with bot.waitSignal(load_signal, timeout=1000) as blocker:
-        ui.converter_table.file_loader.load_files([str(file)])
-    complete_signal = ui.converter_table.conversion.conversion_complete
+        ui.file_loader.add_row()
+    complete_signal = ui.converter.conversion_complete
     with bot.waitSignal(complete_signal, timeout=10000) as blocker:
         bot.mouseClick(ui.pushButton_convert, Qt.LeftButton)
 
@@ -86,10 +84,13 @@ def compare(reference_file, test_file):
 
 
 @pytest.mark.parametrize('input,types,params', PARAMETERS)
-def test_parameters(input, types, params, new_ui, qtbot, app_data):
+def test_parameters(input, types, params, new_ui, qtbot, app_data, mocker):
+    file = full_path(input)
+    file_mock = mocker.patch('gui.converter.file_loader.dialogs.open_lid_file')
+    file_mock.return_value = [[str(file)], None]
     app_data.update(params)
     ui = new_ui(app_data)
-    load_and_convert_file(input, ui, qtbot)
+    load_and_convert_file(ui, qtbot)
     for t in types:
         expect = input[:-4] + '_' + t + '.expect'
         converted = input[:-4] + '_' + t + '.csv'

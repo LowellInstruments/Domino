@@ -13,6 +13,10 @@ if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
     QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
+QtCore.QCoreApplication.setOrganizationName('LowellInstruments')
+QtCore.QCoreApplication.setOrganizationDomain('lowellinstruments.com')
+QtCore.QCoreApplication.setApplicationName('Domino')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

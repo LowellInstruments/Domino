@@ -1,6 +1,5 @@
 pycodestyle
 flake8
-mock
 pytest>=3.6
 pytest-cov
 pytest-xvfb

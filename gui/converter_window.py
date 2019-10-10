@@ -9,11 +9,9 @@ import glob
 from operator import itemgetter
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
+from PyQt5.QtCore import QSettings, QThread
 from mat.calibration_factories import make_from_calibration_file
 from gui.gui_utils import error_message
-
-from gui.converter.file_converter import FileConverter
-from gui.progress_dialog import ProgressDialog
 from gui import dialogs
 from gui.converter import (
     table_model,
@@ -26,6 +24,8 @@ from gui.converter import (
     declination_controller
 )
 from gui.converter.session import restore_last_session, save_session
+from queue import Queue
+from pathlib import Path
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -38,9 +38,11 @@ class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
         self.table_controller = None
-
+        self.file_queue = Queue()
         self.conversion = None
         self.progress_dialog = None
+        self.settings = QSettings()
+        self.thread = QThread()
 
 
     def setupUi(self, frame):
@@ -61,15 +63,15 @@ class ConverterFrame(Ui_Frame):
             self.data_file_container, self.table_view)
         self.dec_controller = declination_controller.DeclinationController(
             self.dec_model, self.dec_view)
-        self.file_loader = file_loader.LoaderController(
-            self.data_file_container)
+        self.file_loader = file_loader.FileLoader(self.file_queue)
 
         self.populate_tilt_curves()
         self._connect_signals_to_slots()
         restore_last_session(self)
 
     def _connect_signals_to_slots(self):
-        self.pushButton_add.clicked.connect(self.file_loader.add_row)
+        self.pushButton_add.clicked.connect(self.add_files)
+        self.file_loader.file_loaded_signal.connect(self.file_loaded)
         self.pushButton_remove.clicked.connect(
             self.table_controller.delete_selected_rows)
         self.pushButton_clear.clicked.connect(self.table_controller.clear)
@@ -85,9 +87,33 @@ class ConverterFrame(Ui_Frame):
             self.change_output_type_slot)
         self.pushButton_help.clicked.connect(dialogs.about_declination)
 
-    def load_error_slot(self, error_str):
-        QMessageBox.warning(self.frame, 'File Load Error', error_str)
+    """
+    Methods for loading files
+    """
+    def add_files(self):
+        directory = self.settings.value('last_directory', '', type=str)
+        file_paths = dialogs.open_lid_file(directory)
+        if not file_paths[0]:
+            return
+        directory = Path(file_paths[0][0]).parent
+        self.settings.setValue('last_directory', str(directory))
+        self.file_queue.put(file_paths[0])
+        self.file_loader.run()
 
+    # slot
+    def file_loaded(self, file):
+        if file.header_error:
+            dialogs.header_error(file.filename, file.header_error)
+        self.data_file_container.add_file(file)
+
+    def _start_thread(self):
+        self.file_loader.moveToThread(self.thread)
+        self.file_loader.finished_signal.connect(self.thread.quit)
+        self.thread.start()
+
+    """
+    Convert files
+    """
     def convert_files(self):
         self.remove_error_files()
         parameters = self._read_conversion_parameters()

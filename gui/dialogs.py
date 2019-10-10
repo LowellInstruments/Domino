@@ -59,7 +59,7 @@ def no_channels_warning():
 
 def open_lid_file(directory):
     file_paths = QFileDialog.getOpenFileNames(
-        Parent.id(),
+        None,
         'Open Lowell Instruments Data File',
         directory,
         'Data Files (*.lid *.lis)')
@@ -165,6 +165,15 @@ def ask_remove_error_files():
     dialog = RemoveDiscardDialog(Parent.id())
     dialog.exec_()
     return dialog.clickedButton().text()
+
+
+def header_error(filename, header_error):
+    good, ideal = header_error
+    percent = good / ideal * 100
+    message = 'The file "{}" encountered corruption at {:.0f}%. ' \
+              'The good portion of the file will be ' \
+              'converted.'.format(filename, percent)
+    QMessageBox.warning(None, 'File Corruption', message)
 
 
 class RemoveDiscardDialog(QMessageBox):

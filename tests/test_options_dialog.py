@@ -9,8 +9,8 @@ from pathlib import Path
 app = QApplication(sys.argv)
 
 
-def full_path(file_name):
-    return Path(__file__).parent / file_name
+def file(file_name):
+    return Path(__file__).parent / 'files' / file_name
 
 
 def appdata():
@@ -41,7 +41,7 @@ def new_ui(mocked_get_userdata):
     return _appdata
 
 
-def test_open_options_dialog(qtbot, new_ui):
+def test_open_options_dialog(new_ui):
     dialog = new_ui(appdata())
     assert dialog.ui.radioButton_csv.isChecked()
     assert not dialog.ui.radioButton_hdf5.isChecked()
@@ -84,7 +84,7 @@ def test_custom_cal_enable_disable(new_ui, qtbot):
 
 def test_open_custom_cal_file(new_ui, qtbot, mocker):
     file_mock = mocker.patch('gui.options_dialog.QFileDialog.getOpenFileName')
-    path = str(full_path('v3_calibration.txt'))
+    path = str(file('v3_calibration.txt'))
     file_mock.return_value = [path, '']
     dialog = new_ui(appdata())
     qtbot.mouseClick(dialog.ui.radioButton_custom_cal, Qt.LeftButton)
@@ -96,7 +96,7 @@ def test_open_custom_bad_cal_file(new_ui, qtbot, mocker):
     file_mock = mocker.patch('gui.options_dialog.QFileDialog.getOpenFileName')
     error_mock = mocker.patch(
         'gui.options_dialog.QMessageBox.warning')
-    path = str(full_path('v3_calibration_missing_value.txt'))
+    path = str(file('v3_calibration_missing_value.txt'))
     file_mock.return_value = [path, '']
     dialog = new_ui(appdata())
     qtbot.mouseClick(dialog.ui.radioButton_custom_cal, Qt.LeftButton)
