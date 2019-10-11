@@ -5,7 +5,6 @@ from PyQt5.QtCore import Qt
 import sys
 import pytest
 from tests.utils import compare_files
-from queue import Queue
 from mat.data_converter import default_parameters
 
 
@@ -21,11 +20,31 @@ PARAMETERS = [
     (
         'file1.lid',
         ['YawPitchRoll', 'Temperature'],
-        {'average': True, 'output_type': 'ypr'}),
+        {'average': True, 'time_format': 'iso8601', 'output_type': 'ypr'}),
     (
         'file1.lid',
-        ['Temperature'],
-        {'average': True, 'output_type': 'ypr'})
+        ['YawPitchRoll'],
+        {'average': True, 'time_format': 'legacy', 'output_type': 'ypr'}),
+    (
+        'file1.lid',
+        ['YawPitchRoll'],
+        {'average': False, 'time_format': 'iso8601', 'output_type': 'ypr'}),
+    (
+        'file1.lid',
+        ['YawPitchRoll'],
+        {'average': False, 'time_format': 'legacy', 'output_type': 'ypr'}),
+    (
+        'file1.lid',
+        ['Heading'],
+        {'average': False, 'time_format': 'iso8601', 'output_type': 'compass', 'declination': 0}),
+    (
+        'file1.lid',
+        ['Heading'],
+        {'average': False, 'time_format': 'iso8601', 'output_type': 'compass', 'declination': 45}),
+    (
+        'file1.lid',
+        ['Heading'],
+        {'average': False, 'time_format': 'iso8601', 'output_type': 'compass', 'declination': -70})
 ]
 
 
@@ -33,12 +52,16 @@ def expected_filename(filename, this_type, params):
     types_map = {
         'AccelMag': 'MA',
         'Temperature': 'T',
-        'YawPitchRoll': 'YPR'}
+        'YawPitchRoll': 'YPR',
+        'Heading': 'HEADING'}
     stem = Path(filename).stem
     type = types_map[this_type]
     time = 'iso' if params['time_format'] == 'iso8601' else 'legacy'
     avg = 'yes' if params['average'] is True else 'no'
-    return '_'.join([stem, type, time, avg]) + '.expect'
+    filename_parts = [stem, type, time, avg]
+    if params['declination'] != 0:
+        filename_parts.append(str(params['declination']))
+    return '_'.join(filename_parts) + '.expect'
 
 
 app = QApplication(sys.argv)
@@ -82,10 +105,7 @@ def test_parameters(input, types, params, new_ui, qtbot, mocker):
     with qtbot.waitSignal(complete_signal, timeout=4000) as blocker:
         # ui.convert_files()
         qtbot.mouseClick(new_ui.pushButton_convert, Qt.LeftButton)
-
-
     for t in types:
         expect = expected_filename(input, t, all_params)
         converted = '{}_{}.csv'.format(input[:-4], t)
         compare(expect, converted)
-

@@ -8,10 +8,11 @@ sensor_precision = {
     'Mx (mG)': 1,
     'My (mG)': 1,
     'Mz (mG)': 1,
-    'Yaw (degrees)': 0.1,
-    'Pitch (degrees)': 0.1,
-    'Roll (degrees)': 0.1,
-    'Temperature (C)': 0.01
+    'Yaw (degrees)': 1,
+    'Pitch (degrees)': 1,
+    'Roll (degrees)': 1,
+    'Temperature (C)': 0.01,
+    'Heading (degrees)': 0.5
 }
 
 
@@ -44,13 +45,14 @@ def _values_are_close(columns, zip_obj):
                 legacy_check = True
 
         for i in range(time_fields):
-            assert file1[i] == file2[i]
+            try:
+                assert file1[i] == file2[i]
+            except:
+                raise AssertionError(file1[i], file2[i])
 
         for i in range(time_fields, min(len(file1), len(file2))):
             try:
                 assert isclose(float(file1[i]), float(file2[i]), abs_tol=sensor_precision[columns[i]])
             except AssertionError:
-                print(file1[0])
-                print(float(file1[i]), float(file2[i]))
-                raise AssertionError
+                raise AssertionError(float(file1[i]), float(file2[i]))
         row_count += 1
