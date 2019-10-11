@@ -1,11 +1,28 @@
 from math import isclose
 
 
+sensor_precision = {
+    'Ax (g)': 0.01,
+    'Ay (g)': 0.01,
+    'Az (g)': 0.01,
+    'Mx (mG)': 1,
+    'My (mG)': 1,
+    'Mz (mG)': 1,
+    'Yaw (degrees)': 0.1,
+    'Pitch (degrees)': 0.1,
+    'Roll (degrees)': 0.1,
+    'Temperature (C)': 0.01
+}
+
+
+
 def compare_files(path1, path2):
     with open(path1, 'r') as fid1, open(path2, 'r') as fid2:
-        assert _n_lines(fid1) == _n_lines(fid2)
-        assert _n_columns(fid1) == _n_columns(fid2)
-        _values_are_close(zip(fid1, fid2))
+        assert isclose(_n_lines(fid1), _n_lines(fid2), rel_tol=0.05)
+        columns_1 = fid1.readline()
+        columns_2 = fid2.readline()
+        assert columns_1 == columns_2
+        _values_are_close(columns_1.strip().split(','), zip(fid1, fid2))
 
 
 def _n_lines(fid):
@@ -14,12 +31,7 @@ def _n_lines(fid):
     return count
 
 
-def _n_columns(fid):
-    line = fid.readline()
-    return len(line.split(','))
-
-
-def _values_are_close(zip_obj):
+def _values_are_close(columns, zip_obj):
     row_count = 0
     legacy_check = False
     time_fields = 1
@@ -27,10 +39,18 @@ def _values_are_close(zip_obj):
         file1 = rows[0].strip().split(',')
         file2 = rows[1].strip().split(',')
         if not legacy_check:
-            state = 'checked'
             if len(file1) >= 2 and ':' in file1[1]:
                 time_fields = 2
+                legacy_check = True
 
-        for i in range(time_fields, len(file1)):
-            assert isclose(float(file1[i]), float(file2[i]), abs_tol=0.01)
+        for i in range(time_fields):
+            assert file1[i] == file2[i]
+
+        for i in range(time_fields, min(len(file1), len(file2))):
+            try:
+                assert isclose(float(file1[i]), float(file2[i]), abs_tol=sensor_precision[columns[i]])
+            except AssertionError:
+                print(file1[0])
+                print(float(file1[i]), float(file2[i]))
+                raise AssertionError
         row_count += 1

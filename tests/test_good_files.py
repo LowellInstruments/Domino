@@ -5,23 +5,40 @@ from PyQt5.QtCore import Qt
 import sys
 import pytest
 from tests.utils import compare_files
+from queue import Queue
+from mat.data_converter import default_parameters
 
 
 PARAMETERS = [
     (
-        'ScenarioA.lid',
+        'file1.lid',
         ['AccelMag', 'Temperature'],
-        {'average_bursts': False}),
+        {'average': False}),
     (
-        'ScenarioA.lid',
+        'file1.lid',
         ['AccelMag', 'Temperature'],
-        {'average_bursts': False, 'time_format': 'elapsed'}),
+        {'average': False, 'time_format': 'legacy'}),
     (
-        'ScenarioB.lid',
+        'file1.lid',
+        ['YawPitchRoll', 'Temperature'],
+        {'average': True, 'output_type': 'ypr'}),
+    (
+        'file1.lid',
         ['Temperature'],
-        {'average_bursts': False}
-    )
+        {'average': True, 'output_type': 'ypr'})
 ]
+
+
+def expected_filename(filename, this_type, params):
+    types_map = {
+        'AccelMag': 'MA',
+        'Temperature': 'T',
+        'YawPitchRoll': 'YPR'}
+    stem = Path(filename).stem
+    type = types_map[this_type]
+    time = 'iso' if params['time_format'] == 'iso8601' else 'legacy'
+    avg = 'yes' if params['average'] is True else 'no'
+    return '_'.join([stem, type, time, avg]) + '.expect'
 
 
 app = QApplication(sys.argv)
@@ -32,49 +49,14 @@ def full_path(file_name):
 
 
 @pytest.fixture
-def app_data():
-    return {'time_format': 'iso8601',
-            'average_bursts': True,
-            'output_format': 'csv',
-            'split': 'Do not split output files',
-            'output_type': 'Discrete Channels',
-            'meter_model': 'TCM-1 - 0 ballast - Fresh water',
-            'same_directory': True,
-            'output_directory': '',
-            'declination': 0.0,
-            'last_directory': '',
-            'custom_cal': '',
-            'setup_file_directory': ''}
-
-
-@pytest.fixture
-def mocked_get_userdata(mocker):
-    return mocker.patch('gui.converter_window.appdata.get_userdata')
-
-
-@pytest.fixture
-def mocked_set_userdata(mocker):
-    return mocker.patch('gui.converter_window.appdata.set_userdata')
-
-
-@pytest.fixture
-def new_ui(mocked_get_userdata, mocked_set_userdata):
-    def _appdata(this_appdata):
-        mocked_get_userdata.return_value = this_appdata
-        ui = converter_window.ConverterFrame()
-        frame = QFrame()
-        ui.setupUi(frame)
-        return ui
-    return _appdata
-
-
-def load_and_convert_file(ui, bot):
-    load_signal = ui.file_loader.file_loader.load_complete_signal
-    with bot.waitSignal(load_signal, timeout=1000) as blocker:
-        ui.file_loader.add_row()
-    complete_signal = ui.converter.conversion_complete
-    with bot.waitSignal(complete_signal, timeout=10000) as blocker:
-        bot.mouseClick(ui.pushButton_convert, Qt.LeftButton)
+def new_ui(mocker):
+    overwrite_mock = mocker.patch(
+        'gui.converter.file_converter.FileConverter._process_overwrite')
+    overwrite_mock.return_value = ('yes_to_all', True)
+    ui = converter_window.ConverterFrame()
+    frame = QFrame()
+    ui.setupUi(frame)
+    return ui
 
 
 def compare(reference_file, test_file):
@@ -84,43 +66,26 @@ def compare(reference_file, test_file):
 
 
 @pytest.mark.parametrize('input,types,params', PARAMETERS)
-def test_parameters(input, types, params, new_ui, qtbot, app_data, mocker):
+def test_parameters(input, types, params, new_ui, qtbot, mocker):
     file = full_path(input)
-    file_mock = mocker.patch('gui.converter.file_loader.dialogs.open_lid_file')
+    all_params = default_parameters()
+    all_params.update(params)
+
+    file_mock = mocker.patch('gui.converter_window.dialogs.open_lid_file')
     file_mock.return_value = [[str(file)], None]
-    app_data.update(params)
-    ui = new_ui(app_data)
-    load_and_convert_file(ui, qtbot)
+
+    new_ui._read_conversion_parameters = lambda: all_params
+
+    with qtbot.waitSignal(new_ui.file_loader.finished_signal, timeout=1000):
+        qtbot.mouseClick(new_ui.pushButton_add, Qt.LeftButton)
+    complete_signal = new_ui.converter.conversion_complete
+    with qtbot.waitSignal(complete_signal, timeout=4000) as blocker:
+        # ui.convert_files()
+        qtbot.mouseClick(new_ui.pushButton_convert, Qt.LeftButton)
+
+
     for t in types:
-        expect = input[:-4] + '_' + t + '.expect'
-        converted = input[:-4] + '_' + t + '.csv'
+        expect = expected_filename(input, t, all_params)
+        converted = '{}_{}.csv'.format(input[:-4], t)
         compare(expect, converted)
 
-# def test_scenarioA_heading_posix(new_ui, qtbot, app_data):
-#     app_data['time_format'] = 'posix'
-#     app_data['output_type'] = 'Compass Heading'
-#     ui = new_ui(app_data)
-#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
-#     compare('ScenarioA_Heading.expect', 'ScenarioA_Heading.csv')
-#     compare('ScenarioA_T_POSIX.expect', 'ScenarioA_Temperature.csv')
-#
-#
-# def test_ScenarioA_t_elapsed(new_ui, qtbot, app_data):
-#     app_data['time_format'] = 'elapsed'
-#     ui = new_ui(app_data)
-#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
-#     compare('ScenarioA_T_Elapsed.expect', 'ScenarioA_Temperature.csv')
-#
-#
-# def test_ScenarioA_t_iso(new_ui, qtbot, app_data):
-#     app_data['time_format'] = 'iso8601'
-#     ui = new_ui(app_data)
-#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
-#     compare('ScenarioA_T_ISO.expect', 'ScenarioA_Temperature.csv')
-#
-#
-# def test_ScenarioA_t_legacy(new_ui, qtbot, app_data):
-#     app_data['time_format'] = 'legacy'
-#     ui = new_ui(app_data)
-#     load_and_convert_file('ScenarioA.lid', ui, qtbot)
-#     compare('ScenarioA_T_legacy.expect', 'ScenarioA_Temperature.csv')

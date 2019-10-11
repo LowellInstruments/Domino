@@ -9,15 +9,15 @@ import os
 class ConverterController(QObject):
     conversion_complete = pyqtSignal()
 
-    def __init__(self, model, parameters):
+    def __init__(self, model=None, parameters=None):
         super().__init__()
-        self.model = model
+        self.model = model or list()
         self.parameters = parameters
-        self.progress_dialog = ProgressDialog(dialogs.Parent.id())
 
     def convert(self):
         if len(self.model) == 0:
             return
+        self.progress_dialog = ProgressDialog(None)
         self.converter = FileConverter(self.model, self.parameters)
         self.progress_dialog.ui.pushButton.clicked.connect(
             self.converter.cancel)

@@ -43,7 +43,7 @@ class ConverterFrame(Ui_Frame):
         self.progress_dialog = None
         self.settings = QSettings()
         self.thread = QThread()
-
+        self.converter = file_converter.ConverterController()
 
     def setupUi(self, frame):
         super().setupUi(frame)
@@ -131,8 +131,8 @@ class ConverterFrame(Ui_Frame):
             return
 
         save_session(self)
-        self.converter = file_converter.ConverterController(
-            self.data_file_container, parameters)
+        self.converter.model = self.data_file_container
+        self.converter.parameters = parameters
         self.converter.convert()
 
     def check_terminate_conditions(self, conditions):
@@ -237,8 +237,6 @@ class ConverterFrame(Ui_Frame):
 
         parameters['output_format'] = app_data.get('output_format', 'csv')
         parameters['declination'] = self._declination()
-        parameters['calibration'] = self._load_calibration_file(
-            app_data.get('custom_cal', None))
         return parameters
 
     def _load_calibration_file(self, path):
