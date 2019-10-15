@@ -1,4 +1,14 @@
 from PyQt5.QtWidgets import QMessageBox
+from pathlib import Path
+import sys
+
+
+def application_directory():
+    try:
+        directory = Path(sys._MEIPASS)
+    except AttributeError:
+        directory = Path(__file__).parent
+    return directory
 
 
 def show_error(widgets, state):
@@ -26,7 +36,3 @@ def is_float(string):
         return True
     except ValueError:
         return False
-
-
-def error_message(parent, title, message):
-    QMessageBox.warning(parent, title, message, QMessageBox.Ok)

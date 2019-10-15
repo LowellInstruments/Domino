@@ -1,26 +1,18 @@
-import os
-import sys
 from mat.tiltcurve import TiltCurve
-import PyQt5.QtCore as qtc
-from pathlib import Path
-from operator import itemgetter
+from PyQt5 import QtCore
 
 
-class TiltCurveModel(qtc.QAbstractListModel):
-    load_error = qtc.pyqtSignal(str)
+class TiltCurveModel(QtCore.QAbstractListModel):
+    load_error = QtCore.pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, directory):
         super().__init__()
         self.tilt_tables = []
-        try:
-            directory = Path(sys._MEIPASS)
-        except AttributeError:
-            directory = Path(__file__).parent
-        self.directory = directory / 'Calibration Tables'
+        self.directory = directory
         self.load_tilt_curves()
 
     def load_tilt_curves(self):
-        tilt_table_paths = list(self.directory.glob('*.cal'))
+        tilt_table_paths = self.directory.glob('*.cal')
         for path in tilt_table_paths:
             try:
                 this_table = TiltCurve(path)
@@ -29,18 +21,19 @@ class TiltCurveModel(qtc.QAbstractListModel):
                 self.load_error.emit('Error loading ' + str(path))
         self.tilt_tables.sort()
 
-
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.tilt_tables)
 
     def data(self, index, role=None):
-        if role == qtc.Qt.DisplayRole:
-            this_table = self.tilt_tables[index.row()]
+        this_table = self.tilt_tables[index.row()]
+        if role == QtCore.Qt.DisplayRole:
             return '{} - {} ballast - {} water'.format(
                 this_table.model, this_table.ballast, this_table.salinity)
+        elif role == QtCore.Qt.UserRole:
+            return this_table
 
     def add(self, thing):
         pos = len(self.tilt_tables)
-        self.beginInsertRows(qtc.QModelIndex(), pos - 1, pos - 1)
+        self.beginInsertRows(QtCore.QModelIndex(), pos - 1, pos - 1)
         self.tilt_tables.append(thing)
         self.endInsertRows()

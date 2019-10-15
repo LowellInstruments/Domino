@@ -4,14 +4,11 @@ from gui.converter_ui import Ui_Frame
 from gui.options_dialog import OptionsDialog
 from mat import appdata, tiltcurve
 import os
-import sys
-import glob
-from operator import itemgetter
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from PyQt5.QtCore import QSettings, QThread
 from mat.calibration_factories import make_from_calibration_file
-from gui.gui_utils import error_message
+from gui.gui_utils import application_directory
 from gui import dialogs
 from gui.converter import (
     table_model,
@@ -26,6 +23,7 @@ from gui.converter import (
 from gui.converter.session import restore_last_session, save_session
 from queue import Queue
 from pathlib import Path
+from gui.tilt_curve_model import TiltCurveModel
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -65,7 +63,9 @@ class ConverterFrame(Ui_Frame):
             self.dec_model, self.dec_view)
         self.file_loader = file_loader.FileLoader(self.file_queue)
 
-        self.populate_tilt_curves()
+        self.tilt_model = TiltCurveModel(
+            application_directory() / 'Calibration Tables')
+        self.comboBox_tilt_tables.setModel(self.tilt_model)
         self._connect_signals_to_slots()
         restore_last_session(self)
 
@@ -158,8 +158,7 @@ class ConverterFrame(Ui_Frame):
 
     def check_error_states(self):
         if self.dec_model.error_state:
-            error_message(self.frame, 'Error',
-                          'Please correct declination')
+            dialogs.error_message('Error', 'Please correct declination')
             return True
         return False
 
@@ -170,35 +169,6 @@ class ConverterFrame(Ui_Frame):
         disabled = ['Discrete Channels', 'Cable Attitude']
         state = self.comboBox_output_type.currentText() in disabled
         self.dec_model.set_enabled(not state)
-
-    def populate_tilt_curves(self):
-        try:
-            directory = sys._MEIPASS
-        except AttributeError:
-            directory = os.path.dirname(__file__)
-        directory = os.path.abspath(
-            os.path.join(directory, 'Calibration Tables', '*.cal'))
-        self.tilt_tables = glob.glob(directory)
-        tilt_tables = []
-        for table in self.tilt_tables:
-            try:
-                tilt_curve = tiltcurve.TiltCurve(table)
-                tilt_curve.parse()
-                tilt_tables.append([tilt_curve.model,
-                                    tilt_curve.ballast,
-                                    tilt_curve.salinity,
-                                    tilt_curve.path])
-            except (FileNotFoundError, UnicodeDecodeError, ValueError):
-                QMessageBox.warning(self.frame,
-                                              'Error',
-                                              'Error loading ' + table)
-
-        tilt_tables.sort(key=itemgetter(1))
-        tilt_tables.sort(key=itemgetter(0))
-        for model, ballast, salinity, path in tilt_tables:
-            self.comboBox_tilt_tables.addItem(
-                '{} - {} ballast - {} water'.format(model, ballast, salinity),
-                path)
 
     def set_combobox(self, combobox, value):
         ind = combobox.findText(value)
@@ -227,8 +197,8 @@ class ConverterFrame(Ui_Frame):
 
         if self.comboBox_output_type.currentText() == 'Current':
             parameters['output_type'] = 'current'
-            parameters['tilt_curve'] = tiltcurve.TiltCurve(
-                self.comboBox_tilt_tables.currentData())
+            parameters['tilt_curve'] = \
+                self.comboBox_tilt_tables.currentData()
         else:
             output_type = OUTPUT_TYPE.get(
                 self.comboBox_output_type.currentText(),

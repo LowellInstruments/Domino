@@ -3,7 +3,7 @@ from mat.data_converter import DataConverter, default_parameters
 from mat.sensor_data_file import NoDataError
 from gui.progress_dialog import ProgressDialog
 from gui import dialogs
-import os
+import gui
 
 
 class ConverterController(QObject):
@@ -17,7 +17,7 @@ class ConverterController(QObject):
     def convert(self):
         if len(self.model) == 0:
             return
-        self.progress_dialog = ProgressDialog(None)
+        self.progress_dialog = ProgressDialog(gui.mw)
         self.converter = FileConverter(self.model, self.parameters)
         self.progress_dialog.ui.pushButton.clicked.connect(
             self.converter.cancel)

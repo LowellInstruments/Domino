@@ -24,7 +24,7 @@ import logging
 from gui.description_generator import DescriptionGenerator
 from gui import dialogs
 from mat import appdata
-from gui.gui_utils import error_message, set_enabled
+from gui.gui_utils import set_enabled
 import os
 from datetime import datetime
 
@@ -248,14 +248,12 @@ class SetupFrame(Ui_Frame):
         string = self.lineEdit_file_name.text()
         try:
             self.setup_file.set_filename(string + '.lid')
-            # show_error(self.lineEdit_file_name, False)
         except ValueError:
             message = 'There were invalid characters in the file name. ' \
                       'Reverting value.'
-            error_message(self.frame, 'File name error', message)
+            dialogs.error_message('File name error', message)
         finally:
             self.redraw()
-            # show_error(self.lineEdit_file_name, True)
 
     def burst_rate_changed(self):
         index = self.comboBox_orient_burst_rate.currentIndex()
@@ -282,7 +280,7 @@ class SetupFrame(Ui_Frame):
             self.setup_file.set_time(value, date_time_string)
         except ValueError:
             message = 'Start time must be before end time. Reverting value.'
-            error_message(self.frame, 'Start/Stop Time Error', message)
+            dialogs.error_message('Start/Stop Time Error', message)
         finally:
             self.redraw()
 
@@ -307,7 +305,7 @@ class SetupFrame(Ui_Frame):
         except ValueError:
             message = 'The burst duration must be less than or equal to ' \
                       'the orientation interval. Reverting value.'
-            error_message(self.frame, 'Invalid duration', message)
+            dialogs.error_message('Invalid duration', message)
         finally:
             self.redraw()
 
@@ -329,7 +327,7 @@ class SetupFrame(Ui_Frame):
         if not path[0].endswith('MAT.cfg'):
             message = 'Filename must be MAT.cfg. File not saved. ' \
                       'Please save again.'
-            error_message(self.frame, 'File name error', message)
+            dialogs.error_message('File name error', message)
             self.save_file()
             return
         directory = os.path.dirname(path[0])

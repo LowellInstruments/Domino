@@ -1,24 +1,8 @@
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QAbstractButton
+import gui
 
 
 # TODO Move all the text, dialog types, etc into a yaml file
-
-
-class Parent:
-    """
-    The GUI must set parent id at the beginning of the session
-    """
-    _id = None
-
-    @classmethod
-    def id(cls):
-        if cls._id is None:
-            raise NotImplementedError
-        return cls._id
-
-    @classmethod
-    def set_id(cls, _id):
-        cls._id = _id
 
 
 def major_interval_warning():
@@ -27,13 +11,13 @@ def major_interval_warning():
               'reducing the temperature recording interval. The ' \
               'configuration file was not generated. See the user ' \
               'guide for more details.'
-    QMessageBox.information(Parent.id(), 'Invalid settings', message)
+    QMessageBox.information(gui.mw, 'Invalid settings', message)
 
 
 def end_time_in_past():
     message = 'The specified end time is in the past. Please select ' \
               'a time in the future.'
-    QMessageBox.warning(Parent.id(), 'End time in past', message)
+    QMessageBox.warning(gui.mw, 'End time in past', message)
 
 
 def temp_compensated_sensor_warning():
@@ -42,7 +26,7 @@ def temp_compensated_sensor_warning():
            'It is recommended that you enable temperature logging. Would ' \
            'you like to continue anyway?'
     answer = QMessageBox.warning(
-        Parent.id(),
+        gui.mw,
         'Temperature compensated sensor',
         text,
         QMessageBox.Yes | QMessageBox.No)
@@ -52,14 +36,14 @@ def temp_compensated_sensor_warning():
 
 def no_channels_warning():
     text = 'At lease one channel must be enabled.'
-    QMessageBox.warning(Parent.id(), 'Invalid settings', text)
+    QMessageBox.warning(gui.mw, 'Invalid settings', text)
 
 
 # Converter window dialogs
 
 def open_lid_file(directory):
     file_paths = QFileDialog.getOpenFileNames(
-        None,
+        gui.mw,
         'Open Lowell Instruments Data File',
         directory,
         'Data Files (*.lid *.lis)')
@@ -79,7 +63,7 @@ def about_declination():
            'Calculator</a><br /><br />' \
            'Values must be in the range [-180, 180]<br /> East is positive.'
 
-    message = QMessageBox(Parent.id())
+    message = QMessageBox(gui.mw)
     message.setTextFormat(1)
     message.setIcon(QMessageBox.Information)
     message.setWindowTitle('About Declination')
@@ -99,7 +83,7 @@ def ask_overwrite(filename):
         button_val = button_val | button
     message = 'Converting {} will overwrite files in the output ' \
               'directory. Would you like to continue?'.format(filename)
-    answer = QMessageBox.question(Parent.id(), 'Overwrite file?',
+    answer = QMessageBox.question(gui.mw, 'Overwrite file?',
                                   message, button_val)
     for button, action in buttons_actions:
         if answer == button:
@@ -110,7 +94,7 @@ def prompt_mark_unconverted():
     text = 'All items in the queue have previously been converted. ' \
            'Would you like to mark them unconverted?'
     answer = QMessageBox.warning(
-                Parent.id(),
+                gui.mw,
                 'All items converted',
                 text,
                 QMessageBox.Yes | QMessageBox.Cancel)
@@ -123,7 +107,7 @@ def confirm_custom_cal():
            'This calibration will be applied to all the files in the ' \
            'conversion queue. Are you sure you want to apply it?'
     answer = QMessageBox.warning(
-                Parent.id(),
+                gui.mw,
                 'Confirm Custom Calibration',
                 text,
                 QMessageBox.Yes | QMessageBox.Cancel)
@@ -132,7 +116,7 @@ def confirm_custom_cal():
 
 def confirm_quit():
     reply = QMessageBox.question(
-            Parent.id(),
+            gui.mw,
             'Confirm Quit',
             'There are unconverted files in the queue. '
             'Are you sure you want to quit?')
@@ -153,7 +137,7 @@ def conversion_error(model):
             error = error_map.get(file.status, UNKNOWN)
             error_str = '{}: {}\n'.format(file.filename, error)
             detailed_text += error_str
-    msg_box = QMessageBox(Parent.id())
+    msg_box = QMessageBox(gui.mw)
     msg_box.setIcon(QMessageBox.Warning)
     msg_box.setWindowTitle('Conversion Error')
     msg_box.setText(message)
@@ -162,7 +146,7 @@ def conversion_error(model):
 
 
 def ask_remove_error_files():
-    dialog = RemoveDiscardDialog(Parent.id())
+    dialog = RemoveDiscardDialog(gui.mw)
     dialog.exec_()
     return dialog.clickedButton().text()
 
@@ -173,7 +157,7 @@ def header_error(filename, header_error):
     message = 'The file "{}" encountered corruption at {:.0f}%. ' \
               'The good portion of the file will be ' \
               'converted.'.format(filename, percent)
-    QMessageBox.warning(None, 'File Corruption', message)
+    QMessageBox.warning(gui.mw, 'File Corruption', message)
 
 
 class RemoveDiscardDialog(QMessageBox):
@@ -187,3 +171,7 @@ class RemoveDiscardDialog(QMessageBox):
         self.setText(text)
         self.addButton('Remove', QMessageBox.AcceptRole)
         self.addButton('Retry', QMessageBox.AcceptRole)
+
+
+def error_message(title, message):
+    QMessageBox.warning(gui.mw, title, message, QMessageBox.Ok)

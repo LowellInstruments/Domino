@@ -93,12 +93,9 @@ def test_parameters(input, types, params, new_ui, qtbot, mocker):
     file = full_path(input)
     all_params = default_parameters()
     all_params.update(params)
-
     file_mock = mocker.patch('gui.converter_window.dialogs.open_lid_file')
     file_mock.return_value = [[str(file)], None]
-
     new_ui._read_conversion_parameters = lambda: all_params
-
     with qtbot.waitSignal(new_ui.file_loader.finished_signal, timeout=1000):
         qtbot.mouseClick(new_ui.pushButton_add, Qt.LeftButton)
     complete_signal = new_ui.converter.conversion_complete
