@@ -335,9 +335,12 @@ class SetupFrame(Ui_Frame):
         appdata.set_userdata('domino.dat', 'setup_file',
                              self.setup_file._setup_dict)
         self.setup_file.write_file(path[0])
+        message = 'Setup file saved but your device is NOT RECORDING ' \
+                  'yet.  To start recording, switch to the "Start/Stop ' \
+                  'Device" tab and click the "Start Recording" button.'
         QMessageBox.information(self.frame,
                                 'File Saved',
-                                'File saved successfully')
+                                message)
 
     def pre_save_check(self):
         passed = True
