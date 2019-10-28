@@ -261,8 +261,8 @@ class StatusUpdate(Update):
         return False if status_code & 1 else True
 
     def description(self, status_code):
-        running = 'running' if self._running(status_code) else 'halted'
-        status_str = 'Device is {}'.format(running)
+        running = 'running' if self._running(status_code) else 'stopped'
+        status_str = 'Device {}'.format(running)
         for value, string in ERROR_CODES:
             if status_code & value:
                 status_str += ' - {}'.format(string)
@@ -275,7 +275,7 @@ class StatusUpdate(Update):
         icon = self.rabbit_icon if state is True else self.stopped_icon
         self.gui.pushButton_status.setIcon(icon)
         self.gui.pushButton_status.setIconSize(QtCore.QSize(36, 36))
-        status = '  Device Running  ' if state else '  Halted  '
+        status = '  Device Running  ' if state else '  Stopped  '
         self.gui.statusbar_logging_status.setText(status)
         status = {False: 'Real-Time Data', True: 'Most-Recent Data'}
         self.gui.label_table.setText(status[state])
