@@ -191,6 +191,13 @@ class ConverterFrame(Ui_Frame):
         parameters['output_directory'] = self._get_output_directory()
         parameters['time_format'] = app_data.get('time_format', 'iso8601')
         parameters['average'] = app_data.get('average_bursts', True)
+        custom_cal_path = app_data.get('custom_cal', None)
+        if custom_cal_path:
+            try:
+                custom_cal = make_from_calibration_file(custom_cal_path)
+                parameters['calibration'] = custom_cal
+            except:
+                pass
         split_size = app_data.get('split', 'Do not split output files')
         if split_size != 'Do not split output files':
             parameters['split'] = int(split_size.split(' ')[0])
@@ -208,15 +215,6 @@ class ConverterFrame(Ui_Frame):
         parameters['output_format'] = app_data.get('output_format', 'csv')
         parameters['declination'] = self._declination()
         return parameters
-
-    def _load_calibration_file(self, path):
-        if not path:
-            return None
-        try:
-            calibration = make_from_calibration_file(path)
-        except ValueError:
-            calibration = None
-        return calibration
 
     def _declination(self):
         if self.dec_model.error_state:

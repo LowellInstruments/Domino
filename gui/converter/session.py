@@ -34,4 +34,4 @@ def restore_last_session(gui):
     gui.lineEdit_output_folder.setText(
         app_data.get('output_directory', ''))
     gui.dec_model.declination = str(app_data.get('declination', 0.0))
-    appdata.set_userdata('domino.dat', 'custom_cal', '')
+    appdata.set_userdata('domino.dat', 'custom_cal', None)

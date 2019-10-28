@@ -85,10 +85,10 @@ class OptionsDialog(QDialog):
         split_size = application_data.get('split',
                                           'Do not split output files')
         self.ui.comboBox_split.setCurrentText(split_size)
-        # calibration = application_data.get('custom_cal', None)
-        # if calibration:
-        #     self.ui.radioButton_custom_cal.setChecked(True)
-        #     self.ui.lineEdit_custom_cal.setText(calibration)
+        calibration = application_data.get('custom_cal', None)
+        if calibration:
+            self.ui.radioButton_custom_cal.setChecked(True)
+            self.ui.lineEdit_custom_cal.setText(calibration)
 
     def save(self):
         button_name = self.ui.buttonGroup.checkedButton().objectName()
@@ -106,9 +106,13 @@ class OptionsDialog(QDialog):
         appdata.set_userdata('domino.dat',
                              'split',
                              self.ui.comboBox_split.currentText())
-        # appdata.set_userdata('domino.dat',
-        #                      'custom_cal',
-        #                      self.ui.lineEdit_custom_cal.text())
+        if self.ui.radioButton_factory_cal.isChecked():
+            custom_cal = None
+        else:
+            custom_cal = self.ui.lineEdit_custom_cal.text()
+        appdata.set_userdata('domino.dat',
+                             'custom_cal',
+                             custom_cal)
         self.hide()
 
     def cancel(self):
