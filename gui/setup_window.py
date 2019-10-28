@@ -237,11 +237,11 @@ class SetupFrame(Ui_Frame):
         else:
             start_time = self.setup_file.value(START_TIME)
             if start_time == DEFAULT_SETUP[START_TIME]:
-                end_time = next_hour.addYears(1)
+                end_time = next_hour.addMonths(1)
             else:
                 time_obj = QDateTime.fromString(start_time,
                                                 'yyyy-MM-dd HH:mm:ss')
-                end_time = time_obj.addYears(1)
+                end_time = time_obj.addMonths(1)
             return end_time.toString('yyyy-MM-dd HH:mm:ss')
 
     def filename_changed(self):
