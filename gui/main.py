@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5 import QtCore
 from gui.container import Container
 import sys
+from gui._version import __version__
 
 
 if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
@@ -15,7 +16,7 @@ if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
 
 QtCore.QCoreApplication.setOrganizationName('LowellInstruments')
 QtCore.QCoreApplication.setOrganizationDomain('lowellinstruments.com')
-QtCore.QCoreApplication.setApplicationName('Domino')
+QtCore.QCoreApplication.setApplicationName('Domino' + '_' + __version__)
 
 
 if __name__ == '__main__':

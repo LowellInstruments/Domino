@@ -19,7 +19,6 @@ from gui.setup_window import SetupFrame
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
-from mat import appdata
 import gui
 
 
@@ -29,7 +28,6 @@ RICH_TEXT = 1
 class Container(Ui_MainWindow):
     def __init__(self, window):
         self.version = __version__
-        self.appdata_version_check()
         self.window = window
         self.setupUi(window)
         self.window.closeEvent = self.closeEvent
@@ -59,10 +57,6 @@ class Container(Ui_MainWindow):
         self.pushButton1.setFlat(True)
         self.pushButton1.setObjectName('about')
         self.pushButton1.clicked.connect(self.about)
-
-    def appdata_version_check(self):
-        appdata.delete_if_version_not_equal('domino.dat', self.version)
-        appdata.set_userdata('domino.dat', 'version', self.version)
 
     def check_for_updates(self):
         self.version_check = VersionCheckerThread(self.window, self.version)

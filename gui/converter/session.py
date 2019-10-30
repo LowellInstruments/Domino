@@ -1,25 +1,19 @@
-from mat import appdata
+from PyQt5.QtCore import QSettings
 
 
 def save_session(gui):
-    appdata.set_userdata('domino.dat',
-                         'output_type',
-                         gui.comboBox_output_type.currentText())
-    appdata.set_userdata('domino.dat',
-                         'meter_model',
-                         gui.comboBox_tilt_tables.currentText())
-    appdata.set_userdata('domino.dat',
-                         'same_directory',
-                         gui.radioButton_output_same.isChecked())
-    appdata.set_userdata('domino.dat',
-                         'output_directory',
-                         gui.lineEdit_output_folder.text())
-
-    appdata.set_userdata('domino.dat', 'declination', gui._declination())
+    app_data = {
+        'output_type': gui.comboBox_output_type.currentText(),
+        'meter_model': gui.comboBox_tilt_tables.currentText(),
+        'same_directory': gui.radioButton_output_same.isChecked(),
+        'output_directory': gui.lineEdit_output_folder.text(),
+        'declination': gui._declination()
+    }
+    QSettings().setValue('converter_window', app_data)
 
 
 def restore_last_session(gui):
-    app_data = appdata.get_userdata('domino.dat')
+    app_data = QSettings().value('converter_window', {}, type=dict)
     output_type = app_data.get('output_type', 'Discrete Channels')
     gui.set_combobox(gui.comboBox_output_type, output_type)
 
@@ -34,4 +28,5 @@ def restore_last_session(gui):
     gui.lineEdit_output_folder.setText(
         app_data.get('output_directory', ''))
     gui.dec_model.declination = str(app_data.get('declination', 0.0))
-    appdata.set_userdata('domino.dat', 'custom_cal', None)
+    app_data['custom_cal'] = None
+    QSettings().setValue('output_options', app_data)

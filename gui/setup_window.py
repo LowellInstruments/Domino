@@ -18,12 +18,11 @@ from setup_file.setup_file import (
     END_TIME
 )
 from collections import namedtuple
-from PyQt5.QtCore import QDateTime
+from PyQt5.QtCore import QDateTime, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
 from gui.description_generator import DescriptionGenerator
 from gui import dialogs
-from mat import appdata
 from gui.gui_utils import set_enabled
 import os
 from datetime import datetime
@@ -34,8 +33,7 @@ sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
 
 class SetupFrame(Ui_Frame):
     def __init__(self):
-        application_data = appdata.get_userdata('domino.dat')
-        setup_dict = application_data.get('setup_file', None)
+        setup_dict = QSettings().value('setup_file', None, type=dict)
         self.setup_file = SetupFile(setup_dict)
         self.interval_mapping = None
         self.sensor_mapping = None
@@ -318,8 +316,8 @@ class SetupFrame(Ui_Frame):
         self.redraw()
         if not self.pre_save_check():
             return
-        application_data = appdata.get_userdata('domino.dat')
-        directory = application_data.get('setup_file_directory', '')
+
+        directory = QSettings().value('setup_file_directory', '', type=str)
         file_name = os.path.join(directory, 'MAT.cfg')
         path = QFileDialog.getSaveFileName(self.frame, 'Save File', file_name)
         if not path[0]:
@@ -331,9 +329,8 @@ class SetupFrame(Ui_Frame):
             self.save_file()
             return
         directory = os.path.dirname(path[0])
-        appdata.set_userdata('domino.dat', 'setup_file_directory', directory)
-        appdata.set_userdata('domino.dat', 'setup_file',
-                             self.setup_file._setup_dict)
+        QSettings().setValue('setup_file_directory', directory)
+        QSettings().setValue('setup_file', self.setup_file._setup_dict)
         self.setup_file.write_file(path[0])
         message = 'Setup file saved but your device is NOT RECORDING ' \
                   'yet.  To start recording, switch to the "Start/Stop ' \

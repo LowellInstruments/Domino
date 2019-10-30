@@ -1,8 +1,8 @@
+from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMessageBox
 from gui.options_ui import Ui_Dialog
-from mat import appdata
 from mat.calibration_factories import make_from_calibration_file
 
 
@@ -12,6 +12,7 @@ class OptionsDialog(QDialog):
         self.parent = parent
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
+        self.settings = QSettings()
         self.setWindowTitle('File Output Options')
         self.ui.pushButton_save.clicked.connect(self.save)
         self.ui.pushButton_cancel.clicked.connect(self.cancel)
@@ -72,47 +73,38 @@ class OptionsDialog(QDialog):
         self.ui.pushButton_browse.setEnabled(state)
 
     def load_saved(self):
-        application_data = appdata.get_userdata('domino.dat')
-        time_format = application_data.get('time_format', 'iso8601')
+        app_data = self.settings.value('output_options', {}, type=dict)
+        time_format = app_data.get('time_format', 'iso8601')
         time_format_button_name = self.button_mapping[time_format]
         getattr(self.ui, time_format_button_name).setChecked(True)
-        self.ui.checkBox_average_bursts.setChecked(application_data.get(
+        self.ui.checkBox_average_bursts.setChecked(app_data.get(
             'average_bursts', True))
-        output_format = application_data.get('output_format',
-                                             'csv')
+        output_format = app_data.get('output_format', 'csv')
         output_format_button = self.button_mapping[output_format]
         getattr(self.ui, output_format_button).setChecked(True)
-        split_size = application_data.get('split',
-                                          'Do not split output files')
+        split_size = app_data.get('split', 'Do not split output files')
         self.ui.comboBox_split.setCurrentText(split_size)
-        calibration = application_data.get('custom_cal', None)
+        calibration = app_data.get('custom_cal', None)
         if calibration:
             self.ui.radioButton_custom_cal.setChecked(True)
             self.ui.lineEdit_custom_cal.setText(calibration)
 
     def save(self):
         button_name = self.ui.buttonGroup.checkedButton().objectName()
-        appdata.set_userdata('domino.dat',
-                             'time_format',
-                             self.button_mapping[button_name])
-        appdata.set_userdata('domino.dat',
-                             'average_bursts',
-                             self.ui.checkBox_average_bursts.isChecked())
         output_button = \
             self.ui.buttonGroup_output_format.checkedButton().objectName()
-        appdata.set_userdata('domino.dat',
-                             'output_format',
-                             self.button_mapping[output_button])
-        appdata.set_userdata('domino.dat',
-                             'split',
-                             self.ui.comboBox_split.currentText())
         if self.ui.radioButton_factory_cal.isChecked():
             custom_cal = None
         else:
             custom_cal = self.ui.lineEdit_custom_cal.text()
-        appdata.set_userdata('domino.dat',
-                             'custom_cal',
-                             custom_cal)
+        app_data = {
+            'time_format': self.button_mapping[button_name],
+            'average_bursts': self.ui.checkBox_average_bursts.isChecked(),
+            'output_format': self.button_mapping[output_button],
+            'split': self.ui.comboBox_split.currentText(),
+            'custom_cal': custom_cal
+        }
+        self.settings.setValue('output_options', app_data)
         self.hide()
 
     def cancel(self):

@@ -2,7 +2,6 @@
 # Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 from gui.converter_ui import Ui_Frame
 from gui.options_dialog import OptionsDialog
-from mat import appdata, tiltcurve
 import os
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
@@ -116,7 +115,7 @@ class ConverterFrame(Ui_Frame):
     """
     def convert_files(self):
         self.remove_error_files()
-        parameters = self._read_conversion_parameters()
+        parameters = self._read_output_options()
         terminate_conditions = [
             lambda: self.check_error_states(),
             lambda: parameters['output_directory'] == 'error',
@@ -185,9 +184,9 @@ class ConverterFrame(Ui_Frame):
         self.lineEdit_output_folder.setEnabled(state)
         self.pushButton_browse.setEnabled(state)
 
-    def _read_conversion_parameters(self):
+    def _read_output_options(self):
         parameters = default_parameters()
-        app_data = appdata.get_userdata('domino.dat')
+        app_data = self.settings.value('output_options', {}, type=dict)
         parameters['output_directory'] = self._get_output_directory()
         parameters['time_format'] = app_data.get('time_format', 'iso8601')
         parameters['average'] = app_data.get('average_bursts', True)
