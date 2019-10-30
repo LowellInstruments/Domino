@@ -12,7 +12,6 @@ class OptionsDialog(QDialog):
         self.parent = parent
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        self.settings = QSettings()
         self.setWindowTitle('File Output Options')
         self.ui.pushButton_save.clicked.connect(self.save)
         self.ui.pushButton_cancel.clicked.connect(self.cancel)
@@ -73,7 +72,7 @@ class OptionsDialog(QDialog):
         self.ui.pushButton_browse.setEnabled(state)
 
     def load_saved(self):
-        app_data = self.settings.value('output_options', {}, type=dict)
+        app_data = QSettings().value('output_options', {}, type=dict)
         time_format = app_data.get('time_format', 'iso8601')
         time_format_button_name = self.button_mapping[time_format]
         getattr(self.ui, time_format_button_name).setChecked(True)
@@ -104,7 +103,7 @@ class OptionsDialog(QDialog):
             'split': self.ui.comboBox_split.currentText(),
             'custom_cal': custom_cal
         }
-        self.settings.setValue('output_options', app_data)
+        QSettings().setValue('output_options', app_data)
         self.hide()
 
     def cancel(self):

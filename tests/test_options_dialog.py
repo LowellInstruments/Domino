@@ -23,12 +23,12 @@ def appdata():
 
 @pytest.fixture
 def mocked_get_userdata(mocker):
-    return mocker.patch('gui.options_dialog.appdata.get_userdata')
+    return mocker.patch('gui.options_dialog.QSettings.value')
 
 
 @pytest.fixture
 def mocked_set_userdata(mocker):
-    return mocker.patch('gui.options_dialog.appdata.set_userdata')
+    return mocker.patch('gui.options_dialog.QSettings.setValue')
 
 
 @pytest.fixture
@@ -65,10 +65,15 @@ def test_save(new_ui, mocked_set_userdata, mocker, qtbot):
     app_data['average_bursts'] = False
     dialog = new_ui(app_data)
     qtbot.mouseClick(dialog.ui.pushButton_save, Qt.LeftButton)
-    expected = []
-    for key, value in app_data.items():
-        expected.append(mocker.call('domino.dat', key, value))
-    assert expected == mocked_set_userdata.call_args_list
+    expected = {
+        'time_format': 'iso8601',
+        'average_bursts': False,
+        'output_format': 'csv',
+        'split': 'Do not split output files',
+        'custom_cal': None
+    }
+    assert [mocker.call('output_options', expected)] == \
+           mocked_set_userdata.call_args_list
 
 
 def test_custom_cal_enable_disable(new_ui, qtbot):
