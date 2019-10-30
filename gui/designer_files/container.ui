@@ -54,7 +54,7 @@
          <normaloff>:/icons/icons/icons8-services-48.png</normaloff>:/icons/icons/icons8-services-48.png</iconset>
        </attribute>
        <attribute name="title">
-        <string>Create Setup File</string>
+        <string>Setup</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
@@ -75,7 +75,7 @@
          <normaloff>:/icons/icons/usb.png</normaloff>:/icons/icons/usb.png</iconset>
        </attribute>
        <attribute name="title">
-        <string>Start/Stop Device</string>
+        <string>Device</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
@@ -96,7 +96,7 @@
          <normaloff>:/icons/icons/convert.png</normaloff>:/icons/icons/convert.png</iconset>
        </attribute>
        <attribute name="title">
-        <string>Convert Files</string>
+        <string>Convert</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0">
