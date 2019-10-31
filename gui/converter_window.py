@@ -15,14 +15,13 @@ from gui.converter import (
     table_controller,
     file_loader,
     file_converter,
-    declination_model,
-    declination_view,
-    declination_controller
+    declination_model
 )
 from gui.converter.session import restore_last_session, save_session
 from queue import Queue
 from pathlib import Path
 from gui.tilt_curve_model import TiltCurveModel
+from gui.gui_utils import show_error
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -54,14 +53,11 @@ class ConverterFrame(Ui_Frame):
 
         # Views
         self.table_view = table_view.ConverterTable(self.tableWidget)
-        self.dec_view = declination_view.DeclinationView(
-            self.lineEdit_declination)
 
         # Controllers
         self.table_controller = table_controller.TableController(
             self.data_file_container, self.table_view)
-        self.dec_controller = declination_controller.DeclinationController(
-            self.dec_model, self.dec_view)
+
         self.file_loader = file_loader.FileLoader(self.file_queue)
 
         self.tilt_model = TiltCurveModel(
@@ -88,6 +84,8 @@ class ConverterFrame(Ui_Frame):
         self.comboBox_output_type.currentIndexChanged.connect(
             self.change_output_type_slot)
         self.pushButton_help.clicked.connect(dialogs.about_declination)
+        self.lineEdit_declination.textChanged.connect(self.declination_changed)
+        self.dec_model.update_signal.connect(self.update_declination)
 
     """
     Methods for loading files
@@ -168,10 +166,11 @@ class ConverterFrame(Ui_Frame):
             return True
         return False
 
+    # slot
     def change_output_type_slot(self):
+        print('changed')
         state = self.comboBox_output_type.currentText() == 'Current'
         self.comboBox_tilt_tables.setEnabled(state)
-
         disabled = ['Discrete Channels', 'Cable Attitude']
         state = self.comboBox_output_type.currentText() in disabled
         self.dec_model.set_enabled(not state)
@@ -219,14 +218,21 @@ class ConverterFrame(Ui_Frame):
             parameters['output_type'] = output_type
 
         parameters['output_format'] = app_data.get('output_format', 'csv')
-        parameters['declination'] = self._declination()
+        parameters['declination'] = self.dec_model.declination_value()
         return parameters
 
-    def _declination(self):
-        if self.dec_model.error_state:
-            return 0
-        else:
-            return float(self.dec_model.declination)
+    """
+    Methods for declination
+    """
+    # slot
+    def declination_changed(self):
+        self.dec_model.declination = self.lineEdit_declination.text()
+
+    # slot
+    def update_declination(self):
+        self.lineEdit_declination.setText(str(self.dec_model.declination))
+        show_error(self.lineEdit_declination, self.dec_model.error_state)
+        self.lineEdit_declination.setEnabled(self.dec_model.enabled)
 
     def _get_output_directory(self):
         if self.radioButton_output_directory.isChecked():

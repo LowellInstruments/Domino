@@ -7,7 +7,7 @@ def save_session(gui):
         'meter_model': gui.comboBox_tilt_tables.currentText(),
         'same_directory': gui.radioButton_output_same.isChecked(),
         'output_directory': gui.lineEdit_output_folder.text(),
-        'declination': gui._declination()
+        'declination': gui.dec_model.declination_value()
     }
     QSettings().setValue('converter_window', app_data)
 
@@ -16,6 +16,7 @@ def restore_last_session(gui):
     app_data = QSettings().value('converter_window', {}, type=dict)
     output_type = app_data.get('output_type', 'Discrete Channels')
     gui.set_combobox(gui.comboBox_output_type, output_type)
+    gui.change_output_type_slot()
 
     tilt_curve = app_data.get('meter_model', '')
     gui.set_combobox(gui.comboBox_tilt_tables, tilt_curve)
@@ -27,6 +28,6 @@ def restore_last_session(gui):
         gui.radioButton_output_directory.setChecked(True)
     gui.lineEdit_output_folder.setText(
         app_data.get('output_directory', ''))
-    gui.dec_model.declination = str(app_data.get('declination', 0.0))
+    gui.dec_model.declination = app_data.get('declination', 0.0)
     app_data['custom_cal'] = None
     QSettings().setValue('output_options', app_data)
