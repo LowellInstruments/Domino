@@ -127,6 +127,9 @@
       </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="pushButton_output_options">
+        <property name="toolTip">
+         <string/>
+        </property>
         <property name="text">
          <string>Options...</string>
         </property>
@@ -136,6 +139,9 @@
        <widget class="QComboBox" name="comboBox_tilt_tables">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Choose device model, ballast washers (if using), and water type</string>
         </property>
        </widget>
       </item>
@@ -187,7 +193,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Meter Model:</string>
+         <string>TCM Model:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -369,6 +375,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Add a data file to the conversion queue</string>
+        </property>
         <property name="text">
          <string>Add file</string>
         </property>
@@ -401,6 +410,9 @@
           <height>0</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Remove a data file from the conversion queue</string>
+        </property>
         <property name="text">
          <string>Remove File</string>
         </property>
@@ -421,6 +433,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_clear">
+        <property name="toolTip">
+         <string>Clear the conversion queue</string>
+        </property>
         <property name="text">
          <string>Clear List</string>
         </property>
@@ -452,6 +467,9 @@
           <width>0</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="toolTip">
+         <string>Converter all files in the conversion queue using the settings below</string>
         </property>
         <property name="text">
          <string>Convert</string>

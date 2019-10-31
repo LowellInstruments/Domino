@@ -47,6 +47,7 @@ class ConverterFrame(Ui_Frame):
         self.frame = frame
 
         self.tableWidget.horizontalHeader().setSectionsClickable(False)
+
         # Models
         self.data_file_container = table_model.DataFileContainer()
         self.dec_model = declination_model.Declination()

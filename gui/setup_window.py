@@ -44,7 +44,7 @@ class SetupFrame(Ui_Frame):
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
-        self.lineEdit_file_name.setMaxLength(11)
+        self.lineEdit_file_name.setMaxLength(15)
         self.populate_combo_boxes()
         self.setup_mapping()
         self.set_retain_size([self.dateTimeEdit_start_time,

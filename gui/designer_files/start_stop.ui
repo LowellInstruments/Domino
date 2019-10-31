@@ -175,6 +175,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_sync_clock">
+          <property name="toolTip">
+           <string>Syncs the device clock to computer clock</string>
+          </property>
           <property name="text">
            <string>Set Device Clock</string>
           </property>

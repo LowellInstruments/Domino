@@ -289,6 +289,7 @@ class Ui_Frame(object):
         self.label_sd_free_space.setText(_translate("Frame", "SD Card Usage: 0 "))
         self.label_sd_total_space.setText(_translate("Frame", "of 0 GB Available"))
         self.label_logger_time.setText(_translate("Frame", "Device Time: 2018-10-02 11:10:05"))
+        self.pushButton_sync_clock.setToolTip(_translate("Frame", "Syncs the device clock to computer clock"))
         self.pushButton_sync_clock.setText(_translate("Frame", "Set Device Clock"))
         self.label_computer_time.setText(_translate("Frame", "Computer Time: 2018-10-02 11:10:17"))
         self.label_serial.setText(_translate("Frame", "Serial Number:"))

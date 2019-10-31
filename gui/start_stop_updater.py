@@ -31,7 +31,7 @@ FILE_SIZE = {
 }
 
 SIMPLE_FIELD = {
-    'GTM': ('Logger Time: {}', 'label_logger_time'),
+    'GTM': ('Device Time: {}', 'label_logger_time'),
     'GFV': ('Firmware Version: {}', 'label_firmware')
 }
 

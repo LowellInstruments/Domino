@@ -35,13 +35,14 @@ class StartStopFrame(Ui_Frame):
         self.frame = frame
         super().setupUi(frame)
         self.tableWidget.horizontalHeader().setSectionsClickable(False)
+        self.tableWidget.horizontalHeader().setFixedHeight(30)
         self.tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tableWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         table_width = self.tableWidget.horizontalHeader().length()
         self.tableWidget.setFixedSize(
             table_width,
             self.tableWidget.verticalHeader().length()
-            + self.tableWidget.horizontalHeader().height()+2
+            + self.tableWidget.horizontalHeader().height()
         )
         self.tableWidget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
         self.tableWidget.setColumnWidth(0, table_width / 2)
