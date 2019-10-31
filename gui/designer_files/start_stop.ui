@@ -169,14 +169,14 @@
         <item>
          <widget class="QLabel" name="label_logger_time">
           <property name="text">
-           <string>Logger Time: 2018-10-02 11:10:05</string>
+           <string>Device Time: 2018-10-02 11:10:05</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_sync_clock">
           <property name="text">
-           <string>Set Clock</string>
+           <string>Set Device Clock</string>
           </property>
          </widget>
         </item>
@@ -303,6 +303,12 @@
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAsNeeded</enum>
      </property>
+     <property name="autoScroll">
+      <bool>false</bool>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::NoSelection</enum>
      </property>
@@ -313,6 +319,9 @@
       <bool>false</bool>
      </property>
      <attribute name="horizontalHeaderVisible">
+      <bool>true</bool>
+     </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
       <bool>true</bool>
      </attribute>
      <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
@@ -374,10 +383,22 @@
       <property name="text">
        <string>Sensor</string>
       </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
      </column>
      <column>
       <property name="text">
        <string>Enabled</string>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
       </property>
       <property name="textAlignment">
        <set>AlignCenter</set>
@@ -386,6 +407,12 @@
      <column>
       <property name="text">
        <string>Value</string>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
       </property>
       <property name="textAlignment">
        <set>AlignTrailing|AlignVCenter</set>

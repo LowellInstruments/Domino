@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'designer_files/options.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -141,8 +143,8 @@ class Ui_Dialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Calibration Coefficients (advanced)"))
         self.pushButton_cancel.setText(_translate("Dialog", "Cancel"))
         self.pushButton_save.setText(_translate("Dialog", "Save"))
-
 from . import icons_rc
+
 
 if __name__ == "__main__":
     import sys
@@ -152,4 +154,3 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
-

@@ -34,9 +34,7 @@ class StartStopFrame(Ui_Frame):
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
-        # self.tableWidget.horizontalHeader().setSectionResizeMode(
-        #     QHeaderView.Stretch)
-        #self.tableWidget.resizeColumnsToContents()
+        self.tableWidget.horizontalHeader().setSectionsClickable(False)
         self.tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tableWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         table_width = self.tableWidget.horizontalHeader().length()

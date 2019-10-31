@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'designer_files/start_stop.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Frame(object):
     def setupUi(self, Frame):
@@ -145,6 +147,8 @@ class Ui_Frame(object):
         self.gridLayout.addItem(spacerItem1, 2, 1, 1, 1)
         self.tableWidget = QtWidgets.QTableWidget(Frame)
         self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.tableWidget.setAutoScroll(False)
+        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.tableWidget.setShowGrid(True)
         self.tableWidget.setCornerButtonEnabled(False)
@@ -168,12 +172,24 @@ class Ui_Frame(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setVerticalHeaderItem(7, item)
         item = QtWidgets.QTableWidgetItem()
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        item.setFont(font)
         self.tableWidget.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignCenter)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        item.setFont(font)
         self.tableWidget.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        item.setFont(font)
         self.tableWidget.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignVCenter)
@@ -248,6 +264,7 @@ class Ui_Frame(object):
         item.setTextAlignment(QtCore.Qt.AlignCenter)
         self.tableWidget.setItem(7, 2, item)
         self.tableWidget.horizontalHeader().setVisible(True)
+        self.tableWidget.horizontalHeader().setHighlightSections(True)
         self.tableWidget.horizontalHeader().setSortIndicatorShown(False)
         self.tableWidget.horizontalHeader().setStretchLastSection(False)
         self.tableWidget.verticalHeader().setVisible(False)
@@ -271,8 +288,8 @@ class Ui_Frame(object):
         self.label_file_size.setText(_translate("Frame", "File Size: 487.65 MB"))
         self.label_sd_free_space.setText(_translate("Frame", "SD Card Usage: 0 "))
         self.label_sd_total_space.setText(_translate("Frame", "of 0 GB Available"))
-        self.label_logger_time.setText(_translate("Frame", "Logger Time: 2018-10-02 11:10:05"))
-        self.pushButton_sync_clock.setText(_translate("Frame", "Set Clock"))
+        self.label_logger_time.setText(_translate("Frame", "Device Time: 2018-10-02 11:10:05"))
+        self.pushButton_sync_clock.setText(_translate("Frame", "Set Device Clock"))
         self.label_computer_time.setText(_translate("Frame", "Computer Time: 2018-10-02 11:10:17"))
         self.label_serial.setText(_translate("Frame", "Serial Number:"))
         self.label_firmware.setText(_translate("Frame", "Firmware Version:"))
@@ -322,8 +339,8 @@ class Ui_Frame(object):
         item.setText(_translate("Frame", "Battery (V)"))
         self.tableWidget.setSortingEnabled(__sortingEnabled)
         self.label_table.setText(_translate("Frame", "Real-time Data"))
-
 from . import icons_rc
+
 
 if __name__ == "__main__":
     import sys
@@ -333,4 +350,3 @@ if __name__ == "__main__":
     ui.setupUi(Frame)
     Frame.show()
     sys.exit(app.exec_())
-

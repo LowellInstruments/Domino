@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'designer_files/converter.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Frame(object):
     def setupUi(self, Frame):
@@ -18,6 +20,8 @@ class Ui_Frame(object):
         self.gridLayout.setObjectName("gridLayout")
         self.tableWidget = QtWidgets.QTableWidget(Frame)
         self.tableWidget.setMidLineWidth(0)
+        self.tableWidget.setAutoScroll(False)
+        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.tableWidget.setAlternatingRowColors(True)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(5)
@@ -52,7 +56,6 @@ class Ui_Frame(object):
         font.setWeight(75)
         item.setFont(font)
         self.tableWidget.setHorizontalHeaderItem(4, item)
-        self.tableWidget.horizontalHeader().setVisible(True)
         self.tableWidget.horizontalHeader().setHighlightSections(False)
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setHighlightSections(False)
@@ -250,8 +253,8 @@ class Ui_Frame(object):
         self.pushButton_clear.setText(_translate("Frame", "Clear List"))
         self.pushButton_convert.setText(_translate("Frame", "Convert"))
         self.pushButton_convert.setShortcut(_translate("Frame", "Ctrl+S"))
-
 from . import icons_rc
+
 
 if __name__ == "__main__":
     import sys
@@ -261,4 +264,3 @@ if __name__ == "__main__":
     ui.setupUi(Frame)
     Frame.show()
     sys.exit(app.exec_())
-
