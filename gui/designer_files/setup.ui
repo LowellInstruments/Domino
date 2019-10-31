@@ -53,6 +53,9 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Allowable characters: Upper/lower case letters, digits, space, hyphen, underscore</string>
+        </property>
        </widget>
       </item>
       <item>
