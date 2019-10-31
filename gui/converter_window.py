@@ -73,6 +73,7 @@ class ConverterFrame(Ui_Frame):
     def _connect_signals_to_slots(self):
         self.pushButton_add.clicked.connect(self.add_files)
         self.file_loader.file_loaded_signal.connect(self.file_loaded)
+        self.file_loader.file_error_signal.connect(self.file_error)
         self.pushButton_remove.clicked.connect(
             self.table_controller.delete_selected_rows)
         self.pushButton_clear.clicked.connect(self.table_controller.clear)
@@ -106,6 +107,10 @@ class ConverterFrame(Ui_Frame):
         if file.header_error:
             dialogs.header_error(file.filename, file.header_error)
         self.data_file_container.add_file(file)
+
+    # slot
+    def file_error(self, message):
+        dialogs.error_message('Load Error', message)
 
     def _start_thread(self):
         self.file_loader.moveToThread(self.thread)
