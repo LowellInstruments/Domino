@@ -275,6 +275,9 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Must be [-180, 180]. East is positive.</string>
+          </property>
          </widget>
         </item>
         <item>

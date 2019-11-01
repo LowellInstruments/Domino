@@ -249,6 +249,7 @@ class Ui_Frame(object):
         self.pushButton_browse.setText(_translate("Frame", "..."))
         self.radioButton_output_same.setText(_translate("Frame", "Save output to same directory as source files"))
         self.label_2.setText(_translate("Frame", "Declination:"))
+        self.lineEdit_declination.setToolTip(_translate("Frame", "Must be [-180, 180]. East is positive."))
         self.label_4.setText(_translate("Frame", "Degrees East"))
         self.pushButton_add.setToolTip(_translate("Frame", "Add a data file to the conversion queue"))
         self.pushButton_add.setText(_translate("Frame", "Add file"))

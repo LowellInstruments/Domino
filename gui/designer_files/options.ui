@@ -42,7 +42,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>180</y>
+         <y>20</y>
          <width>301</width>
          <height>17</height>
         </rect>
@@ -58,7 +58,7 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>20</y>
+         <y>50</y>
          <width>271</width>
          <height>20</height>
         </rect>
@@ -71,7 +71,7 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>50</y>
+         <y>110</y>
          <width>201</width>
          <height>18</height>
         </rect>
@@ -108,9 +108,9 @@
       <widget class="QLabel" name="label">
        <property name="geometry">
         <rect>
-         <x>20</x>
-         <y>110</y>
-         <width>311</width>
+         <x>64</x>
+         <y>140</y>
+         <width>171</width>
          <height>16</height>
         </rect>
        </property>
@@ -121,8 +121,8 @@
       <widget class="QComboBox" name="comboBox_split">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>140</y>
+         <x>64</x>
+         <y>170</y>
          <width>211</width>
          <height>22</height>
         </rect>
@@ -348,7 +348,7 @@
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_output_format"/>
   <buttongroup name="buttonGroup_calibration"/>
+  <buttongroup name="buttonGroup_output_format"/>
  </buttongroups>
 </ui>
