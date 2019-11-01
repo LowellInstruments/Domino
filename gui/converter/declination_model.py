@@ -22,7 +22,6 @@ class Declination(QObject):
             self.error_state = False
         else:
             self.error_state = True
-            print('error')
         self.update_signal.emit()
 
     def declination_value(self):

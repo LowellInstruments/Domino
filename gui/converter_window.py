@@ -58,6 +58,7 @@ class ConverterFrame(Ui_Frame):
         self.table_controller = table_controller.TableController(
             self.data_file_container, self.table_view)
 
+
         self.file_loader = file_loader.FileLoader(self.file_queue)
 
         self.tilt_model = TiltCurveModel(
@@ -86,6 +87,16 @@ class ConverterFrame(Ui_Frame):
         self.pushButton_help.clicked.connect(dialogs.about_declination)
         self.lineEdit_declination.textChanged.connect(self.declination_changed)
         self.dec_model.update_signal.connect(self.update_declination)
+        self.data_file_container.add_observer(self.enable_buttons)
+
+    def enable_buttons(self, model):
+        state = True if len(model) > 0 else False
+        buttons = [
+            self.pushButton_remove,
+            self.pushButton_clear,
+            self.pushButton_convert]
+        for button in buttons:
+            button.setEnabled(state)
 
     """
     Methods for loading files
@@ -168,7 +179,6 @@ class ConverterFrame(Ui_Frame):
 
     # slot
     def change_output_type_slot(self):
-        print('changed')
         state = self.comboBox_output_type.currentText() == 'Current'
         self.comboBox_tilt_tables.setEnabled(state)
         disabled = ['Discrete Channels', 'Cable Attitude']

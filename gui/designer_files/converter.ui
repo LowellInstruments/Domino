@@ -401,6 +401,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_remove">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -436,6 +439,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_clear">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="toolTip">
          <string>Clear the conversion queue</string>
         </property>
@@ -459,6 +465,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_convert">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
