@@ -33,7 +33,6 @@ OUTPUT_TYPE = {'Current': 'current',
 class ConverterFrame(Ui_Frame):
     def __init__(self):
         self.frame = None
-        self.table_controller = None
         self.file_queue = Queue()
         self.conversion = None
         self.progress_dialog = None
@@ -44,20 +43,12 @@ class ConverterFrame(Ui_Frame):
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
-
-        self.tableWidget.horizontalHeader().setSectionsClickable(False)
+        self.tableView.horizontalHeader().setSectionsClickable(False)
 
         # Models
         self.data_file_container = table_model.DataFileContainer()
+        self.tableView.setModel(self.data_file_container)
         self.dec_model = declination_model.Declination()
-
-        # Views
-        self.table_view = table_view.ConverterTable(self.tableWidget)
-
-        # Controllers
-        self.table_controller = table_controller.TableController(
-            self.data_file_container, self.table_view)
-
 
         self.file_loader = file_loader.FileLoader(self.file_queue)
 
@@ -71,13 +62,11 @@ class ConverterFrame(Ui_Frame):
         self.pushButton_add.clicked.connect(self.add_files)
         self.file_loader.file_loaded_signal.connect(self.file_loaded)
         self.file_loader.file_error_signal.connect(self.file_error)
-        self.pushButton_remove.clicked.connect(
-            self.table_controller.delete_selected_rows)
-        self.pushButton_clear.clicked.connect(self.table_controller.clear)
+        self.pushButton_remove.clicked.connect(self.delete_row)
+        # TODO implement
+        #self.pushButton_clear.clicked.connect(self.table_controller.clear)
         self.pushButton_convert.clicked.connect(self.convert_files)
-
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
-
         self.pushButton_output_options.clicked.connect(
             lambda: OptionsDialog(self.frame).exec_())
         self.buttonGroup.buttonToggled.connect(
@@ -87,10 +76,11 @@ class ConverterFrame(Ui_Frame):
         self.pushButton_help.clicked.connect(dialogs.about_declination)
         self.lineEdit_declination.textChanged.connect(self.declination_changed)
         self.dec_model.update_signal.connect(self.update_declination)
-        self.data_file_container.add_observer(self.enable_buttons)
+        self.data_file_container.rowsInserted.connect(self.enable_buttons)
+        self.data_file_container.rowsRemoved.connect(self.enable_buttons)
 
-    def enable_buttons(self, model):
-        state = True if len(model) > 0 else False
+    def enable_buttons(self):
+        state = True if len(self.data_file_container) > 0 else False
         buttons = [
             self.pushButton_remove,
             self.pushButton_clear,
@@ -101,6 +91,7 @@ class ConverterFrame(Ui_Frame):
     """
     Methods for loading files
     """
+    # slot
     def add_files(self):
         directory = self.settings.value('last_directory', '', type=str)
         file_paths = dialogs.open_lid_file(directory)
@@ -110,6 +101,12 @@ class ConverterFrame(Ui_Frame):
         self.settings.setValue('last_directory', str(directory))
         self.file_queue.put(file_paths[0])
         self.file_loader.run()
+
+    # slot
+    def delete_row(self):
+        row_objects = self.tableView.selectionModel().selectedRows()
+        for row in row_objects:
+            self.data_file_container.delete(row.row())
 
     # slot
     def file_loaded(self, file):

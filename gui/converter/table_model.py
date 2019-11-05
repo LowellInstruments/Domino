@@ -2,6 +2,7 @@ from pathlib import Path
 from mat.data_file_factory import load_data_file, WrongFileTypeError
 from datetime import datetime
 from mat.sensor_data_file import NoDataError
+from PyQt5 import QtCore
 
 
 class DataFile:
@@ -40,23 +41,58 @@ class DataFile:
         self.status = 'unconverted'
 
 
-class DataFileContainer:
+class DataFileContainer(QtCore.QAbstractTableModel):
+
+    headers = [
+        ('Files to Convert', 200),
+        ('Status', 100),
+        ('Size', 100),
+        ('Start Time', 140),
+        ('Containing Folder', 450)
+    ]
+
     def __init__(self):
+        super().__init__()
         self._data_files = []
         self._observers = []
 
-    def add_observer(self, observer):
-        self._observers.append(observer)
+    def rowCount(self, parent):
+        return len(self._data_files)
 
-    def notify_observers(self):
-        for observer in self._observers:
-            observer(self)
+    def columnCount(self, parent):
+        return len(self.headers)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            row, column = index.row(), index.column()
+            if column == 0:
+                return self._data_files[row].filename
+            elif column == 1:
+                status = self._data_files[row].status
+                if status.startswith('error'):
+                    status = 'error'
+                return status.capitalize()
+            elif column == 2:
+                return self._data_files[row].size_str
+            elif column == 3:
+                return self._data_files[row].start_time
+            elif column == 4:
+                return self._data_files[row].folder
+
+    def headerData(self, section, orientation, role):
+        if (orientation == QtCore.Qt.Horizontal
+                and role == QtCore.Qt.DisplayRole
+        ):
+            return self.headers[section][0]
+
 
     def add_file(self, data_file):
         if self._check_for_duplicate(data_file):
             return
+        n_files = len(self._data_files)
+        self.beginInsertRows(QtCore.QModelIndex(), n_files, n_files)
         self._data_files.append(data_file)
-        self.notify_observers()
+        self.endInsertRows()
 
     def _check_for_duplicate(self, data_file):
         if data_file.path in [file.path for file in self._data_files]:
@@ -64,29 +100,30 @@ class DataFileContainer:
         return False
 
     def clear(self):
+        self.beginResetModel()
         self._data_files.clear()
-        self.notify_observers()
+        self.endResetModel()
 
     def delete(self, index):
         del self._data_files[index]
-        self.notify_observers()
+        #self.notify_observers()
 
     def remove_error_files(self):
         self._data_files = [file for file in self._data_files if
                             not file.status.startswith('error')]
-        self.notify_observers()
+        #self.notify_observers()
 
     def reset_converted(self):
         for file in self._data_files:
             if file.status == 'converted':
                 file.status = 'unconverted'
-        self.notify_observers()
+        #self.notify_observers()
 
     def reset_errors(self):
         for file in self._data_files:
             if file.status.startswith('error'):
                 file.status = 'unconverted'
-        self.notify_observers()
+        #self.notify_observers()
 
     def unconverted(self):
         # returns the number of unconverted files
