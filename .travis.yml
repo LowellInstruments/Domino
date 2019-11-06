@@ -3,7 +3,6 @@ python:
   - "3.7"
 env:
   - PYTHONPATH=.
-  - QT_DEBUG_PLUGINS=1
 install:
   - pip install -r requirements.txt
 script:
