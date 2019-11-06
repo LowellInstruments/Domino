@@ -44,11 +44,11 @@ class DataFile:
 class DataFileContainer(QtCore.QAbstractTableModel):
 
     headers = [
-        ('Files to Convert', 200),
-        ('Status', 100),
-        ('Size', 100),
-        ('Start Time', 140),
-        ('Containing Folder', 450)
+        ('Files to Convert', QtCore.QSize(200, 30)),
+        ('Status', QtCore.QSize(100, 30)),
+        ('Size', QtCore.QSize(100, 30)),
+        ('Start Time', QtCore.QSize(140, 30)),
+        ('Containing Folder', QtCore.QSize(450, 30))
     ]
 
     def __init__(self):
@@ -80,11 +80,11 @@ class DataFileContainer(QtCore.QAbstractTableModel):
                 return self._data_files[row].folder
 
     def headerData(self, section, orientation, role):
-        if (orientation == QtCore.Qt.Horizontal
-                and role == QtCore.Qt.DisplayRole
-        ):
-            return self.headers[section][0]
-
+        if orientation == QtCore.Qt.Horizontal:
+            if role == QtCore.Qt.DisplayRole:
+                return self.headers[section][0]
+            elif role == QtCore.Qt.SizeHintRole:
+                return self.headers[section][1]
 
     def add_file(self, data_file):
         if self._check_for_duplicate(data_file):
@@ -105,8 +105,15 @@ class DataFileContainer(QtCore.QAbstractTableModel):
         self.endResetModel()
 
     def delete(self, index):
+        self.beginResetModel()
         del self._data_files[index]
-        #self.notify_observers()
+        self.endResetModel()
+
+    def change_status(self, obj, new_status):
+        ind = self._data_files.index(obj)
+        self.beginResetModel()
+        self._data_files[ind].status = new_status
+        self.endResetModel()
 
     def remove_error_files(self):
         self._data_files = [file for file in self._data_files if

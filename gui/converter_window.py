@@ -4,15 +4,13 @@ from gui.converter_ui import Ui_Frame
 from gui.options_dialog import OptionsDialog
 import os
 from mat.data_converter import default_parameters
-from PyQt5.QtWidgets import QMessageBox, QFileDialog
-from PyQt5.QtCore import QSettings, QThread
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QAbstractItemView
+from PyQt5.QtCore import QSettings, QThread, Qt
 from mat.calibration_factories import make_from_calibration_file
 from gui.gui_utils import application_directory
 from gui import dialogs
 from gui.converter import (
     table_model,
-    table_view,
-    table_controller,
     file_loader,
     file_converter,
     declination_model
@@ -43,11 +41,16 @@ class ConverterFrame(Ui_Frame):
     def setupUi(self, frame):
         super().setupUi(frame)
         self.frame = frame
+
         self.tableView.horizontalHeader().setSectionsClickable(False)
+        self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableView.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
         # Models
         self.data_file_container = table_model.DataFileContainer()
         self.tableView.setModel(self.data_file_container)
+        self.tableView.resizeColumnsToContents()
         self.dec_model = declination_model.Declination()
 
         self.file_loader = file_loader.FileLoader(self.file_queue)
@@ -63,8 +66,7 @@ class ConverterFrame(Ui_Frame):
         self.file_loader.file_loaded_signal.connect(self.file_loaded)
         self.file_loader.file_error_signal.connect(self.file_error)
         self.pushButton_remove.clicked.connect(self.delete_row)
-        # TODO implement
-        #self.pushButton_clear.clicked.connect(self.table_controller.clear)
+        self.pushButton_clear.clicked.connect(self.data_file_container.clear)
         self.pushButton_convert.clicked.connect(self.convert_files)
         self.pushButton_browse.clicked.connect(self.choose_output_directory)
         self.pushButton_output_options.clicked.connect(
@@ -78,6 +80,7 @@ class ConverterFrame(Ui_Frame):
         self.dec_model.update_signal.connect(self.update_declination)
         self.data_file_container.rowsInserted.connect(self.enable_buttons)
         self.data_file_container.rowsRemoved.connect(self.enable_buttons)
+        self.data_file_container.modelReset.connect(self.enable_buttons)
 
     def enable_buttons(self):
         state = True if len(self.data_file_container) > 0 else False

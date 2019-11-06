@@ -29,8 +29,6 @@ class ConverterController(QObject):
             self.progress_dialog.update_status)
         self.converter.conversion_complete.connect(
             self.progress_dialog.conversion_complete)
-        self.converter.conversion_complete.connect(
-            self.model.notify_observers)
         self.converter.conversion_complete.connect(self.finished)
         self.converter.ask_overwrite_signal.connect(self.ask_overwrite)
         self.progress_dialog.show()
@@ -104,24 +102,25 @@ class FileConverter(QThread):
             self.converter = DataConverter(file.path, conversion_parameters)
             self.converter.register_observer(self.update_progress)
             self.converter.convert()
-            file.status = 'converted'
+            self.data_file_container.change_status(file, 'converted')
         except FileExistsError as message:
             self.ask_overwrite(file.filename)
             if self.overwrite in ['once', 'yes_to_all']:
                 self._convert_file(file)
         except (FileNotFoundError, TypeError, ValueError) as m:
             if str(m) == 'Not all required sensors present':
-                file.status = 'error_sensor_missing'
+                self.data_file_container.change_status(
+                    file, 'error_sensor_missing')
             else:
-                file.status = 'error_failed'
+                self.data_file_container.change_status(file, 'error_failed')
         except NoDataError:
-            file.status = 'error_no_data'
+            self.data_file_container.change_status(file, 'error_no_data')
         finally:
             self.converter.source_file.close()
 
         # check for the case that the conversion was canceled
         if not self.converter._is_running:
-            file.status = 'unconverted'
+            self.data_file_container.change_status(file, 'unconverted')
 
     def update_progress(self, percent_done):
         # This is an observer function that gets notified when a data
@@ -137,6 +136,7 @@ class FileConverter(QThread):
         self.progress_signal.emit(percent_done, overall_percent)
 
     def _process_overwrite(self):
+        # TODO why is there a tuple used below when index 0 isn't used?
         action_map = {
             'once': (None, True),
             'yes_to_all': ('yes_to_all', True),

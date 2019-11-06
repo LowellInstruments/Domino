@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'designer_files/converter.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.1
+# Created by: PyQt5 UI code generator 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -181,7 +181,10 @@ class Ui_Frame(object):
         self.horizontalLayout.addItem(spacerItem1)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
         self.tableView = QtWidgets.QTableView(Frame)
+        self.tableView.setAutoScroll(False)
+        self.tableView.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.tableView.setObjectName("tableView")
+        self.tableView.verticalHeader().setVisible(False)
         self.gridLayout.addWidget(self.tableView, 1, 0, 1, 1)
 
         self.retranslateUi(Frame)
