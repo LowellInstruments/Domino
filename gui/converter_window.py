@@ -42,22 +42,24 @@ class ConverterFrame(Ui_Frame):
         super().setupUi(frame)
         self.frame = frame
 
+        # Configure table
         self.tableView.horizontalHeader().setSectionsClickable(False)
         self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableView.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
 
-        # Models
+        # Define models
         self.data_file_container = table_model.DataFileContainer()
-        self.tableView.setModel(self.data_file_container)
-        self.tableView.resizeColumnsToContents()
         self.dec_model = declination_model.Declination()
-
-        self.file_loader = file_loader.FileLoader(self.file_queue)
-
         self.tilt_model = TiltCurveModel(
             application_directory() / 'Calibration Tables')
+
+        # Connect models
+        self.tableView.setModel(self.data_file_container)
+        self.tableView.resizeColumnsToContents()
         self.comboBox_tilt_tables.setModel(self.tilt_model)
+
+        self.file_loader = file_loader.FileLoader(self.file_queue)
         self._connect_signals_to_slots()
         restore_last_session(self)
 
