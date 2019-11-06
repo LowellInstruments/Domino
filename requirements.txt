@@ -3,8 +3,7 @@ flake8
 pytest>=3.6
 pytest-cov
 pytest-xvfb
-#pyinstaller
-git+https://github.com/pyinstaller/pyinstaller.git@a9b299995fda17e61cc7fdac0108d53fc2e6e10a
+pyinstaller
 numpy<1.17
 h5py
 PyQt5
