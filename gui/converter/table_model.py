@@ -2,7 +2,7 @@ from pathlib import Path
 from mat.data_file_factory import load_data_file, WrongFileTypeError
 from datetime import datetime
 from mat.sensor_data_file import NoDataError
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 
 class DataFile:
@@ -63,8 +63,8 @@ class DataFileContainer(QtCore.QAbstractTableModel):
         return len(self.headers)
 
     def data(self, index, role):
+        row, column = index.row(), index.column()
         if role == QtCore.Qt.DisplayRole:
-            row, column = index.row(), index.column()
             if column == 0:
                 return self._data_files[row].filename
             elif column == 1:
@@ -78,6 +78,13 @@ class DataFileContainer(QtCore.QAbstractTableModel):
                 return self._data_files[row].start_time
             elif column == 4:
                 return self._data_files[row].folder
+        if role == QtCore.Qt.FontRole:
+            status = self._data_files[row].status
+            if column == 1:
+                if status.startswith('error') or status == 'converted':
+                    font = QtGui.QFont()
+                    font.setBold(True)
+                    return font
 
     def headerData(self, section, orientation, role):
         if orientation == QtCore.Qt.Horizontal:
@@ -85,6 +92,10 @@ class DataFileContainer(QtCore.QAbstractTableModel):
                 return self.headers[section][0]
             elif role == QtCore.Qt.SizeHintRole:
                 return self.headers[section][1]
+            elif role == QtCore.Qt.FontRole:
+                font = QtGui.QFont()
+                font.setBold(True)
+                return font
 
     def add_file(self, data_file):
         if self._check_for_duplicate(data_file):

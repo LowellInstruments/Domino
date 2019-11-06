@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'designer_files/converter.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Frame(object):
     def setupUi(self, Frame):
@@ -185,6 +183,7 @@ class Ui_Frame(object):
         self.tableView.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.tableView.setObjectName("tableView")
         self.tableView.verticalHeader().setVisible(False)
+        self.tableView.verticalHeader().setDefaultSectionSize(26)
         self.gridLayout.addWidget(self.tableView, 1, 0, 1, 1)
 
         self.retranslateUi(Frame)
@@ -217,8 +216,8 @@ class Ui_Frame(object):
         self.pushButton_convert.setToolTip(_translate("Frame", "Converter all files in the conversion queue using the settings below"))
         self.pushButton_convert.setText(_translate("Frame", "Convert"))
         self.pushButton_convert.setShortcut(_translate("Frame", "Ctrl+S"))
-from . import icons_rc
 
+from . import icons_rc
 
 if __name__ == "__main__":
     import sys
@@ -228,3 +227,4 @@ if __name__ == "__main__":
     ui.setupUi(Frame)
     Frame.show()
     sys.exit(app.exec_())
+

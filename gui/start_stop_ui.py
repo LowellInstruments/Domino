@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'designer_files/start_stop.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.2
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Frame(object):
     def setupUi(self, Frame):
@@ -340,8 +338,8 @@ class Ui_Frame(object):
         item.setText(_translate("Frame", "Battery (V)"))
         self.tableWidget.setSortingEnabled(__sortingEnabled)
         self.label_table.setText(_translate("Frame", "Real-time Data"))
-from . import icons_rc
 
+from . import icons_rc
 
 if __name__ == "__main__":
     import sys
@@ -351,3 +349,4 @@ if __name__ == "__main__":
     ui.setupUi(Frame)
     Frame.show()
     sys.exit(app.exec_())
+
