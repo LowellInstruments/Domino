@@ -29,5 +29,8 @@ def restore_last_session(gui):
     gui.lineEdit_output_folder.setText(
         app_data.get('output_directory', ''))
     gui.dec_model.declination = app_data.get('declination', 0.0)
-    app_data['custom_cal'] = None
-    QSettings().setValue('output_options', app_data)
+    # make sure custom_cal doesn't persist between sessions
+    output_options = QSettings().value('output_options')
+    if output_options:
+        output_options['custom_cal'] = None
+        QSettings().setValue('output_options', output_options)
