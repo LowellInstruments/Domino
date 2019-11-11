@@ -118,7 +118,7 @@ class SetupFile:
                           interval % INTERVALS == 0)
 
     def set_filename(self, filename):
-        if not search(r'^[a-zA-Z0-9_\-]{1,11}\.lid$', filename):
+        if not search(r'^[a-zA-Z0-9_\-]{1,15}\.lid$', filename):
             raise ValueError('Filename error')
         self.update(FILE_NAME, filename)
 
