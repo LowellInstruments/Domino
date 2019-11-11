@@ -333,8 +333,8 @@ class SetupFrame(Ui_Frame):
         QSettings().setValue('setup_file', self.setup_file._setup_dict)
         self.setup_file.write_file(path[0])
         message = 'Setup file saved but your device is NOT RECORDING ' \
-                  'yet.  To start recording, switch to the "Start/Stop ' \
-                  'Device" tab and click the "Start Recording" button.'
+                  'yet.  To start recording, switch to the ' \
+                  '"Device" tab and click the "Start Running" button.'
         QMessageBox.information(self.frame,
                                 'File Saved',
                                 message)
