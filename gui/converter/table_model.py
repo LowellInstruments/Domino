@@ -1,6 +1,8 @@
 from pathlib import Path
 from mat.data_file_factory import load_data_file, WrongFileTypeError
 from datetime import datetime
+from mat.sensor_data_file import NoDataError
+from PyQt5 import QtCore, QtGui
 
 
 class DataFile:
@@ -12,16 +14,20 @@ class DataFile:
         self.size_str = None
         self.start_time = None
         self.status = None
+        self.header_error = None
 
     def query_file(self):
         try:
             data_file = load_data_file(self.path)
-            data_file.page_times()
+            self.header_error = data_file.header_error
         except WrongFileTypeError:
             self.status = 'error_type'
             return
         except (KeyError, ValueError):
             self.status = 'error_header'
+            return
+        except NoDataError:
+            self.status = 'error_no_data'
             return
 
         if len(data_file.page_times()) == 0:
@@ -35,23 +41,69 @@ class DataFile:
         self.status = 'unconverted'
 
 
-class DataFileContainer:
+class DataFileContainer(QtCore.QAbstractTableModel):
+
+    headers = [
+        ('Files to Convert', QtCore.QSize(200, 30)),
+        ('Status', QtCore.QSize(100, 30)),
+        ('Size', QtCore.QSize(100, 30)),
+        ('Start Time', QtCore.QSize(140, 30)),
+        ('Containing Folder', QtCore.QSize(450, 30))
+    ]
+
     def __init__(self):
+        super().__init__()
         self._data_files = []
         self._observers = []
 
-    def add_observer(self, observer):
-        self._observers.append(observer)
+    def rowCount(self, parent):
+        return len(self._data_files)
 
-    def notify_observers(self):
-        for observer in self._observers:
-            observer(self)
+    def columnCount(self, parent):
+        return len(self.headers)
+
+    def data(self, index, role):
+        row, column = index.row(), index.column()
+        if role == QtCore.Qt.DisplayRole:
+            if column == 0:
+                return self._data_files[row].filename
+            elif column == 1:
+                status = self._data_files[row].status
+                if status.startswith('error'):
+                    status = 'error'
+                return status.capitalize()
+            elif column == 2:
+                return self._data_files[row].size_str
+            elif column == 3:
+                return self._data_files[row].start_time
+            elif column == 4:
+                return self._data_files[row].folder
+        if role == QtCore.Qt.FontRole:
+            status = self._data_files[row].status
+            if column == 1:
+                if status.startswith('error') or status == 'converted':
+                    font = QtGui.QFont()
+                    font.setBold(True)
+                    return font
+
+    def headerData(self, section, orientation, role):
+        if orientation == QtCore.Qt.Horizontal:
+            if role == QtCore.Qt.DisplayRole:
+                return self.headers[section][0]
+            elif role == QtCore.Qt.SizeHintRole:
+                return self.headers[section][1]
+            elif role == QtCore.Qt.FontRole:
+                font = QtGui.QFont()
+                font.setBold(True)
+                return font
 
     def add_file(self, data_file):
         if self._check_for_duplicate(data_file):
             return
+        n_files = len(self._data_files)
+        self.beginInsertRows(QtCore.QModelIndex(), n_files, n_files)
         self._data_files.append(data_file)
-        self.notify_observers()
+        self.endInsertRows()
 
     def _check_for_duplicate(self, data_file):
         if data_file.path in [file.path for file in self._data_files]:
@@ -59,29 +111,37 @@ class DataFileContainer:
         return False
 
     def clear(self):
+        self.beginResetModel()
         self._data_files.clear()
-        self.notify_observers()
+        self.endResetModel()
 
     def delete(self, index):
+        self.beginResetModel()
         del self._data_files[index]
-        self.notify_observers()
+        self.endResetModel()
+
+    def change_status(self, obj, new_status):
+        ind = self._data_files.index(obj)
+        self.beginResetModel()
+        self._data_files[ind].status = new_status
+        self.endResetModel()
 
     def remove_error_files(self):
         self._data_files = [file for file in self._data_files if
                             not file.status.startswith('error')]
-        self.notify_observers()
+        #self.notify_observers()
 
     def reset_converted(self):
         for file in self._data_files:
             if file.status == 'converted':
                 file.status = 'unconverted'
-        self.notify_observers()
+        #self.notify_observers()
 
     def reset_errors(self):
         for file in self._data_files:
             if file.status.startswith('error'):
                 file.status = 'unconverted'
-        self.notify_observers()
+        #self.notify_observers()
 
     def unconverted(self):
         # returns the number of unconverted files

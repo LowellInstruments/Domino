@@ -1,6 +1,7 @@
 # GPLv3 License
 # Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
 import logging
+import time
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
 from PyQt5.QtCore import QThread, pyqtSignal, Qt
@@ -33,8 +34,20 @@ class StartStopFrame(Ui_Frame):
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(
-            QHeaderView.Stretch)
+        self.tableWidget.horizontalHeader().setSectionsClickable(False)
+        self.tableWidget.horizontalHeader().setFixedHeight(30)
+        self.tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.tableWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        table_width = self.tableWidget.horizontalHeader().length()
+        self.tableWidget.setFixedSize(
+            table_width,
+            self.tableWidget.verticalHeader().length()
+            + self.tableWidget.horizontalHeader().height()
+        )
+        self.tableWidget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
+        self.tableWidget.setColumnWidth(0, table_width / 2)
+        self.tableWidget.setColumnWidth(1, table_width / 4)
+        self.tableWidget.setColumnWidth(2, table_width / 4)
         self.commands = Commands(self)
         self.logger = LoggerQueryThread(self.commands.get_schedule(),
                                         self.queue)
@@ -78,8 +91,8 @@ class StartStopFrame(Ui_Frame):
     def query_slot(self, query_results):
         logging.debug(query_results)
         command, data = query_results
-        if data:
-            self.commands.command_handler(query_results)
+        if data is not None:
+            self.commands.notify_handlers(query_results)
 
     def connected_slot(self, state):
         self.connection_status.update(state)
@@ -135,6 +148,7 @@ class LoggerQueryThread(QThread):
         self.queue = queue
         self.is_active = False
         self.is_connected = False
+        self.time = time.monotonic()
 
     def run(self):
         self.is_active = True
@@ -163,13 +177,13 @@ class LoggerQueryThread(QThread):
             elif next_command is not None:
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
-            self.msleep(10)
+            self.msleep(50)
 
     def get_next_command(self):
         queue = self.read_queue()
         if queue:
             return queue
-        now = datetime.now().timestamp()
+        now = time.monotonic()
         for i, (command, repeat, next_time) in enumerate(self.commands):
             if now > next_time:
                 self.commands[i][TIME_FIELD] = now + repeat

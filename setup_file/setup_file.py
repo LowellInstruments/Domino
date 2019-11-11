@@ -1,5 +1,6 @@
 from datetime import datetime
 from mat.utils import parse_tags
+from mat.header import Header
 from numpy import array, logical_or, logical_and
 from pathlib import Path
 from re import compile, search
@@ -86,7 +87,10 @@ class SetupFile:
         self._setup_dict[tag] = value
 
     def major_interval_bytes(self):
-        return mat.sensor.major_interval_bytes(self._setup_dict)
+        header = Header('')
+        header._header = self._setup_dict
+        interval, bytes = mat.sensor.major_interval_info(header)
+        return bytes
 
     def available_intervals(self, sensor):
         """
@@ -114,15 +118,11 @@ class SetupFile:
                           interval % INTERVALS == 0)
 
     def set_filename(self, filename):
-        if not search(r'^[a-zA-Z0-9_\-]{1,11}\.lid$', filename):
+        if not search(r'^[a-zA-Z0-9_\-]{1,15}\.lid$', filename):
             raise ValueError('Filename error')
         self.update(FILE_NAME, filename)
 
     def set_channel_enabled(self, sensor, state):
-        self._confirm_bool(state)
-        self.update(sensor, state)
-
-    def _set_accelmag_enabled(self, sensor, state):
         self._confirm_bool(state)
         self.update(sensor, state)
 
@@ -155,7 +155,7 @@ class SetupFile:
         if 0 <= value > max_burst_count:
             raise ValueError('Burst count must be > 0 and <= orient interval '
                              'multiplied by orient burst rate.')
-        if self.is_continuous and (self.value(ORIENTATION_BURST_COUNT) !=
+        if self.is_continuous and (value !=
                                    self.value(ORIENTATION_BURST_RATE)):
             raise ValueError('Invalid burst count while in continuous mode')
         self.update(ORIENTATION_BURST_COUNT, value)

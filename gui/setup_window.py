@@ -18,13 +18,12 @@ from setup_file.setup_file import (
     END_TIME
 )
 from collections import namedtuple
-from PyQt5.QtCore import QDateTime
+from PyQt5.QtCore import QDateTime, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 import logging
 from gui.description_generator import DescriptionGenerator
 from gui import dialogs
-from mat import appdata
-from gui.gui_utils import error_message, set_enabled
+from gui.gui_utils import set_enabled
 import os
 from datetime import datetime
 
@@ -34,8 +33,7 @@ sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
 
 class SetupFrame(Ui_Frame):
     def __init__(self):
-        application_data = appdata.get_userdata('domino.dat')
-        setup_dict = application_data.get('setup_file', None)
+        setup_dict = QSettings().value('setup_file', None, type=dict)
         self.setup_file = SetupFile(setup_dict)
         self.interval_mapping = None
         self.sensor_mapping = None
@@ -46,7 +44,7 @@ class SetupFrame(Ui_Frame):
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
-        self.lineEdit_file_name.setMaxLength(11)
+        self.lineEdit_file_name.setMaxLength(15)
         self.populate_combo_boxes()
         self.setup_mapping()
         self.set_retain_size([self.dateTimeEdit_start_time,
@@ -237,25 +235,23 @@ class SetupFrame(Ui_Frame):
         else:
             start_time = self.setup_file.value(START_TIME)
             if start_time == DEFAULT_SETUP[START_TIME]:
-                end_time = next_hour.addYears(1)
+                end_time = next_hour.addMonths(1)
             else:
                 time_obj = QDateTime.fromString(start_time,
                                                 'yyyy-MM-dd HH:mm:ss')
-                end_time = time_obj.addYears(1)
+                end_time = time_obj.addMonths(1)
             return end_time.toString('yyyy-MM-dd HH:mm:ss')
 
     def filename_changed(self):
         string = self.lineEdit_file_name.text()
         try:
             self.setup_file.set_filename(string + '.lid')
-            # show_error(self.lineEdit_file_name, False)
         except ValueError:
             message = 'There were invalid characters in the file name. ' \
                       'Reverting value.'
-            error_message(self.frame, 'File name error', message)
+            dialogs.error_message('File name error', message)
         finally:
             self.redraw()
-            # show_error(self.lineEdit_file_name, True)
 
     def burst_rate_changed(self):
         index = self.comboBox_orient_burst_rate.currentIndex()
@@ -282,7 +278,7 @@ class SetupFrame(Ui_Frame):
             self.setup_file.set_time(value, date_time_string)
         except ValueError:
             message = 'Start time must be before end time. Reverting value.'
-            error_message(self.frame, 'Start/Stop Time Error', message)
+            dialogs.error_message('Start/Stop Time Error', message)
         finally:
             self.redraw()
 
@@ -307,7 +303,7 @@ class SetupFrame(Ui_Frame):
         except ValueError:
             message = 'The burst duration must be less than or equal to ' \
                       'the orientation interval. Reverting value.'
-            error_message(self.frame, 'Invalid duration', message)
+            dialogs.error_message('Invalid duration', message)
         finally:
             self.redraw()
 
@@ -320,8 +316,8 @@ class SetupFrame(Ui_Frame):
         self.redraw()
         if not self.pre_save_check():
             return
-        application_data = appdata.get_userdata('domino.dat')
-        directory = application_data.get('setup_file_directory', '')
+
+        directory = QSettings().value('setup_file_directory', '', type=str)
         file_name = os.path.join(directory, 'MAT.cfg')
         path = QFileDialog.getSaveFileName(self.frame, 'Save File', file_name)
         if not path[0]:
@@ -329,17 +325,19 @@ class SetupFrame(Ui_Frame):
         if not path[0].endswith('MAT.cfg'):
             message = 'Filename must be MAT.cfg. File not saved. ' \
                       'Please save again.'
-            error_message(self.frame, 'File name error', message)
+            dialogs.error_message('File name error', message)
             self.save_file()
             return
         directory = os.path.dirname(path[0])
-        appdata.set_userdata('domino.dat', 'setup_file_directory', directory)
-        appdata.set_userdata('domino.dat', 'setup_file',
-                             self.setup_file._setup_dict)
+        QSettings().setValue('setup_file_directory', directory)
+        QSettings().setValue('setup_file', self.setup_file._setup_dict)
         self.setup_file.write_file(path[0])
+        message = 'Setup file saved but your device is NOT RECORDING ' \
+                  'yet.  To start recording, switch to the ' \
+                  '"Device" tab and click the "Start Running" button.'
         QMessageBox.information(self.frame,
                                 'File Saved',
-                                'File saved successfully')
+                                message)
 
     def pre_save_check(self):
         passed = True

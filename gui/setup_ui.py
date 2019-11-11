@@ -179,6 +179,7 @@ class Ui_Frame(object):
         _translate = QtCore.QCoreApplication.translate
         Frame.setWindowTitle(_translate("Frame", "Frame"))
         self.groupBox_6.setTitle(_translate("Frame", "Description"))
+        self.lineEdit_file_name.setToolTip(_translate("Frame", "Allowable characters: Upper/lower case letters, digits, space, hyphen, underscore"))
         self.groupBox.setTitle(_translate("Frame", "Temperature"))
         self.label_5.setText(_translate("Frame", "Sampling Interval:"))
         self.checkBox_temperature.setText(_translate("Frame", "Temperature"))
