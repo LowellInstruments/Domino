@@ -10,6 +10,7 @@ from mat.logger_controller_usb import LoggerControllerUSB
 from mat.logger_controller import CommunicationError
 from datetime import datetime
 from gui.start_stop_updater import Commands, ConnectionStatus
+from gui import start_stop_updater
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from PyQt5.QtWidgets import QApplication
 from queue import Queue
@@ -180,7 +181,10 @@ class LoggerQueryThread(QThread):
             if next_command == 'disconnect':
                 self.is_active = False
                 break
-            elif next_command is not None:
+            elif next_command == 'get_logger_settings':
+                if start_stop_updater.supports_gls is False:
+                    continue
+            if next_command is not None:
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
             self.msleep(50)

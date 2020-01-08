@@ -14,14 +14,14 @@ from enum import Enum
 COMMANDS = [
     ('GTM', 1),
     ('STS', 1),
+    ('GFV', 10),
     ('get_logger_settings', 5),
     ('get_sensor_readings', 1),
     ('logger_info', 10),
     ('FSZ', 5),
     ('CTS', 10),
     ('CFS', 10),
-    ('GSN', 10),
-    ('GFV', 10),
+    ('GSN', 10)
 ]
 
 FILE_SIZE = {
@@ -60,6 +60,9 @@ ERROR_CODES = [
     (64, 'ADXL data error'),
     (128, 'Stack Overflow')
 ]
+
+
+supports_gls = False
 
 
 class Commands:
@@ -123,6 +126,9 @@ class SimpleUpdate(Update):
 
     def update(self, query_results):
         command, data = query_results
+        if command == 'GFV':
+            if data != '1.0.124':
+                supports_gls = True
         format_, widget_name = SIMPLE_FIELD[command]
         self.widget = getattr(self.gui, widget_name)
         self.widget.setText(format_.format(data))
