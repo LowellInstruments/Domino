@@ -30,7 +30,7 @@ class Container(Ui_MainWindow):
         self.version = __version__
         self.window = window
         self.setupUi(window)
-        self.window.setStyleSheet('font-size: 12px;')
+        self.window.setStyleSheet('font-size: 13px;')
         self.window.closeEvent = self.closeEvent
         gui.mw = self.window
         self.converter_frame = ConverterFrame()

@@ -4,7 +4,7 @@ import logging
 import time
 logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, Qt, QSysInfo
 from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
 from mat.logger_controller import CommunicationError
@@ -48,6 +48,12 @@ class StartStopFrame(Ui_Frame):
         self.tableWidget.setColumnWidth(0, table_width / 2)
         self.tableWidget.setColumnWidth(1, table_width / 4)
         self.tableWidget.setColumnWidth(2, table_width / 4)
+        if QSysInfo.productType() == 'windows' and QSysInfo.productVersion() == '10':
+            self.tableWidget.horizontalHeader().setStyleSheet(
+                'border-top: 0px; '
+                'border-left: 0px; '
+                'border-right: 0px; '
+                'border-bottom: 1px solid gray;')
         self.commands = Commands(self)
         self.logger = LoggerQueryThread(self.commands.get_schedule(),
                                         self.queue)

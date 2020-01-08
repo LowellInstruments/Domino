@@ -5,7 +5,7 @@ from gui.options_dialog import OptionsDialog
 import os
 from mat.data_converter import default_parameters
 from PyQt5.QtWidgets import QMessageBox, QFileDialog, QAbstractItemView
-from PyQt5.QtCore import QSettings, QThread, Qt
+from PyQt5.QtCore import QSettings, QThread, Qt, QSysInfo
 from mat.calibration_factories import make_from_calibration_file
 from gui.gui_utils import application_directory
 from gui import dialogs
@@ -47,6 +47,12 @@ class ConverterFrame(Ui_Frame):
         self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableView.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
+        if QSysInfo.productType() == 'windows' and QSysInfo.productVersion() == '10':
+            self.tableView.horizontalHeader().setStyleSheet(
+                'border-top: 0px; '
+                'border-left: 0px; '
+                'border-right: 0px; '
+                'border-bottom: 1px solid gray;')
 
         # Define models
         self.data_file_container = table_model.DataFileContainer()
