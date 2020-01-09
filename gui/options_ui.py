@@ -130,7 +130,7 @@ class Ui_Dialog(object):
         self.comboBox_split.setItemText(4, _translate("Dialog", "100 MB"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Output"))
         self.radioButton_posix_time.setToolTip(_translate("Dialog", "UTC (no time zone adjustment)"))
-        self.radioButton_posix_time.setText(_translate("Dialog", "POSIX Time Stamp (seconds since Jan 1, 1970)"))
+        self.radioButton_posix_time.setText(_translate("Dialog", "Local POSIX Time Stamp (seconds since Jan 1, 1970)"))
         self.radioButton_legacy_time.setText(_translate("Dialog", "Legacy (yyyy-mm-dd, HH:MM:SS.SSS)"))
         self.radioButton_iso8601_time.setText(_translate("Dialog", "ISO 8601 (yyyy-mm-ddTHH:MM:SS.SSS)"))
         self.radioButton_elapsed_time.setText(_translate("Dialog", "Elapsed Time (seconds)"))

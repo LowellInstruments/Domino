@@ -171,7 +171,7 @@
         <string>UTC (no time zone adjustment)</string>
        </property>
        <property name="text">
-        <string>POSIX Time Stamp (seconds since Jan 1, 1970)</string>
+        <string>Local POSIX Time Stamp (seconds since Jan 1, 1970)</string>
        </property>
        <attribute name="buttonGroup">
         <string notr="true">buttonGroup</string>
