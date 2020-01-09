@@ -54,7 +54,7 @@ LOGGER_INFO = {
 ERROR_CODES = [
     (2, 'Delayed start'),
     (4, 'SD card error'),
-    (8, 'MAT.cfg error'),
+    (8, 'Configuration file (MAT.cfg) missing or invalid'),
     (16, 'Safe shutdown'),
     (32, 'SD retry error'),
     (64, 'ADXL data error'),
