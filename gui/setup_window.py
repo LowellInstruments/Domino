@@ -248,8 +248,9 @@ class SetupFrame(Ui_Frame):
             self.setup_file.set_filename(string + '.lid')
         except ValueError:
             message = 'There were invalid characters in the file name. ' \
-                      'Reverting value.'
-            dialogs.error_message('File name error', message)
+                      'Reverting to prior value. Use only alphanumeric ' \
+                      'values and/or underscores and dashes. 15 characters maximum.'
+            dialogs.error_message('Description Error', message)
         finally:
             self.redraw()
 
