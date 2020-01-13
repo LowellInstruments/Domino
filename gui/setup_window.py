@@ -349,6 +349,11 @@ class SetupFrame(Ui_Frame):
             dialogs.no_channels_warning()
             passed = False
 
+        if self.dateTimeEdit_start_time.dateTime() < QDateTime.currentDateTime():
+            message = 'Start time must be in the future.'
+            dialogs.error_message('Start/Stop Time Error', message)
+            passed = False
+
         if self.setup_file.major_interval_bytes() > 32000:
             dialogs.major_interval_warning()
             passed = False
