@@ -8,12 +8,14 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt, QSysInfo
 from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
 from mat.logger_controller import CommunicationError
+from mat.calibration_factories import DEFAULT_COEFFICIENTS
 from datetime import datetime
 from gui.start_stop_updater import Commands, ConnectionStatus
 from gui import start_stop_updater
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from PyQt5.QtWidgets import QApplication
 from queue import Queue
+from gui import dialogs
 
 
 TIME_FIELD = 2
@@ -60,6 +62,7 @@ class StartStopFrame(Ui_Frame):
                                         self.queue)
         self.logger.query_update.connect(self.query_slot)
         self.logger.connected.connect(self.connected_slot)
+        self.logger.error_message.connect(self.show_warning)
         self.logger.start()
         self.time_updater = TimeUpdater()
         self.time_updater.time_signal.connect(self.update_time_slot)
@@ -134,6 +137,9 @@ class StartStopFrame(Ui_Frame):
             text = 'Computer Time: --'
         self.label_computer_time.setText(text)
 
+    def show_warning(self, title, message):
+        dialogs.error_message(title, message)
+
 
 class TimeUpdater(QThread):
     time_signal = pyqtSignal(str)
@@ -148,6 +154,7 @@ class TimeUpdater(QThread):
 class LoggerQueryThread(QThread):
     query_update = pyqtSignal(tuple)
     connected = pyqtSignal(bool)
+    error_message = pyqtSignal(str, str)
 
     def __init__(self, commands, queue):
         super().__init__()
@@ -165,6 +172,7 @@ class LoggerQueryThread(QThread):
             with LoggerControllerUSB() as controller:
                 if controller is not None:
                     self._update_connection_status(True)
+                    self.queue.put('load_calibration')
                     self.start_query_loop(controller)
                 else:
                     self._update_connection_status(False)
@@ -187,6 +195,12 @@ class LoggerQueryThread(QThread):
             if next_command is not None:
                 result = self._send_command(controller, next_command)
                 self.query_update.emit((next_command, result))
+            if next_command == 'load_calibration':
+                if controller.calibration.coefficients == DEFAULT_COEFFICIENTS:
+                    self.error_message.emit(
+                        'Warning',
+                        'Calibration values on your device are missing, invalid, or outdated.')
+
             self.msleep(50)
 
     def get_next_command(self):
