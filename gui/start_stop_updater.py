@@ -75,13 +75,12 @@ class Commands:
             ('CFS', 10),
             ('GSN', 10)
         ]
-        self.make_schedule()
-
-        for klass in self.HANDLER_CLASSES:
-            self.command_handlers.append(klass(self.gui))
+        self.reset()
 
     def reset(self):
         self.make_schedule()
+        for klass in self.HANDLER_CLASSES:
+            self.command_handlers.append(klass(self.gui))
         self.gls_set = False
 
     def make_schedule(self):
