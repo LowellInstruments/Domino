@@ -10,20 +10,6 @@ from gui.start_stop_clear import clear_gui
 from enum import Enum
 
 
-# (Command, repeat interval)
-COMMANDS = [
-    ('GTM', 1),
-    ('STS', 1),
-    ('GFV', 10),
-    ('get_logger_settings', 5),
-    ('get_sensor_readings', 1),
-    ('logger_info', 10),
-    ('FSZ', 5),
-    ('CTS', 10),
-    ('CFS', 10),
-    ('GSN', 10)
-]
-
 FILE_SIZE = {
     'FSZ': ('File size {:0.2f} MB', 'label_file_size'),
     'CTS': (' of {:0.2f} GB available', 'label_sd_total_space'),
@@ -62,14 +48,12 @@ ERROR_CODES = [
 ]
 
 
-supports_gls = False
-
-
 class Commands:
     def __init__(self, gui):
         self.gui = gui
         self.command_schedule = []
         self.command_handlers = []
+        self.gls_set = False
         self.HANDLER_CLASSES = [
             TimeUpdate,
             StatusUpdate,
@@ -79,17 +63,42 @@ class Commands:
             SerialNumberUpdate,
             SimpleUpdate,
         ]
-        self.make_commands()
+        # (Command, repeat interval)
+        self.COMMANDS = [
+            ('GFV', 10),
+            ('GTM', 1),
+            ('STS', 1),
+            ('get_sensor_readings', 1),
+            ('logger_info', 10),
+            ('FSZ', 5),
+            ('CTS', 10),
+            ('CFS', 10),
+            ('GSN', 10)
+        ]
+        self.make_schedule()
 
-    def make_commands(self):
         for klass in self.HANDLER_CLASSES:
             self.command_handlers.append(klass(self.gui))
 
-    def get_schedule(self):
-        command_schedule = []
-        for command, repeat in COMMANDS:
-            command_schedule.append([command, repeat, 0])
-        return list(command_schedule)
+    def reset(self):
+        self.make_schedule()
+        self.gls_set = False
+
+    def make_schedule(self):
+        self.command_schedule = []
+        for command, repeat in self.COMMANDS:
+            self.command_schedule.append([command, repeat, 0])
+
+    def next_command(self):
+        for i, (command, repeat, next_time) in enumerate(self.command_schedule):
+            if time.monotonic() > next_time:
+                self.command_schedule[i][2] = time.monotonic() + repeat
+                return command
+
+    def supports_gls(self, state):
+        if not self.gls_set and state is True:
+            self.gls_set = True
+            self.command_schedule.insert(1, ['get_logger_settings', 5, 0])
 
     def notify_handlers(self, query_results):
         for handler in self.command_handlers:
@@ -126,9 +135,6 @@ class SimpleUpdate(Update):
 
     def update(self, query_results):
         command, data = query_results
-        if command == 'GFV':
-            if data != '1.0.124':
-                supports_gls = True
         format_, widget_name = SIMPLE_FIELD[command]
         self.widget = getattr(self.gui, widget_name)
         self.widget.setText(format_.format(data))
@@ -152,8 +158,6 @@ class SensorUpdate(Update):
         command, data = query_results
         if command == 'get_logger_settings':
             self.logger_settings = query_results[1]
-            self.supports_gls = True
-            self.gls_status_determined = True
         elif command == 'get_sensor_readings':
             self.redraw_table(query_results[1])
 

@@ -56,7 +56,7 @@ class StartStopFrame(Ui_Frame):
                 'border-right: 0px; '
                 'border-bottom: 1px solid gray;')
         self.commands = Commands(self)
-        self.logger = LoggerQueryThread(self.commands.get_schedule(),
+        self.logger = LoggerQueryThread(self.commands,
                                         self.queue)
         self.logger.query_update.connect(self.query_slot)
         self.logger.connected.connect(self.connected_slot)
@@ -164,6 +164,7 @@ class LoggerQueryThread(QThread):
                 self.is_active = False
             with LoggerControllerUSB() as controller:
                 if controller is not None:
+                    self.commands.reset()
                     self._update_connection_status(True)
                     self.start_query_loop(controller)
                 else:
@@ -181,11 +182,11 @@ class LoggerQueryThread(QThread):
             if next_command == 'disconnect':
                 self.is_active = False
                 break
-            elif next_command == 'get_logger_settings':
-                if start_stop_updater.supports_gls is False:
-                    continue
             if next_command is not None:
                 result = self._send_command(controller, next_command)
+                if next_command == 'GFV':
+                    if result != '1.0.124':
+                        self.commands.supports_gls(True)
                 self.query_update.emit((next_command, result))
             self.msleep(50)
 
@@ -194,10 +195,7 @@ class LoggerQueryThread(QThread):
         if queue:
             return queue
         now = time.monotonic()
-        for i, (command, repeat, next_time) in enumerate(self.commands):
-            if now > next_time:
-                self.commands[i][TIME_FIELD] = now + repeat
-                return command
+        return self.commands.next_command()
 
     def read_queue(self):
         if not self.queue.empty():
