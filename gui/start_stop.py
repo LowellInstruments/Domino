@@ -8,13 +8,14 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt, QSysInfo
 from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
 from mat.logger_controller import CommunicationError
+from mat.calibration_factories import DEFAULT_COEFFICIENTS
 from datetime import datetime
 from gui.start_stop_updater import Commands, ConnectionStatus, ERROR_CODES
 from gui import start_stop_updater
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from PyQt5.QtWidgets import QApplication
 from queue import Queue
-from gui.dialogs import error_message
+from gui import dialogs
 
 
 TIME_FIELD = 2
@@ -62,6 +63,7 @@ class StartStopFrame(Ui_Frame):
         self.logger.query_update.connect(self.query_slot)
         self.logger.connected.connect(self.connected_slot)
         self.logger.error_code.connect(self.show_run_error)
+        self.logger.error_message.connect(self.show_warning)
         self.logger.start()
         self.time_updater = TimeUpdater()
         self.time_updater.time_signal.connect(self.update_time_slot)
@@ -132,7 +134,7 @@ class StartStopFrame(Ui_Frame):
             if code & value:
                 status_str += ' - {}'.format(string)
         status_str += ' (error code 0x{})'.format(code)
-        error_message('Error', status_str)
+        dialogs.error_message('Error', status_str)
 
     def stop(self):
         self.pushButton_stop.setEnabled(False)
@@ -144,6 +146,9 @@ class StartStopFrame(Ui_Frame):
         else:
             text = 'Computer Time: --'
         self.label_computer_time.setText(text)
+
+    def show_warning(self, title, message):
+        dialogs.error_message(title, message)
 
 
 class TimeUpdater(QThread):
@@ -160,6 +165,7 @@ class LoggerQueryThread(QThread):
     query_update = pyqtSignal(tuple)
     connected = pyqtSignal(bool)
     error_code = pyqtSignal(int)
+    error_message = pyqtSignal(str, str)
 
     def __init__(self, commands, queue):
         super().__init__()
@@ -178,6 +184,7 @@ class LoggerQueryThread(QThread):
                 if controller is not None:
                     self.commands.reset()
                     self._update_connection_status(True)
+                    self.queue.put('load_calibration')
                     self.start_query_loop(controller)
                 else:
                     self._update_connection_status(False)
@@ -200,12 +207,19 @@ class LoggerQueryThread(QThread):
                 if int(result) & 252:
                     self.error_code.emit(int(result) & 252)
 
+            elif next_command == 'load_calibration':
+                if controller.calibration.coefficients == DEFAULT_COEFFICIENTS:
+                    self.error_message.emit(
+                        'Warning',
+                        'Calibration values on your device are missing, invalid, or outdated.')
+
             elif next_command is not None:
                 result = self._send_command(controller, next_command)
                 if next_command == 'GFV':
                     if result != '1.0.124':
                         self.commands.supports_gls(True)
                 self.query_update.emit((next_command, result))
+
             self.msleep(50)
 
     def get_next_command(self):
