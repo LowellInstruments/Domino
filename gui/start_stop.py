@@ -9,11 +9,12 @@ from PyQt5.QtWidgets import QStatusBar, QLabel
 from mat.logger_controller_usb import LoggerControllerUSB
 from mat.logger_controller import CommunicationError
 from datetime import datetime
-from gui.start_stop_updater import Commands, ConnectionStatus
+from gui.start_stop_updater import Commands, ConnectionStatus, ERROR_CODES
 from gui import start_stop_updater
 from PyQt5.QtWidgets import QHeaderView, QMessageBox
 from PyQt5.QtWidgets import QApplication
 from queue import Queue
+from gui.dialogs import error_message
 
 
 TIME_FIELD = 2
@@ -60,6 +61,7 @@ class StartStopFrame(Ui_Frame):
                                         self.queue)
         self.logger.query_update.connect(self.query_slot)
         self.logger.connected.connect(self.connected_slot)
+        self.logger.error_code.connect(self.show_run_error)
         self.logger.start()
         self.time_updater = TimeUpdater()
         self.time_updater.time_signal.connect(self.update_time_slot)
@@ -113,6 +115,7 @@ class StartStopFrame(Ui_Frame):
         self.pushButton_sync_clock.setEnabled(False)
         self.pushButton_start.setEnabled(False)
         self.queue.put('RUN')
+        self.queue.put('POST_RUN_STATUS')
 
     def confirm_run_with_different_time(self):
         message = 'Device time differs from computer time by more than 1 ' \
@@ -122,6 +125,14 @@ class StartStopFrame(Ui_Frame):
                                      QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.No)
         return answer == QMessageBox.Yes
+
+    def show_run_error(self, code):
+        status_str = 'Device failed to start'
+        for value, string in ERROR_CODES:
+            if code & value:
+                status_str += ' - {}'.format(string)
+        status_str += ' (error code 0x{})'.format(code)
+        error_message('Error', status_str)
 
     def stop(self):
         self.pushButton_stop.setEnabled(False)
@@ -148,6 +159,7 @@ class TimeUpdater(QThread):
 class LoggerQueryThread(QThread):
     query_update = pyqtSignal(tuple)
     connected = pyqtSignal(bool)
+    error_code = pyqtSignal(int)
 
     def __init__(self, commands, queue):
         super().__init__()
@@ -182,7 +194,13 @@ class LoggerQueryThread(QThread):
             if next_command == 'disconnect':
                 self.is_active = False
                 break
-            if next_command is not None:
+
+            elif next_command == 'POST_RUN_STATUS':
+                result = self._send_command(controller, 'STS')
+                if int(result) & 252:
+                    self.error_code.emit(int(result) & 252)
+
+            elif next_command is not None:
                 result = self._send_command(controller, next_command)
                 if next_command == 'GFV':
                     if result != '1.0.124':
@@ -194,7 +212,6 @@ class LoggerQueryThread(QThread):
         queue = self.read_queue()
         if queue:
             return queue
-        now = time.monotonic()
         return self.commands.next_command()
 
     def read_queue(self):
