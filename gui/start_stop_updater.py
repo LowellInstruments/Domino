@@ -40,7 +40,7 @@ LOGGER_INFO = {
 ERROR_CODES = [
     (4, 'SD card problem'),
     (8, 'Configuration file (MAT.cfg) missing or invalid'),
-    (16, 'Bad battery'),
+    (16, 'Battery critically low'),
     (32, 'SD Card Problem'),
     (64, 'Data error'),
     (128, 'Stack Overflow')
@@ -97,8 +97,6 @@ class Commands:
         if not self.gls_set and state is True:
             self.gls_set = True
             self.command_schedule.insert(1, ['get_logger_settings', 5, 0])
-            for handler in self.command_handlers:
-                handler.supports_gls = True
 
     def notify_handlers(self, query_results):
         for handler in self.command_handlers:
@@ -112,7 +110,6 @@ class Update:
         of commands that should be accepted by update
         """
         self.gui = gui
-        self.supports_gls = False
 
     def applicable_commands(self):
         raise NotImplementedError
@@ -276,9 +273,6 @@ class StatusUpdate(Update):
         status_str = 'Device {}'.format(running)
         if status_code & 2:
             status_str += ' - {}'.format('Delayed start')
-        if not self.supports_gls:
-            return status_str
-
         for value, string in ERROR_CODES:
             if status_code & value:
                 status_str += ' - {}'.format(string)

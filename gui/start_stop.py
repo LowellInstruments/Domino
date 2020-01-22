@@ -129,11 +129,12 @@ class StartStopFrame(Ui_Frame):
         return answer == QMessageBox.Yes
 
     def show_run_error(self, code):
-        status_str = 'Device failed to start'
+        # code is an int, NOT hex
+        status_str = 'Device reported error'.format(code)
         for value, string in ERROR_CODES:
             if code & value:
                 status_str += ' - {}'.format(string)
-        status_str += ' (error code 0x{})'.format(code)
+        status_str += ' (error code {})'.format(code)
         dialogs.error_message('Error', status_str)
 
     def stop(self):
@@ -204,21 +205,23 @@ class LoggerQueryThread(QThread):
 
             elif next_command == 'POST_RUN_STATUS':
                 result = self._send_command(controller, 'STS')
-                if int(result) & 252:
-                    self.error_code.emit(int(result) & 252)
+                status_code = int(result, 16)
+                if int(status_code) & 252:
+                    self.error_code.emit(int(status_code) & 252)
 
-            elif next_command == 'load_calibration':
+            elif next_command is not None:
+                result = self._send_command(controller, next_command)
+
+            if next_command == 'load_calibration':
                 if controller.calibration.coefficients == DEFAULT_COEFFICIENTS:
                     self.error_message.emit(
                         'Warning',
                         'Calibration values on your device are missing, invalid, or outdated.')
 
-            elif next_command is not None:
-                result = self._send_command(controller, next_command)
-                if next_command == 'GFV':
-                    if result != '1.0.124':
-                        self.commands.supports_gls(True)
-                self.query_update.emit((next_command, result))
+            elif next_command == 'GFV':
+                if result != '1.0.124':
+                    self.commands.supports_gls(True)
+            self.query_update.emit((next_command, result))
 
             self.msleep(50)
 
