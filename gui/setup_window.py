@@ -248,8 +248,9 @@ class SetupFrame(Ui_Frame):
             self.setup_file.set_filename(string + '.lid')
         except ValueError:
             message = 'There were invalid characters in the file name. ' \
-                      'Reverting value.'
-            dialogs.error_message('File name error', message)
+                      'Reverting to prior value. Use only alphanumeric ' \
+                      'values and/or underscores and dashes. 15 characters maximum.'
+            dialogs.error_message('Description Error', message)
         finally:
             self.redraw()
 
@@ -346,6 +347,12 @@ class SetupFrame(Ui_Frame):
                    or self.setup_file.value(TEMPERATURE_ENABLED)
         if not channels:
             dialogs.no_channels_warning()
+            passed = False
+
+        if self.setup_file.value('STM') != DEFAULT_SETUP['STM'] and \
+                self.dateTimeEdit_start_time.dateTime() < QDateTime.currentDateTime():
+            message = 'Start time must be in the future.'
+            dialogs.error_message('Start/Stop Time Error', message)
             passed = False
 
         if self.setup_file.major_interval_bytes() > 32000:

@@ -30,6 +30,7 @@ class Container(Ui_MainWindow):
         self.version = __version__
         self.window = window
         self.setupUi(window)
+        self.window.setStyleSheet('font-size: 13px;')
         self.window.closeEvent = self.closeEvent
         gui.mw = self.window
         self.converter_frame = ConverterFrame()
@@ -38,8 +39,7 @@ class Container(Ui_MainWindow):
         self.setup_frame.setupUi(self.frame_setup_file)
         self.start_stop_frame = StartStopFrame()
         self.start_stop_frame.setupUi(self.frame_start_stop)
-        self.window.setWindowTitle('Lowell Instruments - Domino {}'
-                                   .format(self.version))
+        self.window.setWindowTitle('Lowell Instruments - Domino')
         self.show_about_button()
         self.old_resize = self.window.resizeEvent
         self.window.resizeEvent = self.resizeEvent
@@ -83,7 +83,7 @@ class Container(Ui_MainWindow):
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
             'Domino' + '&trade; ' + self.version + '<br /><br />' \
-            'Copyright 2018-2019 by Lowell Instruments LLC, some ' \
+            'Copyright 2018-2020 by Lowell Instruments LLC, some ' \
             'rights reserved. <br />' \
             'Source code for this application is available under ' \
             'the GPLv3 License at ' \

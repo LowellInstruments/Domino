@@ -31,6 +31,7 @@ class Ui_Frame(object):
         font.setBold(True)
         font.setWeight(75)
         self.label_status.setFont(font)
+        self.label_status.setWordWrap(True)
         self.label_status.setObjectName("label_status")
         self.gridLayout_2.addWidget(self.label_status, 1, 1, 1, 1)
         self.label_connected = QtWidgets.QLabel(self.frame_2)

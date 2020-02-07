@@ -10,20 +10,6 @@ from gui.start_stop_clear import clear_gui
 from enum import Enum
 
 
-# (Command, repeat interval)
-COMMANDS = [
-    ('GTM', 1),
-    ('STS', 1),
-    ('get_logger_settings', 5),
-    ('get_sensor_readings', 1),
-    ('logger_info', 10),
-    ('FSZ', 5),
-    ('CTS', 10),
-    ('CFS', 10),
-    ('GSN', 10),
-    ('GFV', 10),
-]
-
 FILE_SIZE = {
     'FSZ': ('File size {:0.2f} MB', 'label_file_size'),
     'CTS': (' of {:0.2f} GB available', 'label_sd_total_space'),
@@ -52,12 +38,11 @@ LOGGER_INFO = {
 }
 
 ERROR_CODES = [
-    (2, 'Delayed start'),
-    (4, 'SD card error'),
-    (8, 'MAT.cfg error'),
-    (16, 'Safe shutdown'),
-    (32, 'SD retry error'),
-    (64, 'ADXL data error'),
+    (4, 'SD card problem'),
+    (8, 'Configuration file (MAT.cfg) missing or invalid'),
+    (16, 'Battery critically low'),
+    (32, 'SD Card Problem'),
+    (64, 'Data error'),
     (128, 'Stack Overflow')
 ]
 
@@ -67,6 +52,7 @@ class Commands:
         self.gui = gui
         self.command_schedule = []
         self.command_handlers = []
+        self.gls_set = False
         self.HANDLER_CLASSES = [
             TimeUpdate,
             StatusUpdate,
@@ -76,17 +62,41 @@ class Commands:
             SerialNumberUpdate,
             SimpleUpdate,
         ]
-        self.make_commands()
+        # (Command, repeat interval)
+        self.COMMANDS = [
+            ('GFV', 10),
+            ('GTM', 1),
+            ('STS', 1),
+            ('get_sensor_readings', 1),
+            ('logger_info', 10),
+            ('FSZ', 5),
+            ('CTS', 10),
+            ('CFS', 10),
+            ('GSN', 10)
+        ]
+        self.reset()
 
-    def make_commands(self):
+    def reset(self):
+        self.make_schedule()
         for klass in self.HANDLER_CLASSES:
             self.command_handlers.append(klass(self.gui))
+        self.gls_set = False
 
-    def get_schedule(self):
-        command_schedule = []
-        for command, repeat in COMMANDS:
-            command_schedule.append([command, repeat, 0])
-        return list(command_schedule)
+    def make_schedule(self):
+        self.command_schedule = []
+        for command, repeat in self.COMMANDS:
+            self.command_schedule.append([command, repeat, 0])
+
+    def next_command(self):
+        for i, (command, repeat, next_time) in enumerate(self.command_schedule):
+            if time.monotonic() > next_time:
+                self.command_schedule[i][2] = time.monotonic() + repeat
+                return command
+
+    def supports_gls(self, state):
+        if not self.gls_set and state is True:
+            self.gls_set = True
+            self.command_schedule.insert(1, ['get_logger_settings', 5, 0])
 
     def notify_handlers(self, query_results):
         for handler in self.command_handlers:
@@ -146,8 +156,6 @@ class SensorUpdate(Update):
         command, data = query_results
         if command == 'get_logger_settings':
             self.logger_settings = query_results[1]
-            self.supports_gls = True
-            self.gls_status_determined = True
         elif command == 'get_sensor_readings':
             self.redraw_table(query_results[1])
 
@@ -263,6 +271,8 @@ class StatusUpdate(Update):
     def description(self, status_code):
         running = 'running' if self._running(status_code) else 'stopped'
         status_str = 'Device {}'.format(running)
+        if status_code & 2:
+            status_str += ' - {}'.format('Delayed start')
         for value, string in ERROR_CODES:
             if status_code & value:
                 status_str += ' - {}'.format(string)
