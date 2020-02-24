@@ -157,9 +157,11 @@ def ask_remove_error_files():
 def header_error(filename, header_error):
     good, ideal = header_error
     percent = good / ideal * 100
-    message = 'The file "{}" encountered corruption at {:.0f}%. ' \
+    message = 'The file "{}" encountered corruption at {:.0f}% ' \
+              'from the start of the file. ' \
               'The good portion of the file will be ' \
-              'converted.'.format(filename, percent)
+              'converted. Contact support@lowellinstruments.com ' \
+              'for assistance with this issue.'.format(filename, percent)
     QMessageBox.warning(gui.mw, 'File Corruption', message)
 
 
