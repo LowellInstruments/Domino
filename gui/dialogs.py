@@ -128,7 +128,9 @@ def conversion_error(model):
         'error_failed':
             'File structure error',
         'error_sensor_missing':
-            'The output type selected depends on sensors that were disabled'
+            'The output type selected depends on sensors that were disabled',
+        'error_missing':
+            'The input file has been moved or deleted'
     }
     UNKNOWN = 'An unknown error occurred'
     message = 'There were errors during the file conversion'
