@@ -20,6 +20,7 @@ from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
 import gui
+import platform
 
 
 RICH_TEXT = 1
@@ -30,6 +31,12 @@ class Container(Ui_MainWindow):
         self.version = __version__
         self.window = window
         self.setupUi(window)
+
+        # remove icons from tabs on Mac
+        if platform.system() == 'Darwin':
+            for i in range(3):
+                self.tabWidget.setTabIcon(i, QIcon())
+
         self.window.setStyleSheet('font-size: 13px;')
         self.window.closeEvent = self.closeEvent
         gui.mw = self.window
