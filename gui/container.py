@@ -36,6 +36,7 @@ class Container(Ui_MainWindow):
         if platform.system() == 'Darwin':
             for i in range(3):
                 self.tabWidget.setTabIcon(i, QIcon())
+            self.centralwidget.setContentsMargins(11, 25, 11, 11)
 
         self.window.setStyleSheet('font-size: 13px;')
         self.window.closeEvent = self.closeEvent
