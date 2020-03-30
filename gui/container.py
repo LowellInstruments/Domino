@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import (
     QRect,
     QSize,
+    QSize
 )
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop import StartStopFrame
@@ -34,6 +35,8 @@ class Container(Ui_MainWindow):
 
         # remove icons from tabs on Mac
         if platform.system() == 'Darwin':
+            self.window.resize(900, 650)
+            self.window.setMinimumSize(QSize(900, 650))
             for i in range(3):
                 self.tabWidget.setTabIcon(i, QIcon())
             self.centralwidget.setContentsMargins(11, 25, 11, 11)
