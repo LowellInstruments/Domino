@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import (
     QRect,
-    QSize,
     QSize
 )
 from gui.container_ui import Ui_MainWindow
