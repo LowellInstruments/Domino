@@ -8,6 +8,7 @@ numpy<1.17
 h5py
 #PyQt5
 PyQt5==5.9.2
-git+https://github.com/LowellInstruments/lowell-mat.git@36f7c14b2c1273faef9ac7457679dca37d3d5172
+#git+https://github.com/LowellInstruments/lowell-mat.git@36f7c14b2c1273faef9ac7457679dca37d3d5172
+git+https://github.com/LowellInstruments/lowell-mat.git
 pytest-qt
 pytest-mock

@@ -128,7 +128,9 @@ def conversion_error(model):
         'error_failed':
             'File structure error',
         'error_sensor_missing':
-            'The output type selected depends on sensors that were disabled'
+            'The output type selected depends on sensors that were disabled',
+        'error_missing':
+            'The input file has been moved or deleted'
     }
     UNKNOWN = 'An unknown error occurred'
     message = 'There were errors during the file conversion'
@@ -155,9 +157,11 @@ def ask_remove_error_files():
 def header_error(filename, header_error):
     good, ideal = header_error
     percent = good / ideal * 100
-    message = 'The file "{}" encountered corruption at {:.0f}%. ' \
+    message = 'The file "{}" encountered corruption at {:.0f}% ' \
+              'from the start of the file. ' \
               'The good portion of the file will be ' \
-              'converted.'.format(filename, percent)
+              'converted. Contact support@lowellinstruments.com ' \
+              'for assistance with this issue.'.format(filename, percent)
     QMessageBox.warning(gui.mw, 'File Corruption', message)
 
 

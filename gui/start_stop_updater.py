@@ -273,9 +273,9 @@ class StatusUpdate(Update):
         status_str = 'Device {}'.format(running)
         if status_code & 2:
             status_str += ' - {}'.format('Delayed start')
-        for value, string in ERROR_CODES:
-            if status_code & value:
-                status_str += ' - {}'.format(string)
+        # for value, string in ERROR_CODES:
+        #     if status_code & value:
+        #         status_str += ' - {}'.format(string)
         return status_str
 
     def _show_running(self, state):
