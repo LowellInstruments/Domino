@@ -194,7 +194,9 @@ class SetupFrame(Ui_Frame):
             self.lineEdit_burst_duration.setEnabled(False)
             self.comboBox_orient_interval.setEnabled(False)
             self.lineEdit_burst_duration.setText('1')
+            self.comboBox_orient_burst_rate.model().item(0).setEnabled(False)
         else:
+            self.comboBox_orient_burst_rate.model().item(0).setEnabled(True)
             self.lineEdit_burst_duration.setEnabled(True)
             self.comboBox_orient_interval.setEnabled(True)
             self.comboBox_orient_burst_rate.setEnabled(True)
