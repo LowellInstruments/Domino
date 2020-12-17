@@ -1,8 +1,6 @@
 # GPLv3 License
 # Copyright (c) 2019 Lowell Instruments, LLC, some rights reserved
-import logging
 import time
-logging.basicConfig(level=logging.DEBUG, filename='query.log', filemode='w')
 from gui.start_stop_ui import Ui_Frame
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, QSysInfo
 from PyQt5.QtWidgets import QStatusBar, QLabel
@@ -100,7 +98,6 @@ class StartStopFrame(Ui_Frame):
             self.try_connecting = not(self.try_connecting)
 
     def query_slot(self, query_results):
-        logging.debug(query_results)
         command, data = query_results
         if data is not None:
             self.commands.notify_handlers(query_results)
