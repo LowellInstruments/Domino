@@ -20,6 +20,18 @@ def end_time_in_past():
     QMessageBox.warning(gui.mw, 'End time in past', message)
 
 
+def end_time_gt_year():
+    message = 'The specified end time is more than one year in the future. ' \
+              'Proceed?'
+    answer = QMessageBox.warning(
+        gui.mw,
+        'End time',
+        message,
+        QMessageBox.Yes | QMessageBox.No
+    )
+    return answer == QMessageBox.Yes
+
+
 def temp_compensated_sensor_warning():
     text = 'The magnetometer is a temperature compensated sensor and ' \
            'it may not perform well if temperature logging is disabled. ' \

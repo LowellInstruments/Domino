@@ -367,6 +367,10 @@ class SetupFrame(Ui_Frame):
         if QDateTime.currentDateTime().toPyDateTime() > end_time:
             dialogs.end_time_in_past()
             passed = False
+        if (end_time - QDateTime.currentDateTime().toPyDateTime()).days > 365:
+            proceed = dialogs.end_time_gt_year()
+            if not proceed:
+                passed = False
         return passed
 
     def temp_compensated_okay_to_save(self):
