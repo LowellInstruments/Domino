@@ -107,7 +107,7 @@ class FileConverter(QThread):
             self.ask_overwrite(file.filename)
             if self.overwrite in ['once', 'yes_to_all']:
                 self._convert_file(file)
-        except (TypeError, ValueError) as m:
+        except (TypeError, ValueError, IndexError) as m:
             if str(m) == 'Not all required sensors present':
                 self.data_file_container.change_status(
                     file, 'error_sensor_missing')

@@ -20,7 +20,6 @@ from setup_file.setup_file import (
 from collections import namedtuple
 from PyQt5.QtCore import QDateTime, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
-import logging
 from gui.description_generator import DescriptionGenerator
 from gui import dialogs
 from gui.gui_utils import set_enabled
@@ -39,7 +38,6 @@ class SetupFrame(Ui_Frame):
         self.sensor_mapping = None
         self.date_mapping = None
         self.description = DescriptionGenerator(self.setup_file)
-        logging.basicConfig(level=logging.DEBUG)
 
     def setupUi(self, frame):
         self.frame = frame
@@ -125,7 +123,6 @@ class SetupFrame(Ui_Frame):
         self.comboBox_orient_burst_rate.addItems(burst_list)
 
     def redraw(self, *args):
-        logging.debug(args)
         file_name = self.setup_file.value(FILE_NAME)[:-4]
         self.lineEdit_file_name.setText(file_name)
         self.redraw_temperature()
@@ -194,7 +191,9 @@ class SetupFrame(Ui_Frame):
             self.lineEdit_burst_duration.setEnabled(False)
             self.comboBox_orient_interval.setEnabled(False)
             self.lineEdit_burst_duration.setText('1')
+            self.comboBox_orient_burst_rate.model().item(0).setEnabled(False)
         else:
+            self.comboBox_orient_burst_rate.model().item(0).setEnabled(True)
             self.lineEdit_burst_duration.setEnabled(True)
             self.comboBox_orient_interval.setEnabled(True)
             self.comboBox_orient_burst_rate.setEnabled(True)
@@ -362,9 +361,16 @@ class SetupFrame(Ui_Frame):
             passed = False
         end_time = self.setup_file.value(END_TIME)
         end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
-        if QDateTime.currentDateTime().toPyDateTime() > end_time:
+        start_time = self.setup_file.value(START_TIME)
+        start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+        current_time = QDateTime.currentDateTime().toPyDateTime()
+        if current_time > end_time:
             dialogs.end_time_in_past()
             passed = False
+        if (start_time-current_time).days > 365:
+            proceed = dialogs.end_time_gt_year()
+            if not proceed:
+                passed = False
         return passed
 
     def temp_compensated_okay_to_save(self):
