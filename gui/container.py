@@ -58,7 +58,7 @@ class Container(Ui_MainWindow):
     def show_about_button(self):
         self.pushButton1 = QPushButton(self.centralwidget)
         x_pos = self.window.width() - 60
-        self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
+        self.pushButton1.setGeometry(QRect(x_pos, 0, 48, 48))
         icon = QIcon()
         icon.addPixmap(QPixmap(":/icons/icons/icons8-about-36.png"),
                        QIcon.Normal, QIcon.Off)
@@ -76,7 +76,7 @@ class Container(Ui_MainWindow):
     def resizeEvent(self, event):
         self.old_resize(event)
         x_pos = self.window.width() - 60
-        self.pushButton1.setGeometry(QRect(x_pos, 5, 48, 48))
+        self.pushButton1.setGeometry(QRect(x_pos, 0, 48, 48))
 
     def closeEvent(self, event):
         if self.converter_frame.confirm_quit():

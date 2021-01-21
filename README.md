@@ -27,5 +27,16 @@ this will list all the groups the user belongs to. If the dialout group is not l
 sudo gpasswd --add ${USER} dialout
 Then log out and log back in.
 
+## Mac
+
+To build a Mac executable:
+Pull latest updates from Git
+When building a release on Mac, it is necessary to change the filename of main.py 
+to Domino.py. Otherwise the mac menu bar will read main instead of Domino.
+Activate the venv: source venv/bin/activate
+python3 py2app_setup.py py2app
+Note: OSX will complain that the app is untrusted. To bypass this, right click (ctrl-click on mac) 
+the app and choose run. You then have the option to run it anyway. 
+
 ## Installation from source
 For instructions on installing a non-copiled version of Domino on visit [this link](https://docs.google.com/document/d/1XTJbaWQCGlz6biqpjBedaM95eXBzJDoDuvx9tnO_Ktc/edit?usp=sharing).

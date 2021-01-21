@@ -42,6 +42,11 @@ class SetupFrame(Ui_Frame):
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
+        self.treeWidget.expandAll()
+        self.scrollAreaWidgetContents.setStyleSheet(
+            'QWidget#scrollAreaWidgetContents {background-color: white};'
+        )
+        self.frame.setStyleSheet('font-size: 8pt; font-family: Arial')
         self.lineEdit_file_name.setMaxLength(15)
         self.populate_combo_boxes()
         self.setup_mapping()
