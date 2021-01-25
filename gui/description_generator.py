@@ -31,12 +31,20 @@ SECONDS_PER_MONTH = 60*60*24*30
 class DescriptionGenerator:
     def __init__(self, model):
         self.model = model  # type: SetupFile
+        self.preamble = ''
 
     def description(self):
-        output = self.sample_description() + '\n'
-        output += self.start_stop_description() + '\n'
+        output = self.preamble_description()
+        output += self.sample_description()
+        output += self.start_stop_description()
         output += self.file_size_description()
         return output
+
+    def preamble_description(self):
+        if self.preamble:
+            return self.preamble + ' \n\n'
+        else:
+            return ''
 
     def sample_description(self):
         return self.temperature_description() + self.orient_description()

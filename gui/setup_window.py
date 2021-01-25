@@ -17,14 +17,17 @@ from setup_file.setup_file import (
     START_TIME,
     END_TIME
 )
+from gui.converter_window_functions import disable_scroll_wheel
 from collections import namedtuple
-from PyQt5.QtCore import QDateTime, QSettings
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtCore import QDateTime, QSettings, Qt, QEvent
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QTreeWidgetItem
 from gui.description_generator import DescriptionGenerator
 from gui import dialogs
 from gui.gui_utils import set_enabled
 import os
 from datetime import datetime
+import yaml
+from gui.gui_utils import application_directory
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -37,12 +40,15 @@ class SetupFrame(Ui_Frame):
         self.interval_mapping = None
         self.sensor_mapping = None
         self.date_mapping = None
+        self.presets = None
+        self.presets_tree = None
+        self.current_selection = None
         self.description = DescriptionGenerator(self.setup_file)
 
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
-        self.treeWidget.expandAll()
+        disable_scroll_wheel(self)
         self.scrollAreaWidgetContents.setStyleSheet(
             'QWidget#scrollAreaWidgetContents {background-color: white};'
         )
@@ -50,16 +56,44 @@ class SetupFrame(Ui_Frame):
         self.lineEdit_file_name.setMaxLength(15)
         self.populate_combo_boxes()
         self.setup_mapping()
-        self.set_retain_size([self.dateTimeEdit_start_time,
-                              self.dateTimeEdit_end_time])
+        self.add_preset_configurations()
         self.redraw()
         self.connect_signals()
 
-    def set_retain_size(self, widgets):
-        for widget in widgets:
-            date_time_size_policy = widget.sizePolicy()
-            date_time_size_policy.setRetainSizeWhenHidden(True)
-            widget.setSizePolicy(date_time_size_policy)
+    def add_preset_configurations(self):
+        path = application_directory() / 'presets.yaml'
+        self.presets = yaml.safe_load(open(path))
+        self.presets_tree = QTreeWidgetItem(
+            self.treeWidget, ['Preset Configurations'])
+        # this disables selection, edit etc.
+        self.presets_tree.setFlags(Qt.ItemIsEnabled)
+        for category in self.presets:
+            this_category = QTreeWidgetItem(self.presets_tree, [category])
+            this_category.setFlags(Qt.ItemIsEnabled)
+            for item in self.presets[category]:
+                QTreeWidgetItem(this_category, [item])
+        self.treeWidget.expandAll()
+
+    def tree_click(self, clicked_item):
+        if clicked_item.parent():
+            parent = clicked_item.parent().data(0, Qt.DisplayRole)
+        else:
+            parent = None
+        child = clicked_item.data(0, Qt.DisplayRole)
+        if parent in self.presets:
+            self.current_selection = clicked_item
+            setup_dict = self.presets[parent][child]['Settings']
+            self.setup_file = SetupFile(setup_dict)
+            self.description.model = self.setup_file
+            self.description.preamble = \
+                self.presets[parent][child]['Description']
+            self.redraw()
+        else:
+            self.revert_tree_selection()
+
+    def revert_tree_selection(self):
+        if self.current_selection:
+            self.treeWidget.setCurrentItem(self.current_selection)
 
     def connect_signals(self):
         # user only signals (not triggered by programatic changes)
@@ -95,6 +129,7 @@ class SetupFrame(Ui_Frame):
             lambda: self.date_time_changed('end_time'))
         self.pushButton_save.clicked.connect(
             self.save_file)
+        self.treeWidget.itemClicked.connect(self.tree_click)
 
     def setup_mapping(self):
         self.interval_mapping = {
@@ -128,6 +163,7 @@ class SetupFrame(Ui_Frame):
         self.comboBox_orient_burst_rate.addItems(burst_list)
 
     def redraw(self, *args):
+        self.scrollArea.blockSignals(True)
         file_name = self.setup_file.value(FILE_NAME)[:-4]
         self.lineEdit_file_name.setText(file_name)
         self.redraw_temperature()
@@ -138,6 +174,7 @@ class SetupFrame(Ui_Frame):
         self.redraw_burst()
         description = self.description.description()
         self.label_description.setText(description)
+        self.scrollArea.blockSignals(False)
 
     def redraw_temperature(self):
         state = True if self.setup_file.value(TEMPERATURE_ENABLED) else False
