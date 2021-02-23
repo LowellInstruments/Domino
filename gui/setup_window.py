@@ -17,7 +17,11 @@ from setup_file.setup_file import (
     START_TIME,
     END_TIME
 )
-from gui.converter_window_functions import disable_scroll_wheel
+from gui.converter_window_functions import (
+    disable_scroll_wheel,
+    connect_signals,
+    lock_setup_controls
+)
 from collections import namedtuple
 from PyQt5.QtCore import QDateTime, QSettings, Qt, QEvent
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QTreeWidgetItem
@@ -58,7 +62,7 @@ class SetupFrame(Ui_Frame):
         self.setup_mapping()
         self.add_preset_configurations()
         self.redraw()
-        self.connect_signals()
+        connect_signals(self)
 
     def add_preset_configurations(self):
         path = application_directory() / 'presets.yaml'
@@ -87,6 +91,11 @@ class SetupFrame(Ui_Frame):
             self.description.model = self.setup_file
             self.description.preamble = \
                 self.presets[parent][child]['Description']
+            lock_setup_controls(self, True)
+            if parent == 'Current Meter w/ Pressure':
+                self.frame_pressure.show()
+            else:
+                self.frame_pressure.hide()
             self.redraw()
         else:
             self.revert_tree_selection()
@@ -94,42 +103,6 @@ class SetupFrame(Ui_Frame):
     def revert_tree_selection(self):
         if self.current_selection:
             self.treeWidget.setCurrentItem(self.current_selection)
-
-    def connect_signals(self):
-        # user only signals (not triggered by programatic changes)
-        # qlineedit -- textEdited
-        # qcombobox -- activated
-        self.lineEdit_file_name.editingFinished.connect(
-            self.filename_changed)
-        self.comboBox_orient_interval.activated.connect(
-            lambda: self.interval_changed('orientation'))
-        self.comboBox_temp_interval.activated.connect(
-            lambda: self.interval_changed('temperature'))
-        self.checkBox_temperature.stateChanged.connect(
-            lambda: self.sensor_enabled_slot('temperature'))
-        self.checkBox_magnetometer.stateChanged.connect(
-            lambda: self.sensor_enabled_slot('magnetometer'))
-        self.checkBox_accelerometer.stateChanged.connect(
-            lambda: self.sensor_enabled_slot('accelerometer'))
-        self.checkBox_led.stateChanged.connect(
-            lambda: self.sensor_enabled_slot('led'))
-        self.lineEdit_burst_duration.editingFinished.connect(
-            self.duration_changed)
-        self.checkBox_continuous.stateChanged.connect(
-            self.continuous_changed)
-        self.comboBox_orient_burst_rate.activated.connect(
-            self.burst_rate_changed)
-        self.comboBox_start_time.activated.connect(
-            lambda: self.date_time_combobox_changed('start_time'))
-        self.comboBox_end_time.activated.connect(
-            lambda: self.date_time_combobox_changed('end_time'))
-        self.dateTimeEdit_start_time.dateTimeChanged.connect(
-            lambda: self.date_time_changed('start_time'))
-        self.dateTimeEdit_end_time.dateTimeChanged.connect(
-            lambda: self.date_time_changed('end_time'))
-        self.pushButton_save.clicked.connect(
-            self.save_file)
-        self.treeWidget.itemClicked.connect(self.tree_click)
 
     def setup_mapping(self):
         self.interval_mapping = {

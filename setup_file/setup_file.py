@@ -19,8 +19,10 @@ INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
                          '15 minutes', '30 minutes', '1 hour'],
                         dtype=object)
 BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
-DEFAULT_SETUP = {'DFN': 'Test.lid', 'TMP': True, 'ACL': True,
-                 'MGN': True, 'TRI': 60, 'ORI': 60, 'BMR': 8, 'BMN': 160,
+PRESSURE_BURST_FREQUENCY = array([2, 4, 8, 16])
+DEFAULT_SETUP = {'DFN': 'Test.lid', 'TMP': True, 'ACL': True, 'MGN': True,
+                 'TRI': 60, 'ORI': 60, 'BMR': 8, 'BMN': 160,
+                 'PRS': False, 'PRR': 60, 'PRN': 8,
                  'STM': '1970-01-01 00:00:00',
                  'ETM': '2096-01-01 00:00:00',
                  'LED': True}
@@ -32,6 +34,7 @@ PRESSURE_ENABLED = 'PRS'
 PHOTO_DIODE_ENABLED = 'PHD'
 TEMPERATURE_INTERVAL = 'TRI'
 ORIENTATION_INTERVAL = 'ORI'
+PRESSURE_INTERVAL = 'PRI'  # PRI doesn't actually exist but it's useful here
 ORIENTATION_BURST_RATE = 'BMR'
 ORIENTATION_BURST_COUNT = 'BMN'
 START_TIME = 'STM'
@@ -99,7 +102,8 @@ class SetupFile:
         Returns a logical array (mask) of available orientation or temperature
         intervals
         """
-        if sensor not in [TEMPERATURE_INTERVAL, ORIENTATION_INTERVAL]:
+        if sensor not in [TEMPERATURE_INTERVAL, ORIENTATION_INTERVAL,
+                          PRESSURE_INTERVAL]:
             raise ValueError('Unknown sensor {}'.format(sensor))
         opposite_interval = self._opposite_interval(sensor)
         if sensor is TEMPERATURE_INTERVAL:
@@ -230,8 +234,6 @@ class ConfigFileWriter:
         If TMP is 0, set TRI to 0
         If ACL and MGN are 0, set ORI to 0, BMR to 2, and BMN to 0
         """
-        if not self.setup_dict[TEMPERATURE_ENABLED]:
-            self.setup_dict[TEMPERATURE_INTERVAL] = 0
         if (not self.setup_dict[ACCELEROMETER_ENABLED]
                 and not self.setup_dict[MAGNETOMETER_ENABLED]):
             self.setup_dict[ORIENTATION_INTERVAL] = 0

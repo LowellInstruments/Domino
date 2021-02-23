@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>867</width>
-    <height>1016</height>
+    <width>861</width>
+    <height>1025</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,6 +62,12 @@
        <property name="sizeType">
         <enum>QSizePolicy::Preferred</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
     </layout>
@@ -99,6 +105,72 @@
      </column>
     </widget>
    </item>
+   <item row="0" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="pushButton_unlock">
+       <property name="text">
+        <string>Edit this Setup </string>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/icons/icons/edit.png</normaloff>:/icons/icons/edit.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_save">
+       <property name="minimumSize">
+        <size>
+         <width>125</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Save Setup File </string>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="1" column="1">
     <widget class="QScrollArea" name="scrollArea">
      <property name="widgetResizable">
@@ -109,40 +181,47 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>634</width>
-        <height>949</height>
+        <width>628</width>
+        <height>958</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_10">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item row="7" column="1" colspan="2">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QFrame" name="frame_5">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
-        </spacer>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_description">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Description</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
-       <item row="1" column="1" colspan="2">
+       <item>
         <widget class="QFrame" name="frame_6">
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="2" column="0">
@@ -216,24 +295,25 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="1" colspan="2">
+       <item>
         <widget class="QFrame" name="frame_3">
          <layout class="QGridLayout" name="gridLayout_6" columnstretch="1,1">
           <property name="topMargin">
            <number>0</number>
           </property>
-          <item row="3" column="1">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+          <item row="3" column="0">
+           <widget class="QComboBox" name="comboBox_start_time">
+            <item>
+             <property name="text">
+              <string>Start Recording Immediately</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Start at Time (year-month-day hours:minutes:seconds)</string>
+             </property>
+            </item>
+           </widget>
           </item>
           <item row="4" column="0">
            <widget class="QDateTimeEdit" name="dateTimeEdit_start_time">
@@ -248,19 +328,18 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QComboBox" name="comboBox_start_time">
-            <item>
-             <property name="text">
-              <string>Start Recording Immediately</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Start at Time (year-month-day hours:minutes:seconds)</string>
-             </property>
-            </item>
-           </widget>
+          <item row="3" column="1">
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_4">
@@ -285,7 +364,7 @@
          </layout>
         </widget>
        </item>
-       <item row="6" column="1" colspan="2">
+       <item>
         <widget class="QFrame" name="frame_4">
          <layout class="QGridLayout" name="gridLayout_7" columnstretch="1,1">
           <property name="topMargin">
@@ -354,7 +433,159 @@
          </layout>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item>
+        <widget class="QFrame" name="frame_temperature">
+         <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,1">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Sampling Interval:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBox_temperature">
+            <property name="text">
+             <string>Temperature</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Temperature</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="comboBox_temp_interval"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_orient">
+         <layout class="QGridLayout" name="gridLayout_5" columnstretch="1,1">
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Burst Rate:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="checkBox_magnetometer">
+            <property name="text">
+             <string>Magnetometer</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QComboBox" name="comboBox_orient_interval"/>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Burst Interval:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Burst Duration (seconds):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="comboBox_orient_burst_rate"/>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="checkBox_accelerometer">
+            <property name="text">
+             <string>Accelerometer</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="spacing">
+             <number>15</number>
+            </property>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_burst_duration">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_continuous">
+              <property name="text">
+               <string>Continuous</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Accelerometer/Magnetometer</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QFrame" name="frame_pressure">
          <layout class="QGridLayout" name="gridLayout_9" columnstretch="1,1">
           <property name="topMargin">
@@ -423,7 +654,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBox_continuous_2">
+             <widget class="QCheckBox" name="checkBox_pressure_continuous">
               <property name="text">
                <string>Continuous</string>
               </property>
@@ -447,262 +678,22 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QFrame" name="frame_5">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_description">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Description</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QFrame" name="frame">
-         <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,1">
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Sampling Interval:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QCheckBox" name="checkBox_temperature">
-            <property name="text">
-             <string>Temperature</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="comboBox_temp_interval"/>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QLabel" name="label_2">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Temperature</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="2">
-        <widget class="QFrame" name="frame_2">
-         <layout class="QGridLayout" name="gridLayout_5" columnstretch="1,1">
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <item row="2" column="0" colspan="2">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="checkBox_accelerometer">
-            <property name="text">
-             <string>Accelerometer</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QComboBox" name="comboBox_orient_burst_rate"/>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Burst Rate:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>Burst Duration (seconds):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Burst Interval:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="checkBox_magnetometer">
-            <property name="text">
-             <string>Magnetometer</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QComboBox" name="comboBox_orient_interval"/>
-          </item>
-          <item row="8" column="1">
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <property name="spacing">
-             <number>15</number>
-            </property>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_burst_duration">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkBox_continuous">
-              <property name="text">
-               <string>Continuous</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Accelerometer/Magnetometer</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
+        </spacer>
        </item>
       </layout>
      </widget>
     </widget>
-   </item>
-   <item row="0" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QPushButton" name="pushButton_unlock">
-       <property name="text">
-        <string>Edit this Setup </string>
-       </property>
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/icons/icons/edit.png</normaloff>:/icons/icons/edit.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>30</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="flat">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_save">
-       <property name="minimumSize">
-        <size>
-         <width>125</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Save Setup File </string>
-       </property>
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>30</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="flat">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
   </layout>
  </widget>
