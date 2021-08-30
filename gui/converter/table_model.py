@@ -135,13 +135,13 @@ class DataFileContainer(QtCore.QAbstractTableModel):
         for file in self._data_files:
             if file.status == 'converted':
                 file.status = 'unconverted'
-        #self.notify_observers()
+        # self.notify_observers()
 
     def reset_errors(self):
         for file in self._data_files:
             if file.status.startswith('error'):
                 file.status = 'unconverted'
-        #self.notify_observers()
+        # self.notify_observers()
 
     def unconverted(self):
         # returns the number of unconverted files
