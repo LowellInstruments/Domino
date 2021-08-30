@@ -93,7 +93,7 @@ class Container(Ui_MainWindow):
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
             'Domino' + '&trade; ' + self.version + '<br /><br />' \
-            'Copyright 2018-2020 by Lowell Instruments LLC, some ' \
+            'Copyright 2018-2021 by Lowell Instruments LLC, some ' \
             'rights reserved. <br />' \
             'Source code for this application is available under ' \
             'the GPLv3 License at ' \
