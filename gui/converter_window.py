@@ -25,7 +25,8 @@ from gui.gui_utils import show_error
 OUTPUT_TYPE = {'Current': 'current',
                'Compass Heading': 'compass',
                'Yaw/Pitch/Roll': 'ypr',
-               'Cable Attitude': 'cable'}
+               'Cable Attitude': 'cable',
+               'Vertical Orientation': 'vertical_orientation'}
 
 
 class ConverterFrame(Ui_Frame):
@@ -189,7 +190,8 @@ class ConverterFrame(Ui_Frame):
     def change_output_type_slot(self):
         state = self.comboBox_output_type.currentText() == 'Current'
         self.comboBox_tilt_tables.setEnabled(state)
-        disabled = ['Discrete Channels', 'Cable Attitude']
+        disabled = [
+            'Discrete Channels', 'Cable Attitude', 'Vertical Orientation']
         state = self.comboBox_output_type.currentText() in disabled
         self.dec_model.set_enabled(not state)
 
