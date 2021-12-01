@@ -25,19 +25,50 @@ from gui import dialogs
 from gui.gui_utils import set_enabled
 import os
 from datetime import datetime
+import json
+from pathlib import Path
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
 
 
+def appdata_directory():
+    path = os.path.join(os.getenv('APPDATA'),
+                        'LowellInstruments',
+                        'Domino')
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
+
+def load_presets():
+    with open('./gui/factory_presets.json') as f:
+        presets = json.load(f)
+    try:
+        with open(Path(appdata_directory(), 'user_presets.json')) as f:
+            user_presets = json.load(f)
+    except FileNotFoundError:
+        user_presets = []
+    presets.extend(user_presets)
+    return presets
+
+
+def save_presets(presets):
+    # saves user presets, removes factory presets
+    to_save = [x for x in presets if not x['factory']]
+    with open(Path(appdata_directory(), 'user_presets.json'), 'w') as f:
+        json.dump(to_save, f, indent=4)
+
+
 class SetupFrame(Ui_Frame):
     def __init__(self):
-        setup_dict = QSettings().value('setup_file', None, type=dict)
-        self.setup_file = SetupFile(setup_dict)
+        self.setup_file = SetupFile()
+        self.presets = load_presets()
         self.interval_mapping = None
         self.sensor_mapping = None
         self.date_mapping = None
         self.description = DescriptionGenerator(self.setup_file)
+        self.using_preset = True
 
     def setupUi(self, frame):
         self.frame = frame
@@ -49,6 +80,7 @@ class SetupFrame(Ui_Frame):
                               self.dateTimeEdit_end_time])
         self.redraw()
         self.connect_signals()
+        self.preset_changed(0)
 
     def set_retain_size(self, widgets):
         for widget in widgets:
@@ -90,6 +122,10 @@ class SetupFrame(Ui_Frame):
             lambda: self.date_time_changed('end_time'))
         self.pushButton_save.clicked.connect(
             self.save_file)
+        self.comboBox_preset.activated.connect(self.preset_changed)
+        self.pushButton_unlock.clicked.connect(self.edit_preset)
+        self.pushButton_delete.clicked.connect(self.delete_preset)
+        self.pushButton_save_preset.clicked.connect(self.save_preset)
 
     def setup_mapping(self):
         self.interval_mapping = {
@@ -121,6 +157,15 @@ class SetupFrame(Ui_Frame):
         burst_list = [str(x) + ' Hz' for x in BURST_FREQUENCY]
         burst_list = ['No Burst'] + burst_list
         self.comboBox_orient_burst_rate.addItems(burst_list)
+        self.populate_presets()
+
+    def populate_presets(self):
+        self.comboBox_preset.clear()
+        self.comboBox_preset.addItems([x['name'] for x in self.presets])
+        # unfortunately the separator counts as an item which throws off
+        # the index relationship between self.presets and the combobox
+        # n_factory = sum([1 for x in self.presets if x['factory']])
+        # self.comboBox_preset.insertSeparator(n_factory)
 
     def redraw(self, *args):
         file_name = self.setup_file.value(FILE_NAME)[:-4]
@@ -269,6 +314,81 @@ class SetupFrame(Ui_Frame):
                 self.setup_file.set_orient_burst_count(burst_rate)
             finally:
                 self.redraw()
+
+    def preset_changed(self, index):
+        preset = self.presets[index]
+        disabled = False if preset['name'] == 'Untitled' else True
+        self.groupBox_temperature.setDisabled(disabled)
+        self.groupBox_orient.setDisabled(disabled)
+        self.pushButton_unlock.setDisabled(not disabled)
+        self.pushButton_save_preset.setDisabled(disabled)
+        self.lineEdit_preset.setReadOnly(disabled)
+        self.lineEdit_preset.setText(preset['description'])
+
+        is_factory = preset['factory']
+        self.pushButton_delete.setDisabled(is_factory)
+
+        self.setup_file.reset()
+        self.setup_file.preset = preset['name']
+        self.setup_file.update_dict(preset['settings'])
+        self.redraw()
+        if index != len(self.presets)-1 and self.presets[-1]['name'] == 'Untitled':
+            self.presets.pop(-1)
+            self.populate_presets()
+
+    def edit_preset(self):
+        preset = dict(self.presets[self.comboBox_preset.currentIndex()])
+        preset['name'] = 'Untitled'
+        preset['factory'] = False
+        self.presets.append(preset)
+        self.populate_presets()
+        index = len(self.presets)-1
+        self.comboBox_preset.setCurrentIndex(index)
+        self.preset_changed(index)
+
+    def delete_preset(self):
+        index = self.comboBox_preset.currentIndex()
+        preset = dict(self.presets[index])
+        if dialogs.ask_delete_preset(preset['name']):
+            self.presets.pop(index)
+            self.populate_presets()
+            self.comboBox_preset.setCurrentIndex(0)
+            self.preset_changed(0)
+        save_presets(self.presets)
+
+    def save_preset(self):
+        new_name = dialogs.ask_new_preset_name()
+        if new_name is None:
+            return
+        existing_names = [x['name'] for x in self.presets]
+        if new_name == 'Untitled':
+            dialogs.error_message(
+                'Invalid name',
+                '"Untitled" is an invalid preset name.'
+            )
+            return
+
+        if new_name in existing_names:
+            dialogs.error_message(
+                'Invalid name',
+                f'The name "{new_name}" is already in use.'
+            )
+            return
+
+        if new_name == '':
+            dialogs.error_message(
+                'Invalid name',
+                'Please enter a valid name.'
+            )
+            return
+
+        self.presets[-1]['name'] = new_name
+        self.presets[-1]['description'] = self.lineEdit_preset.text()
+        save_presets(self.presets)
+        self.populate_presets()
+        index = len(self.presets) - 1
+        self.comboBox_preset.setCurrentIndex(index)
+        self.preset_changed(index)
 
     def date_time_changed(self, occasion):
         widget, value = self.date_mapping[occasion]

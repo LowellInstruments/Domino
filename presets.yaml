@@ -1,9 +1,0 @@
-name: "Current Meter - Typical"
-description: "Commonly used settings for current meters in most environments. 12 month battery life"
-settings:
-  ORI: 60
-  TRI: 60
-  BMR: 8
-  BMN: 120
-  STM: "ON_INT_MIN"
-  LED: 1

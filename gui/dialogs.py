@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QAbstractButton
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog
 import gui
 
 
@@ -135,6 +135,7 @@ def confirm_quit():
             'Are you sure you want to quit?')
     return reply == QMessageBox.Yes
 
+
 def conversion_error(model):
     error_map = {
         'error_failed':
@@ -158,6 +159,24 @@ def conversion_error(model):
     msg_box.setText(message)
     msg_box.setDetailedText(detailed_text)
     msg_box.exec_()
+
+
+def ask_delete_preset(preset):
+    reply = QMessageBox.question(
+            gui.mw,
+            'Confirm Delete',
+            f'Are you sure you want to delete the preset "{preset}"?')
+    return reply == QMessageBox.Yes
+
+
+def ask_new_preset_name():
+    text, ok = QInputDialog().getText(
+        gui.mw,
+        'New Preset',
+        'Enter a new preset name'
+    )
+    if ok:
+        return text
 
 
 def ask_remove_error_files():

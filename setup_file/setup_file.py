@@ -79,6 +79,7 @@ class SetupFile:
         self.is_continuous = False
         self.is_start_time = False
         self.is_end_time = False
+        self.preset = None
 
     def value(self, tag):
         return self._setup_dict[tag]
@@ -86,11 +87,15 @@ class SetupFile:
     def update(self, tag, value):
         self._setup_dict[tag] = value
 
+    def update_dict(self, new_values):
+        # merge dict new_values into _setup_dict
+        self._setup_dict.update(new_values)
+
     def major_interval_bytes(self):
         header = Header('')
         header._header = self._setup_dict
-        interval, bytes = mat.sensor.major_interval_info(header)
-        return bytes
+        interval, n_bytes = mat.sensor.major_interval_info(header)
+        return n_bytes
 
     def available_intervals(self, sensor):
         """
@@ -187,7 +192,7 @@ class SetupFile:
             raise ValueError('State must be True or False')
 
     def write_file(self, path):
-        file_writer = ConfigFileWriter(path, self._setup_dict)
+        file_writer = ConfigFileWriter(path, self._setup_dict, self.preset)
         file_writer.write_file()
 
     def set_continuous(self, state):
@@ -198,13 +203,17 @@ class SetupFile:
             burst_rate = self.value(ORIENTATION_BURST_RATE)
             self.update(ORIENTATION_BURST_COUNT, burst_rate)
 
+    def reset(self):
+        self._setup_dict = dict(DEFAULT_SETUP)
+
 
 class ConfigFileWriter:
-    def __init__(self, path, setup_dict):
+    def __init__(self, path, setup_dict, preset=None):
         self.path = path
         # make a copy because we may change values in the fix function
         self.setup_dict = dict(setup_dict)
         self._fix_ori_tri()
+        self.preset = preset
 
     def write_file(self):
         directory = Path(self.path)
@@ -216,6 +225,8 @@ class ConfigFileWriter:
     def _write_header(self, fid):
         fid.write('// Lowell Instruments LLC - MAT Data Logger - '
                   'Configuration File\n')
+        if self.preset:
+            fid.write(f'// Preset profile: {self.preset}\n')
         time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         fid.write('// This file was generated on {}\n'.format(time_str))
 

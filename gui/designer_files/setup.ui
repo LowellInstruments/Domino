@@ -40,7 +40,7 @@
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="groupBox_start">
      <property name="title">
       <string>Start Time</string>
      </property>
@@ -134,7 +134,7 @@
     </layout>
    </item>
    <item row="2" column="1" rowspan="2">
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupBox_orient">
      <property name="title">
       <string>Accelerometer/Magnetometer</string>
      </property>
@@ -233,7 +233,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QGroupBox" name="groupBox_stop">
      <property name="title">
       <string>Stop Time</string>
      </property>
@@ -269,7 +269,7 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QGroupBox" name="groupBox_7">
+    <widget class="QGroupBox" name="groupBox_indicator">
      <property name="title">
       <string>Operational Indicator</string>
      </property>
@@ -342,7 +342,7 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBox_temperature">
      <property name="title">
       <string>Temperature</string>
      </property>
@@ -421,9 +421,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_save_2">
+         <widget class="QPushButton" name="pushButton_save_preset">
           <property name="toolTip">
-           <string>Save as custom presets</string>
+           <string>Save as a custom preset</string>
           </property>
           <property name="text">
            <string/>
@@ -487,39 +487,19 @@
       <item row="0" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="comboBox_preset">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <item>
-           <property name="text">
-            <string>Current meter - Typical</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Current meter - Swells</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Continuous - Low Rate</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Continuous - High Rate</string>
-           </property>
-          </item>
          </widget>
         </item>
        </layout>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QLineEdit" name="lineEdit">
+       <widget class="QLineEdit" name="lineEdit_preset">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -527,7 +507,7 @@
          <string>Description of preset</string>
         </property>
         <property name="text">
-         <string>Commonly used settings for current meters in most environments. 12 month battery life</string>
+         <string/>
         </property>
        </widget>
       </item>
