@@ -27,6 +27,7 @@ import os
 from datetime import datetime
 import json
 from pathlib import Path
+import numpy as np
 
 
 sensor_map = namedtuple('sensor_map', ['widget', 'tag'])
@@ -53,9 +54,22 @@ def load_presets():
     return presets
 
 
+def fix_data_types(presets):
+    fcn_map = {
+        np.int32: int,
+        np.float64: float
+    }
+    for p in presets:
+        for tag, value in p['settings'].items():
+            if type(value) in fcn_map:
+                p['settings'][tag] = fcn_map[type(value)](value)
+    return presets
+
+
 def save_presets(presets):
     # saves user presets, removes factory presets
     to_save = [x for x in presets if not x['factory']]
+    to_save = fix_data_types(to_save)
     with open(Path(appdata_directory(), 'user_presets.json'), 'w') as f:
         json.dump(to_save, f, indent=4)
 
@@ -68,7 +82,7 @@ class SetupFrame(Ui_Frame):
         self.sensor_mapping = None
         self.date_mapping = None
         self.description = DescriptionGenerator(self.setup_file)
-        self.using_preset = True
+        self.unlocked_preset = None
 
     def setupUi(self, frame):
         self.frame = frame
@@ -231,13 +245,15 @@ class SetupFrame(Ui_Frame):
         if self.setup_file.value(ORIENTATION_BURST_COUNT) == 1:
             self.lineEdit_burst_duration.setEnabled(False)
             self.checkBox_continuous.setEnabled(False)
-            #self.lineEdit_burst_duration.setText('0')
+            # self.lineEdit_burst_duration.setText('0')
         elif self.setup_file.is_continuous:
+            self.checkBox_continuous.setChecked(True)
             self.lineEdit_burst_duration.setEnabled(False)
             self.comboBox_orient_interval.setEnabled(False)
             self.lineEdit_burst_duration.setText('1')
             self.comboBox_orient_burst_rate.model().item(0).setEnabled(False)
         else:
+            self.checkBox_continuous.setChecked(False)
             self.comboBox_orient_burst_rate.model().item(0).setEnabled(True)
             self.lineEdit_burst_duration.setEnabled(True)
             self.comboBox_orient_interval.setEnabled(True)
@@ -309,7 +325,8 @@ class SetupFrame(Ui_Frame):
             seconds = self.lineEdit_burst_duration.text()
             self.setup_file.set_orient_burst_rate(burst_rate)
             try:
-                self.setup_file.set_orient_burst_count(burst_rate*int(seconds))
+                self.setup_file.set_orient_burst_count(
+                    burst_rate*float(seconds))
             except ValueError:
                 self.setup_file.set_orient_burst_count(burst_rate)
             finally:
@@ -317,7 +334,7 @@ class SetupFrame(Ui_Frame):
 
     def preset_changed(self, index):
         preset = self.presets[index]
-        disabled = False if preset['name'] == 'Untitled' else True
+        disabled = False if preset['name'] == self.unlocked_preset else True
         self.groupBox_temperature.setDisabled(disabled)
         self.groupBox_orient.setDisabled(disabled)
         self.pushButton_unlock.setDisabled(not disabled)
@@ -337,14 +354,20 @@ class SetupFrame(Ui_Frame):
             self.populate_presets()
 
     def edit_preset(self):
-        preset = dict(self.presets[self.comboBox_preset.currentIndex()])
-        preset['name'] = 'Untitled'
-        preset['factory'] = False
-        self.presets.append(preset)
-        self.populate_presets()
-        index = len(self.presets)-1
-        self.comboBox_preset.setCurrentIndex(index)
-        self.preset_changed(index)
+        current_preset = self.presets[self.comboBox_preset.currentIndex()]
+        if current_preset['factory']:
+            new_preset = dict(current_preset)
+            new_preset['name'] = 'Untitled'
+            new_preset['factory'] = False
+            self.presets.append(new_preset)
+            self.unlocked_preset = 'Untitled'
+            self.populate_presets()
+            index = len(self.presets) - 1
+            self.comboBox_preset.setCurrentIndex(index)
+            self.preset_changed(index)
+        else:
+            self.unlocked_preset = current_preset['name']
+            self.preset_changed(self.comboBox_preset.currentIndex())
 
     def delete_preset(self):
         index = self.comboBox_preset.currentIndex()
@@ -357,38 +380,43 @@ class SetupFrame(Ui_Frame):
         save_presets(self.presets)
 
     def save_preset(self):
-        new_name = dialogs.ask_new_preset_name()
-        if new_name is None:
-            return
-        existing_names = [x['name'] for x in self.presets]
-        if new_name == 'Untitled':
-            dialogs.error_message(
-                'Invalid name',
-                '"Untitled" is an invalid preset name.'
-            )
-            return
+        index = self.comboBox_preset.currentIndex()
+        preset = self.presets[index]
 
-        if new_name in existing_names:
-            dialogs.error_message(
-                'Invalid name',
-                f'The name "{new_name}" is already in use.'
-            )
-            return
+        if self.unlocked_preset == 'Untitled':
+            new_name = dialogs.ask_new_preset_name()
+            if new_name is None:
+                return
+            existing_names = [x['name'] for x in self.presets]
+            if new_name == 'Untitled':
+                dialogs.error_message(
+                    'Invalid name',
+                    '"Untitled" is an invalid preset name.'
+                )
+                return
 
-        if new_name == '':
-            dialogs.error_message(
-                'Invalid name',
-                'Please enter a valid name.'
-            )
-            return
+            if new_name in existing_names:
+                dialogs.error_message(
+                    'Invalid name',
+                    f'The name "{new_name}" is already in use.'
+                )
+                return
 
-        self.presets[-1]['name'] = new_name
-        self.presets[-1]['description'] = self.lineEdit_preset.text()
+            if new_name == '':
+                dialogs.error_message(
+                    'Invalid name',
+                    'Please enter a valid name.'
+                )
+                return
+            preset['name'] = new_name
+
+        preset['settings'] = self.setup_file._setup_dict
+        preset['description'] = self.lineEdit_preset.text()
         save_presets(self.presets)
+        self.unlocked_preset = None
         self.populate_presets()
-        index = len(self.presets) - 1
-        self.comboBox_preset.setCurrentIndex(index)
         self.preset_changed(index)
+        self.comboBox_preset.setCurrentIndex(index)
 
     def date_time_changed(self, occasion):
         widget, value = self.date_mapping[occasion]

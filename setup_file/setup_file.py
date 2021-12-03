@@ -71,7 +71,6 @@ def _convert_to_type(setup_dict):
 
 class SetupFile:
     def __init__(self, setup_dict=None):
-        super().__init__()
         self._setup_dict = setup_dict or dict(DEFAULT_SETUP)
         self.time_re = compile(r'^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
                                '(0?[0-9]|1[0-9]|2[0-3]):'
@@ -80,6 +79,14 @@ class SetupFile:
         self.is_start_time = False
         self.is_end_time = False
         self.preset = None
+
+    def reset(self):
+        self._setup_dict = dict(DEFAULT_SETUP)
+        self.is_continuous = False
+        self.is_start_time = False
+        self.is_end_time = False
+        self.preset = None
+
 
     def value(self, tag):
         return self._setup_dict[tag]
@@ -202,9 +209,6 @@ class SetupFile:
             self.update(ORIENTATION_INTERVAL, 1)
             burst_rate = self.value(ORIENTATION_BURST_RATE)
             self.update(ORIENTATION_BURST_COUNT, burst_rate)
-
-    def reset(self):
-        self._setup_dict = dict(DEFAULT_SETUP)
 
 
 class ConfigFileWriter:
