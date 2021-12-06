@@ -24,6 +24,7 @@ DEFAULT_SETUP = {'DFN': 'Test.lid', 'TMP': True, 'ACL': True,
                  'STM': '1970-01-01 00:00:00',
                  'ETM': '2096-01-01 00:00:00',
                  'LED': True}
+INTERVAL_START = ['ON_INT_MIN', 'ON_INT_QHR', 'ON_INT-1HR']
 FILE_NAME = 'DFN'
 TEMPERATURE_ENABLED = 'TMP'
 ACCELEROMETER_ENABLED = 'ACL'
@@ -173,21 +174,23 @@ class SetupFile:
         self.update(ORIENTATION_BURST_COUNT, value)
 
     def set_time(self, occasion, time):
-        if not self.time_re.search(time):
-            raise ValueError('Incorrectly formatted time string')
         time_dict = {START_TIME: self.value(START_TIME),
                      END_TIME: self.value(END_TIME)}
         time_dict[occasion] = time
-        self._validate_time(time_dict)
-        self.update(occasion, time)
+        if self._validate_time(time_dict):
+            self.update(occasion, time)
 
     def _validate_time(self, time_dict):
         for key in time_dict:
-            time_dict[key] = datetime.strptime(time_dict[key],
-                                               '%Y-%m-%d %H:%M:%S')
+            if time_dict[key] in INTERVAL_START:
+                time_dict[key] = datetime.now()
+            else:
+                time_dict[key] = datetime.strptime(time_dict[key],
+                                                   '%Y-%m-%d %H:%M:%S')
         if time_dict[END_TIME] <= time_dict[START_TIME]:
             raise ValueError('start time and end time must be in '
                              'correct order')
+        return True
 
     def _check_continuous(self):
         if self.is_continuous:

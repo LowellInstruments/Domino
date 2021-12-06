@@ -15,7 +15,8 @@ from setup_file.setup_file import (
     LED_ENABLED,
     FILE_NAME,
     START_TIME,
-    END_TIME
+    END_TIME,
+    INTERVAL_START
 )
 from collections import namedtuple
 from PyQt5.QtCore import QDateTime, QSettings
@@ -229,15 +230,19 @@ class SetupFrame(Ui_Frame):
                     self.dateTimeEdit_end_time,
                     END_TIME)]
         for combo_box, date_time, occasion in mapping:
-            if self.setup_file.value(occasion) != DEFAULT_SETUP[occasion]:
-                combo_box.setCurrentIndex(1)
+            value = self.setup_file.value(occasion)
+            if value == DEFAULT_SETUP[occasion]:
+                combo_box.setCurrentIndex(0)
+                date_time.setVisible(False)
+            elif value in INTERVAL_START:
+                combo_box.setCurrentIndex(INTERVAL_START.index(value)+1)
+                date_time.setVisible(False)
+            else:
+                combo_box.setCurrentIndex(combo_box.count() - 1)
                 date_time.setVisible(True)
                 time = self.setup_file.value(occasion)
                 time = QDateTime.fromString(time, 'yyyy-MM-dd HH:mm:ss')
                 date_time.setDateTime(time)
-            else:
-                combo_box.setCurrentIndex(0)
-                date_time.setVisible(False)
 
     def redraw_burst(self):
         if not self.setup_file.orient_enabled():
@@ -275,7 +280,11 @@ class SetupFrame(Ui_Frame):
                     self.dateTimeEdit_end_time,
                     END_TIME)}
         combo_box, datetime_edit, tag = mapping[occasion]
-        if combo_box.currentIndex() == 1:
+
+        if combo_box.currentIndex() == 0:
+            self.setup_file.set_time(tag, DEFAULT_SETUP[tag])
+
+        elif combo_box.currentIndex() == combo_box.count()-1:
             time_str = self._time_value(occasion)
             try:
                 self.setup_file.set_time(tag, time_str)
@@ -284,7 +293,9 @@ class SetupFrame(Ui_Frame):
             finally:
                 self.redraw()
         else:
-            self.setup_file.set_time(tag, DEFAULT_SETUP[tag])
+            start_time = INTERVAL_START[combo_box.currentIndex()-1]
+            self.setup_file.set_time(tag, start_time)
+
         self.redraw()
 
     def _time_value(self, occasion):
@@ -294,7 +305,8 @@ class SetupFrame(Ui_Frame):
             return next_hour.toString('yyyy-MM-dd HH:mm:ss')
         else:
             start_time = self.setup_file.value(START_TIME)
-            if start_time == DEFAULT_SETUP[START_TIME]:
+            if (start_time == DEFAULT_SETUP[START_TIME] or
+                    start_time in INTERVAL_START):
                 end_time = next_hour.addMonths(1)
             else:
                 time_obj = QDateTime.fromString(start_time,
@@ -326,7 +338,7 @@ class SetupFrame(Ui_Frame):
             self.setup_file.set_orient_burst_rate(burst_rate)
             try:
                 self.setup_file.set_orient_burst_count(
-                    burst_rate*float(seconds))
+                    burst_rate*int(seconds))
             except ValueError:
                 self.setup_file.set_orient_burst_count(burst_rate)
             finally:
@@ -496,7 +508,8 @@ class SetupFrame(Ui_Frame):
             dialogs.no_channels_warning()
             passed = False
 
-        if self.setup_file.value('STM') != DEFAULT_SETUP['STM'] and \
+        if self.setup_file.value('STM') not in INTERVAL_START and \
+                self.setup_file.value('STM') != DEFAULT_SETUP['STM'] and \
                 self.dateTimeEdit_start_time.dateTime() < QDateTime.currentDateTime():
             message = 'Start time must be in the future.'
             dialogs.error_message('Start/Stop Time Error', message)
@@ -509,8 +522,14 @@ class SetupFrame(Ui_Frame):
             passed = False
         end_time = self.setup_file.value(END_TIME)
         end_time = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
-        start_time = self.setup_file.value(START_TIME)
-        start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+        if self.setup_file.value(START_TIME) in INTERVAL_START:
+            # this is a workaround to make the start on interval values
+            # work with existing code. Basically the logger will start
+            # immediately (within an hour at most)
+            start_time = datetime.now()
+        else:
+            start_time = self.setup_file.value(START_TIME)
+            start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
         current_time = QDateTime.currentDateTime().toPyDateTime()
         if current_time > end_time:
             dialogs.end_time_in_past()

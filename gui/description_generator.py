@@ -10,7 +10,8 @@ from setup_file.setup_file import (
     MAGNETOMETER_ENABLED,
     TEMPERATURE_ENABLED,
     START_TIME,
-    END_TIME
+    END_TIME,
+    INTERVAL_START
 )
 from setup_file.setup_file import SetupFile
 from mat.utils import epoch_from_timestamp
@@ -85,6 +86,11 @@ class DescriptionGenerator:
         return output
 
     def start_stop_description(self):
+        interval_start = {
+            'ON_INT_MIN': 'on the next whole minute. ',
+            'ON_INT_QHR': 'on the next quarter hour. ',
+            'ON_INT-1HR': 'on the next whole hour. '
+        }
         output = ''
         mapping = [('Begin recording ', 'started', START_TIME),
                    ('Stop recording ', 'stopped', END_TIME)]
@@ -92,6 +98,8 @@ class DescriptionGenerator:
             output += preface
             if self.model.value(tag) == DEFAULT_SETUP[tag]:
                 output += 'when manually {}. '.format(verb)
+            elif self.model.value(tag) in interval_start.keys():
+                output += interval_start[self.model.value(tag)]
             else:
                 output += '{}. '.format(self.model.value(tag))
         return output
@@ -113,12 +121,13 @@ class DescriptionGenerator:
 
     def _get_run_time(self):
         if (self.model.value(START_TIME) == DEFAULT_SETUP[START_TIME] or
-                self.model.value(END_TIME) == DEFAULT_SETUP[END_TIME]):
-            return (SECONDS_PER_MONTH, ' per month.')
+                self.model.value(END_TIME) == DEFAULT_SETUP[END_TIME] or
+                self.model.value(START_TIME) in INTERVAL_START):
+            return SECONDS_PER_MONTH, ' per month.'
         else:
             start_seconds = epoch_from_timestamp(self.model.value(START_TIME))
             end_seconds = epoch_from_timestamp(self.model.value(END_TIME))
-            return (end_seconds - start_seconds, '.')
+            return end_seconds - start_seconds, '.'
 
     def _interval_to_string(self, seconds):
         index = list(INTERVALS).index(seconds)
