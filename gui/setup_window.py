@@ -44,7 +44,7 @@ def appdata_directory():
 
 
 def load_presets():
-    with open('./gui/factory_presets.json') as f:
+    with open('factory_presets.json') as f:
         presets = json.load(f)
     try:
         with open(Path(appdata_directory(), 'user_presets.json')) as f:
@@ -52,6 +52,13 @@ def load_presets():
     except FileNotFoundError:
         user_presets = []
     presets.extend(user_presets)
+    new_preset = {
+        'name': 'New Preset',
+        'description': 'Enter your description',
+        'factory': False,
+        'settings': DEFAULT_SETUP
+    }
+    presets.append(new_preset)
     return presets
 
 
@@ -70,6 +77,7 @@ def fix_data_types(presets):
 def save_presets(presets):
     # saves user presets, removes factory presets
     to_save = [x for x in presets if not x['factory']]
+    to_save = [x for x in to_save if x['name'] != 'New Preset']
     to_save = fix_data_types(to_save)
     with open(Path(appdata_directory(), 'user_presets.json'), 'w') as f:
         json.dump(to_save, f, indent=4)
@@ -83,7 +91,6 @@ class SetupFrame(Ui_Frame):
         self.sensor_mapping = None
         self.date_mapping = None
         self.description = DescriptionGenerator(self.setup_file)
-        self.unlocked_preset = None
 
     def setupUi(self, frame):
         self.frame = frame
@@ -138,9 +145,9 @@ class SetupFrame(Ui_Frame):
         self.pushButton_save.clicked.connect(
             self.save_file)
         self.comboBox_preset.activated.connect(self.preset_changed)
-        self.pushButton_unlock.clicked.connect(self.edit_preset)
         self.pushButton_delete.clicked.connect(self.delete_preset)
         self.pushButton_save_preset.clicked.connect(self.save_preset)
+        self.pushButton_copy_preset.clicked.connect(self.copy_preset)
 
     def setup_mapping(self):
         self.interval_mapping = {
@@ -346,40 +353,33 @@ class SetupFrame(Ui_Frame):
 
     def preset_changed(self, index):
         preset = self.presets[index]
-        disabled = False if preset['name'] == self.unlocked_preset else True
-        self.groupBox_temperature.setDisabled(disabled)
-        self.groupBox_orient.setDisabled(disabled)
-        self.pushButton_unlock.setDisabled(not disabled)
-        self.pushButton_save_preset.setDisabled(disabled)
-        self.lineEdit_preset.setReadOnly(disabled)
-        self.lineEdit_preset.setText(preset['description'])
-
         is_factory = preset['factory']
         self.pushButton_delete.setDisabled(is_factory)
+        self.pushButton_save_preset.setDisabled(is_factory)
+        self.groupBox_temperature.setDisabled(is_factory)
+        self.groupBox_orient.setDisabled(is_factory)
+        self.groupBox_start.setDisabled(is_factory)
+        self.groupBox_stop.setDisabled(is_factory)
+        self.lineEdit_preset.setDisabled(is_factory)
 
+        is_new_preset = self.comboBox_preset.currentText() == 'New Preset'
+        self.pushButton_copy_preset.setDisabled(is_new_preset)
+        self.pushButton_delete.setDisabled(is_new_preset)
+        self.lineEdit_preset.setText(preset['description'])
         self.setup_file.reset()
         self.setup_file.preset = preset['name']
         self.setup_file.update_dict(preset['settings'])
         self.redraw()
-        if index != len(self.presets)-1 and self.presets[-1]['name'] == 'Untitled':
-            self.presets.pop(-1)
-            self.populate_presets()
 
-    def edit_preset(self):
-        current_preset = self.presets[self.comboBox_preset.currentIndex()]
-        if current_preset['factory']:
-            new_preset = dict(current_preset)
-            new_preset['name'] = 'Untitled'
-            new_preset['factory'] = False
-            self.presets.append(new_preset)
-            self.unlocked_preset = 'Untitled'
-            self.populate_presets()
-            index = len(self.presets) - 1
-            self.comboBox_preset.setCurrentIndex(index)
-            self.preset_changed(index)
-        else:
-            self.unlocked_preset = current_preset['name']
-            self.preset_changed(self.comboBox_preset.currentIndex())
+    def copy_preset(self):
+        index = self.comboBox_preset.currentIndex()
+        preset = dict(self.presets[index])
+        preset['name'] = 'New Preset'
+        preset['description'] = 'Enter your description here'
+        preset['factory'] = False
+        self.presets[-1] = preset
+        self.comboBox_preset.setCurrentIndex(len(self.presets)-1)
+        self.preset_changed(len(self.presets)-1)
 
     def delete_preset(self):
         index = self.comboBox_preset.currentIndex()
@@ -395,15 +395,15 @@ class SetupFrame(Ui_Frame):
         index = self.comboBox_preset.currentIndex()
         preset = self.presets[index]
 
-        if self.unlocked_preset == 'Untitled':
+        if preset['name'] == 'New Preset':
             new_name = dialogs.ask_new_preset_name()
             if new_name is None:
                 return
             existing_names = [x['name'] for x in self.presets]
-            if new_name == 'Untitled':
+            if new_name == 'New Preset':
                 dialogs.error_message(
                     'Invalid name',
-                    '"Untitled" is an invalid preset name.'
+                    '"New Preset" is an invalid preset name.'
                 )
                 return
 
@@ -425,10 +425,12 @@ class SetupFrame(Ui_Frame):
         preset['settings'] = self.setup_file._setup_dict
         preset['description'] = self.lineEdit_preset.text()
         save_presets(self.presets)
-        self.unlocked_preset = None
+        self.presets = load_presets()
         self.populate_presets()
         self.preset_changed(index)
         self.comboBox_preset.setCurrentIndex(index)
+        dialogs.inform('Preset saved',
+                       f'"{preset["name"]}" saved successfully')
 
     def date_time_changed(self, occasion):
         widget, value = self.date_mapping[occasion]

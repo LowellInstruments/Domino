@@ -398,32 +398,9 @@
       <item row="0" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <item>
-         <widget class="QPushButton" name="pushButton_unlock">
-          <property name="toolTip">
-           <string>Duplicate and edit this preset</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="icons.qrc">
-            <normaloff>:/icons/icons/icons8-padlock-48.png</normaloff>:/icons/icons/icons8-padlock-48.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>24</width>
-            <height>24</height>
-           </size>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="pushButton_save_preset">
           <property name="toolTip">
-           <string>Save as a custom preset</string>
+           <string>Save changes to current preset</string>
           </property>
           <property name="text">
            <string/>
@@ -444,9 +421,32 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushButton_copy_preset">
+          <property name="toolTip">
+           <string>Copy current preset for editing</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/icons/icons/copy.png</normaloff>:/icons/icons/copy.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushButton_delete">
           <property name="toolTip">
-           <string>Delete this custom preset</string>
+           <string>Delete current preset</string>
           </property>
           <property name="whatsThis">
            <string/>

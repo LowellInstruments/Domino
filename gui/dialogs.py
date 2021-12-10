@@ -211,3 +211,7 @@ class RemoveDiscardDialog(QMessageBox):
 
 def error_message(title, message):
     QMessageBox.warning(gui.mw, title, message, QMessageBox.Ok)
+
+
+def inform(title, message):
+    QMessageBox.information(gui.mw, title, message)

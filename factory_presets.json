@@ -1,0 +1,82 @@
+[
+    {
+        "name": "Current Meter - Typical",
+        "description": "Suitable for most environments, high temporal resolution with moderate filtering. 12+ month typical battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "ORI": 60,
+            "TRI": 60,
+            "BMR": 8,
+            "BMN": 160,
+            "STM": "ON_INT_MIN",
+            "ETM": "2096-01-01 00:00:00"
+        }
+    },
+    {
+        "name": "Current Meter - Swells",
+        "description": "Recommended for locations with swells with a period of up to 10 seconds. 12+ month typical battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "ORI": 120,
+            "TRI": 120,
+            "BMR": 8,
+            "BMN": 360,
+            "STM": "ON_INT_MIN",
+            "ETM": "2096-01-01 00:00:00"
+        }
+    },
+    {
+        "name": "Current Meter - Energetic/Turbulence",
+        "description": "Recommended for areas near surf zones or other very turbulent locations. 6+ month typical battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "ORI": 60,
+            "TRI": 60,
+            "BMR": 16,
+            "BMN": 480,
+            "STM": "ON_INT-1HR",
+            "ETM": "2096-01-01 00:00:00"
+        }
+    },
+    {
+        "name": "General Logging - Continuous Recording",
+        "description": "Data logging at 16Hz continuously.  3+ month typical battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "ORI": 1,
+            "TRI": 1,
+            "BMR": 16,
+            "BMN": 16,
+            "STM": "1970-01-01 00:00:00",
+            "ETM": "2096-01-01 00:00:00"
+        }
+    },
+    {
+        "name": "General Logging - Burst Recording",
+        "description": "Data logging at 16 Hz, 1 minute seconds ON, 4 minutes OFF.  12+ month typical battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "ORI": 300,
+            "TRI": 300,
+            "BMR": 16,
+            "BMN": 960,
+            "STM": "ON_INT_QHR",
+            "ETM": "2096-01-01 00:00:00"
+        }
+    }
+]
