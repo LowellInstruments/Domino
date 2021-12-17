@@ -92,6 +92,15 @@ class SetupFrame(Ui_Frame):
         self.date_mapping = None
         self.description = DescriptionGenerator(self.setup_file)
 
+    def load_last_preset(self, name):
+        try:
+            ind = [x['name'] for x in self.presets].index(name)
+            self.setup_file.reset()
+            self.setup_file.update_dict(self.presets[ind]['settings'])
+            return ind
+        except ValueError:
+            return
+
     def setupUi(self, frame):
         self.frame = frame
         super().setupUi(frame)
@@ -102,7 +111,11 @@ class SetupFrame(Ui_Frame):
                               self.dateTimeEdit_end_time])
         self.redraw()
         self.connect_signals()
-        self.preset_changed(0)
+
+        ind = self.load_last_preset(QSettings().value('preset', None))
+        ind = ind if ind else 0
+        self.comboBox_preset.setCurrentIndex(ind)
+        self.preset_changed(ind)
 
     def set_retain_size(self, widgets):
         for widget in widgets:
@@ -200,6 +213,8 @@ class SetupFrame(Ui_Frame):
         self.redraw_burst()
         description = self.description.description()
         self.label_description.setText(description)
+        if self.comboBox_preset.currentText() == 'New Preset':
+            self.presets[-1]['settings'] = self.setup_file._setup_dict
 
     def redraw_temperature(self):
         state = True if self.setup_file.value(TEMPERATURE_ENABLED) else False
@@ -354,18 +369,18 @@ class SetupFrame(Ui_Frame):
     def preset_changed(self, index):
         preset = self.presets[index]
         is_factory = preset['factory']
-        self.pushButton_delete.setDisabled(is_factory)
+        is_new_preset = self.comboBox_preset.currentText() == 'New Preset'
+        self.pushButton_delete.setDisabled(is_factory | is_new_preset)
         self.pushButton_save_preset.setDisabled(is_factory)
         self.groupBox_temperature.setDisabled(is_factory)
         self.groupBox_orient.setDisabled(is_factory)
         self.groupBox_start.setDisabled(is_factory)
         self.groupBox_stop.setDisabled(is_factory)
         self.lineEdit_preset.setDisabled(is_factory)
-
-        is_new_preset = self.comboBox_preset.currentText() == 'New Preset'
-        self.pushButton_copy_preset.setDisabled(is_new_preset)
-        self.pushButton_delete.setDisabled(is_new_preset)
         self.lineEdit_preset.setText(preset['description'])
+
+        self.pushButton_copy_preset.setDisabled(is_new_preset)
+
         self.setup_file.reset()
         self.setup_file.preset = preset['name']
         self.setup_file.update_dict(preset['settings'])
@@ -493,6 +508,7 @@ class SetupFrame(Ui_Frame):
         directory = os.path.dirname(path[0])
         QSettings().setValue('setup_file_directory', directory)
         QSettings().setValue('setup_file', self.setup_file._setup_dict)
+        QSettings().setValue('preset', self.comboBox_preset.currentText())
         self.setup_file.write_file(path[0])
         message = 'Setup file saved but your device is NOT RECORDING ' \
                   'yet.  To start recording, switch to the ' \
