@@ -76,7 +76,7 @@ class SetupFile:
         self.time_re = compile(r'^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
                                '(0?[0-9]|1[0-9]|2[0-3]):'
                                '[0-5][0-9]:[0-6][0-9]$')
-        self.is_continuous = False
+        self.is_continuous = self._check_continuous()
         self.is_start_time = False
         self.is_end_time = False
         self.preset = None
@@ -88,7 +88,6 @@ class SetupFile:
         self.is_end_time = False
         self.preset = None
 
-
     def value(self, tag):
         return self._setup_dict[tag]
 
@@ -98,6 +97,7 @@ class SetupFile:
     def update_dict(self, new_values):
         # merge dict new_values into _setup_dict
         self._setup_dict.update(new_values)
+        self.is_continuous = self._check_continuous()
 
     def major_interval_bytes(self):
         header = Header('')
@@ -146,8 +146,9 @@ class SetupFile:
     def set_interval(self, channel, value):
         if value not in INTERVALS[self.available_intervals(channel)]:
             raise ValueError('Invalid interval value')
-        if channel == ORIENTATION_INTERVAL:
-            self._check_continuous()
+        if channel == ORIENTATION_INTERVAL and self.is_continuous:
+            raise ValueError('Cannot change orientation interval or burst '
+                             'count when operating in continuous mode')
         self.update(channel, value)
         max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
@@ -193,9 +194,10 @@ class SetupFile:
         return True
 
     def _check_continuous(self):
-        if self.is_continuous:
-            raise ValueError('Cannot change orientation interval or burst '
-                             'count when operating in continuous mode')
+        if self.value('ORI') * self.value('BMR') == self.value('BMN'):
+            return True
+        else:
+            return False
 
     def _confirm_bool(self, state):
         if type(state) is not bool:
