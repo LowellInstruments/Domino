@@ -16,7 +16,8 @@ DEFAULTS = [
     ('label_firmware', 'Firmware Version: --'),
     ('label_deployment', 'Deployment Number: --'),
     ('statusbar_logging_status', '  --  '),
-    ('statusbar_serial_number', '  Not Connected  ')
+    ('statusbar_serial_number', '  Not Connected  '),
+    ('labelLoggerSettings', '--')
 ]
 
 

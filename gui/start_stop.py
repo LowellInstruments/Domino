@@ -62,6 +62,7 @@ class StartStopFrame(Ui_Frame):
         self.logger.connected.connect(self.connected_slot)
         self.logger.error_code.connect(self.show_run_error)
         self.logger.error_message.connect(self.show_warning)
+        self.logger.old_firmware.connect(self.old_firmware)
         self.logger.start()
         self.time_updater = TimeUpdater()
         self.time_updater.time_signal.connect(self.update_time_slot)
@@ -148,6 +149,10 @@ class StartStopFrame(Ui_Frame):
     def show_warning(self, title, message):
         dialogs.error_message(title, message)
 
+    def old_firmware(self):
+        self.labelLoggerSettings.setText(
+            'The connected device does not support this feature')
+
 
 class TimeUpdater(QThread):
     time_signal = pyqtSignal(str)
@@ -164,6 +169,7 @@ class LoggerQueryThread(QThread):
     connected = pyqtSignal(bool)
     error_code = pyqtSignal(int)
     error_message = pyqtSignal(str, str)
+    old_firmware = pyqtSignal()
 
     def __init__(self, commands, queue):
         super().__init__()
@@ -216,8 +222,11 @@ class LoggerQueryThread(QThread):
                         'Calibration values on your device are missing, invalid, or outdated.')
 
             elif next_command == 'GFV':
-                if result != '1.0.124':
+                if result == '1.0.124':
+                    self.old_firmware.emit()
+                else:
                     self.commands.supports_gls(True)
+
             self.query_update.emit((next_command, result))
 
             self.msleep(50)

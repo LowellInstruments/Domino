@@ -7,13 +7,14 @@ from numpy import ndarray
 from collections import OrderedDict
 from datetime import datetime
 from gui.start_stop_clear import clear_gui
-from enum import Enum
+from gui.description_generator import DescriptionGenerator
+from setup_file.setup_file import SetupFile
 
 
 FILE_SIZE = {
     'FSZ': ('File size {:0.2f} MB', 'label_file_size'),
     'CTS': (' of {:0.2f} GB available', 'label_sd_total_space'),
-    'CFS': ('SD card free space: {:0.2f}','label_sd_free_space')
+    'CFS': ('SD card free space: {:0.2f}', 'label_sd_free_space')
 }
 
 SIMPLE_FIELD = {
@@ -156,8 +157,14 @@ class SensorUpdate(Update):
         command, data = query_results
         if command == 'get_logger_settings':
             self.logger_settings = query_results[1]
+            self.update_settings_description()
         elif command == 'get_sensor_readings':
             self.redraw_table(query_results[1])
+
+    def update_settings_description(self):
+        setup_file = SetupFile(self.logger_settings)
+        description = DescriptionGenerator(setup_file).sample_description()
+        self.gui.labelLoggerSettings.setText(description)
 
     def redraw_table(self, data):
         for index, sensor in enumerate(SENSORS.keys()):
@@ -294,6 +301,7 @@ class StatusUpdate(Update):
 class DeploymentUpdate(Update):
     def applicable_commands(self):
         return ['logger_info']
+
     def update(self, query_results):
         command, data = query_results
         for tag in LOGGER_INFO:
