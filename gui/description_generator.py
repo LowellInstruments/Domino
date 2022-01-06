@@ -87,12 +87,12 @@ class DescriptionGenerator:
 
     def start_stop_description(self):
         interval_start = {
-            'ON_INT_MIN': 'on the next whole minute. ',
+            'ON_INT_MIN': 'on the next minute. ',
             'ON_INT_QHR': 'on the next quarter hour. ',
-            'ON_INT-1HR': 'on the next whole hour. '
+            'ON_INT-1HR': 'on the next hour. '
         }
         output = ''
-        mapping = [('Begin recording ', 'started', START_TIME),
+        mapping = [('Start recording ', 'started', START_TIME),
                    ('Stop recording ', 'stopped', END_TIME)]
         for preface, verb, tag in mapping:
             output += preface

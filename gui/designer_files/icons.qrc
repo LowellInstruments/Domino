@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/icons8-info-48.png</file>
     <file>icons/copy.png</file>
     <file>icons/icons8-padlock-48.png</file>
     <file>icons/icons8-delete-bin-48.png</file>

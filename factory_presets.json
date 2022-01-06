@@ -65,7 +65,7 @@
     },
     {
         "name": "General Logging - Burst Recording",
-        "description": "Data logging at 16 Hz, 1 minute seconds ON, 4 minutes OFF.  12+ month typical battery life.",
+        "description": "Data logging at 16 Hz, 1 minute ON, 4 minutes OFF.  12+ month typical battery life.",
         "factory": true,
         "settings": {
             "TMP": true,

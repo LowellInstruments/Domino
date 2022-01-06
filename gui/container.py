@@ -47,6 +47,7 @@ class Container(Ui_MainWindow):
         self.converter_frame.setupUi(self.frame_convert)
         self.setup_frame = SetupFrame()
         self.setup_frame.setupUi(self.frame_setup_file)
+        self.window.setMinimumSize(self.frame_setup_file.sizeHint())
         self.start_stop_frame = StartStopFrame()
         self.start_stop_frame.setupUi(self.frame_start_stop)
         self.window.setWindowTitle('Lowell Instruments - Domino')
@@ -93,7 +94,7 @@ class Container(Ui_MainWindow):
             '<a href="http://www.lowellinstruments.com">' \
             'Lowell Instruments LLC</a><br />' \
             'Domino' + '&trade; ' + self.version + '<br /><br />' \
-            'Copyright 2018-2021 by Lowell Instruments LLC, some ' \
+            'Copyright 2018-2022 by Lowell Instruments LLC, some ' \
             'rights reserved. <br />' \
             'Source code for this application is available under ' \
             'the GPLv3 License at ' \

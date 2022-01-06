@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QInputDialog
+from PyQt5.QtGui import QIcon, QPixmap
 import gui
 
 
@@ -214,4 +215,9 @@ def error_message(title, message):
 
 
 def inform(title, message):
-    QMessageBox.information(gui.mw, title, message)
+    msg = QMessageBox(parent=gui.mw)
+    msg.setWindowTitle(title)
+    msg.setText(message)
+    msg.setIconPixmap(QPixmap(":/icons/icons/icons8-info-48.png"))
+    msg.exec_()
+    # QMessageBox.about(gui.mw, title, message)

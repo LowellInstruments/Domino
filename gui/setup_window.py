@@ -513,9 +513,7 @@ class SetupFrame(Ui_Frame):
         message = 'Setup file saved but your device is NOT RECORDING ' \
                   'yet.  To start recording, switch to the ' \
                   '"Device" tab and click the "Start Running" button.'
-        QMessageBox.information(self.frame,
-                                'File Saved',
-                                message)
+        dialogs.inform('File Saved', message)
 
     def pre_save_check(self):
         passed = True
