@@ -7,11 +7,13 @@ from setup_file.setup_file import (
     BURST_FREQUENCY,
     ORIENTATION_BURST_COUNT,
     ORIENTATION_BURST_RATE,
+    PRESSURE_BURST_COUNT,
     TEMPERATURE_INTERVAL,
     ORIENTATION_INTERVAL,
     ACCELEROMETER_ENABLED,
     MAGNETOMETER_ENABLED,
     TEMPERATURE_ENABLED,
+    PRESSURE_ENABLED,
     LED_ENABLED,
     FILE_NAME,
     START_TIME,
@@ -139,12 +141,16 @@ class SetupFrame(Ui_Frame):
             lambda: self.sensor_enabled_slot('magnetometer'))
         self.checkBox_accelerometer.stateChanged.connect(
             lambda: self.sensor_enabled_slot('accelerometer'))
+        self.checkBox_pressure.stateChanged.connect(
+            lambda: self.sensor_enabled_slot('pressure'))
+        self.comboBox_pressure_burst.activated.connect(
+            self.pressure_burst_mode_changed)
         self.checkBox_led.stateChanged.connect(
             lambda: self.sensor_enabled_slot('led'))
         self.lineEdit_burst_duration.editingFinished.connect(
-            self.duration_changed)
-        self.checkBox_continuous.stateChanged.connect(
-            self.continuous_changed)
+            lambda: self.duration_changed('orientation'))
+        self.lineEdit_pressure_burst.editingFinished.connect(
+            lambda: self.duration_changed('pressure'))
         self.comboBox_orient_burst_rate.activated.connect(
             self.burst_rate_changed)
         self.comboBox_start_time.activated.connect(
@@ -177,6 +183,8 @@ class SetupFrame(Ui_Frame):
                 sensor_map(self.checkBox_accelerometer, ACCELEROMETER_ENABLED),
             'magnetometer':
                 sensor_map(self.checkBox_magnetometer, MAGNETOMETER_ENABLED),
+            'pressure':
+                sensor_map(self.checkBox_pressure, PRESSURE_ENABLED),
             'led':
                 sensor_map(self.checkBox_led, LED_ENABLED)}
 
@@ -190,7 +198,6 @@ class SetupFrame(Ui_Frame):
         self.comboBox_temp_interval.addItems(INTERVAL_STRING)
         self.comboBox_orient_interval.addItems(INTERVAL_STRING)
         burst_list = [str(x) + ' Hz' for x in BURST_FREQUENCY]
-        burst_list = ['No Burst'] + burst_list
         self.comboBox_orient_burst_rate.addItems(burst_list)
         self.populate_presets()
 
@@ -210,7 +217,6 @@ class SetupFrame(Ui_Frame):
         self.redraw_interval_combo_boxes()
         self.redraw_check_boxes()
         self.redraw_date_boxes()
-        self.redraw_burst()
         description = self.description.description()
         self.label_description.setText(description)
         if self.comboBox_preset.currentText() == 'New Preset':
@@ -221,12 +227,39 @@ class SetupFrame(Ui_Frame):
         self.comboBox_temp_interval.setEnabled(state)
 
     def redraw_orient_group(self):
-        orient_group = [self.comboBox_orient_interval,
-                        self.comboBox_orient_burst_rate,
-                        self.lineEdit_burst_duration,
-                        self.checkBox_continuous]
-        state = True if self.setup_file.orient_enabled() else False
-        set_enabled(orient_group, state)
+        burst_widgets = [
+            self.comboBox_orient_interval,
+            self.comboBox_orient_burst_rate]
+        burst_widget_state = (
+                self.setup_file.value(ACCELEROMETER_ENABLED) or
+                self.setup_file.value(MAGNETOMETER_ENABLED) or
+                self.setup_file.value(PRESSURE_ENABLED))
+        set_enabled(burst_widgets, burst_widget_state)
+
+        accel_mag_widgets = [
+            self.comboBox_accel_mag_burst,
+            self.lineEdit_burst_duration]
+        accel_mag_state = (
+                self.setup_file.value(ACCELEROMETER_ENABLED) or
+                self.setup_file.value(MAGNETOMETER_ENABLED))
+        set_enabled(accel_mag_widgets, accel_mag_state)
+
+        pressure_widgets = [
+            self.comboBox_pressure_burst,
+            self.lineEdit_pressure_burst]
+        set_enabled(pressure_widgets, self.setup_file.value(PRESSURE_ENABLED))
+
+        # Sync the combo boxes to the setup file
+        orient_count = self.setup_file.value(ORIENTATION_BURST_COUNT)
+        pressure_count = self.setup_file.value(PRESSURE_BURST_COUNT)
+        rate = self.setup_file.value(ORIENTATION_BURST_RATE)
+        orient_seconds = orient_count // rate
+        pressure_seconds = pressure_count // rate
+        index = list(BURST_FREQUENCY).index(rate)
+        self.comboBox_orient_burst_rate.setCurrentIndex(index)
+        self.lineEdit_burst_duration.setText(str(orient_seconds))
+        pressure_text = str(pressure_seconds) if pressure_seconds >= 1 else '-'
+        self.lineEdit_pressure_burst.setText(pressure_text)
 
     def redraw_interval_combo_boxes(self):
         for sensor in ['temperature', 'orientation']:
@@ -265,32 +298,6 @@ class SetupFrame(Ui_Frame):
                 time = self.setup_file.value(occasion)
                 time = QDateTime.fromString(time, 'yyyy-MM-dd HH:mm:ss')
                 date_time.setDateTime(time)
-
-    def redraw_burst(self):
-        if not self.setup_file.orient_enabled():
-            return
-        if self.setup_file.value(ORIENTATION_BURST_COUNT) == 1:
-            self.lineEdit_burst_duration.setEnabled(False)
-            self.checkBox_continuous.setEnabled(False)
-            # self.lineEdit_burst_duration.setText('0')
-        elif self.setup_file.is_continuous:
-            self.checkBox_continuous.setChecked(True)
-            self.lineEdit_burst_duration.setEnabled(False)
-            self.comboBox_orient_interval.setEnabled(False)
-            self.lineEdit_burst_duration.setText('1')
-            self.comboBox_orient_burst_rate.model().item(0).setEnabled(False)
-        else:
-            self.checkBox_continuous.setChecked(False)
-            self.comboBox_orient_burst_rate.model().item(0).setEnabled(True)
-            self.lineEdit_burst_duration.setEnabled(True)
-            self.comboBox_orient_interval.setEnabled(True)
-            self.comboBox_orient_burst_rate.setEnabled(True)
-            count = self.setup_file.value(ORIENTATION_BURST_COUNT)
-            rate = self.setup_file.value(ORIENTATION_BURST_RATE)
-            seconds = count // rate
-            index = list(BURST_FREQUENCY).index(rate)
-            self.comboBox_orient_burst_rate.setCurrentIndex(index + 1)
-            self.lineEdit_burst_duration.setText(str(seconds))
 
     def date_time_combobox_changed(self, occasion):
         mapping = {'start_time':
@@ -350,21 +357,30 @@ class SetupFrame(Ui_Frame):
 
     def burst_rate_changed(self):
         index = self.comboBox_orient_burst_rate.currentIndex()
-        if index == 0:
-            self.setup_file.set_orient_burst_count(1)
-            self.setup_file.set_orient_burst_rate(2)
+        burst_rate = BURST_FREQUENCY[index]
+        seconds = self.lineEdit_burst_duration.text()
+        self.setup_file.set_orient_burst_rate(burst_rate)
+        try:
+            self.setup_file.set_burst_count(
+                ORIENTATION_BURST_COUNT,
+                burst_rate*int(seconds))
+        except ValueError:
+            self.setup_file.set_burst_count(
+                ORIENTATION_BURST_COUNT,
+                burst_rate)
+        finally:
             self.redraw()
+
+    def pressure_burst_mode_changed(self):
+        if self.comboBox_pressure_burst.currentText() == 'Single Sample':
+            self.setup_file.set_burst_count(PRESSURE_BURST_COUNT, 1)
+            self.lineEdit_pressure_burst.setEnabled(False)
         else:
-            burst_rate = BURST_FREQUENCY[index-1]
-            seconds = self.lineEdit_burst_duration.text()
-            self.setup_file.set_orient_burst_rate(burst_rate)
-            try:
-                self.setup_file.set_orient_burst_count(
-                    burst_rate*int(seconds))
-            except ValueError:
-                self.setup_file.set_orient_burst_count(burst_rate)
-            finally:
-                self.redraw()
+            self.lineEdit_pressure_burst.setEnabled(True)
+            if self.setup_file.value(PRESSURE_BURST_COUNT) == 1:
+                burst = self.setup_file.value(ORIENTATION_BURST_RATE)
+                self.setup_file.set_burst_count(PRESSURE_BURST_COUNT, burst)
+        self.redraw()
 
     def preset_changed(self, index):
         preset = self.presets[index]
@@ -471,23 +487,27 @@ class SetupFrame(Ui_Frame):
         self.setup_file.set_channel_enabled(tag, state)
         self.redraw()
 
-    def duration_changed(self):
-        seconds = self.lineEdit_burst_duration.text()
+    def duration_changed(self, sensor):
+        burst_count = {
+            'orientation': ORIENTATION_BURST_COUNT,
+            'pressure': PRESSURE_BURST_COUNT
+        }.get(sensor)
+        line_edit = {
+            'orientation': self.lineEdit_burst_duration,
+            'pressure': self.lineEdit_pressure_burst
+        }.get(sensor)
+        seconds = line_edit.text()
         rate = self.setup_file.value(ORIENTATION_BURST_RATE)
-        count = self.setup_file.value(ORIENTATION_BURST_COUNT)
         try:
-            self.setup_file.set_orient_burst_count(int(seconds)*rate)
+            self.setup_file.set_burst_count(
+                burst_count,
+                int(seconds)*rate)
         except ValueError:
             message = 'The burst duration must be less than or equal to ' \
                       'the orientation interval. Reverting value.'
             dialogs.error_message('Invalid duration', message)
         finally:
             self.redraw()
-
-    def continuous_changed(self):
-        state = self.checkBox_continuous.isChecked()
-        self.setup_file.set_continuous(state)
-        self.redraw()
 
     def save_file(self):
         self.redraw()

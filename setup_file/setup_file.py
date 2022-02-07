@@ -10,7 +10,7 @@ import mat.sensor
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
 TYPE_BOOL = ('ACL', 'LED', 'MGN', 'TMP', 'PRS', 'PHD')
 WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
-               'STM', 'ETM', 'LED']
+               'PRR', 'PRN', 'STM', 'ETM', 'LED']
 INTERVALS = array([1, 2, 5, 10, 15, 20, 30, 60,
                    120, 300, 600, 900, 1800, 3600])
 INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
@@ -18,9 +18,11 @@ INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
                          '1 minute', '2 minutes', '5 minutes', '10 minutes',
                          '15 minutes', '30 minutes', '1 hour'],
                         dtype=object)
-BURST_FREQUENCY = array([2, 4, 8, 16, 32, 64])
+BURST_FREQUENCY = array([2, 4, 8])
 DEFAULT_SETUP = {'DFN': 'Test.lid', 'TMP': True, 'ACL': True,
-                 'MGN': True, 'TRI': 60, 'ORI': 60, 'BMR': 8, 'BMN': 160,
+                 'MGN': True, 'PRS': True,
+                 'TRI': 60, 'ORI': 60, 'BMR': 8, 'BMN': 160,
+                 'PRR': 8, 'PRN': 1,
                  'STM': '1970-01-01 00:00:00',
                  'ETM': '2096-01-01 00:00:00',
                  'LED': True}
@@ -76,14 +78,12 @@ class SetupFile:
         self.time_re = compile(r'^[0-9$]{4}-[0-1][0-9]-[0-3][0-9] '
                                '(0?[0-9]|1[0-9]|2[0-3]):'
                                '[0-5][0-9]:[0-6][0-9]$')
-        self.is_continuous = self._check_continuous()
         self.is_start_time = False
         self.is_end_time = False
         self.preset = None
 
     def reset(self):
         self._setup_dict = dict(DEFAULT_SETUP)
-        self.is_continuous = False
         self.is_start_time = False
         self.is_end_time = False
         self.preset = None
@@ -97,7 +97,6 @@ class SetupFile:
     def update_dict(self, new_values):
         # merge dict new_values into _setup_dict
         self._setup_dict.update(new_values)
-        self.is_continuous = self._check_continuous()
 
     def major_interval_bytes(self):
         header = Header('')
@@ -146,13 +145,12 @@ class SetupFile:
     def set_interval(self, channel, value):
         if value not in INTERVALS[self.available_intervals(channel)]:
             raise ValueError('Invalid interval value')
-        if channel == ORIENTATION_INTERVAL and self.is_continuous:
-            raise ValueError('Cannot change orientation interval or burst '
-                             'count when operating in continuous mode')
         self.update(channel, value)
         max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
-            self.set_orient_burst_count(max_burst_count)
+            self.set_burst_count(ORIENTATION_BURST_COUNT, max_burst_count)
+        if self.value(PRESSURE_BURST_COUNT) > max_burst_count:
+            self.set_burst_count(PRESSURE_BURST_COUNT, max_burst_count)
         if self.value(ORIENTATION_INTERVAL) > self.value(TEMPERATURE_INTERVAL):
             self.set_interval(TEMPERATURE_INTERVAL, value)
 
@@ -160,19 +158,15 @@ class SetupFile:
         if value not in BURST_FREQUENCY:
             raise ValueError('Invalid burst rate')
         self.update(ORIENTATION_BURST_RATE, value)
-        if self.is_continuous:
-            self.update(ORIENTATION_BURST_COUNT, value)
+        self.update(PRESSURE_BURST_RATE, value)
 
-    def set_orient_burst_count(self, value):
+    def set_burst_count(self, sensor, value):
         max_burst_count = (self.value(ORIENTATION_INTERVAL) *
                            self.value(ORIENTATION_BURST_RATE))
         if 0 <= value > max_burst_count:
             raise ValueError('Burst count must be > 0 and <= orient interval '
                              'multiplied by orient burst rate.')
-        if self.is_continuous and (value !=
-                                   self.value(ORIENTATION_BURST_RATE)):
-            raise ValueError('Invalid burst count while in continuous mode')
-        self.update(ORIENTATION_BURST_COUNT, value)
+        self.update(sensor, value)
 
     def set_time(self, occasion, time):
         time_dict = {START_TIME: self.value(START_TIME),
@@ -193,12 +187,6 @@ class SetupFile:
                              'correct order')
         return True
 
-    def _check_continuous(self):
-        if self.value('ORI') * self.value('BMR') == self.value('BMN'):
-            return True
-        else:
-            return False
-
     def _confirm_bool(self, state):
         if type(state) is not bool:
             raise ValueError('State must be True or False')
@@ -206,14 +194,6 @@ class SetupFile:
     def write_file(self, path):
         file_writer = ConfigFileWriter(path, self._setup_dict, self.preset)
         file_writer.write_file()
-
-    def set_continuous(self, state):
-        self._confirm_bool(state)
-        self.is_continuous = state
-        if state is True:
-            self.update(ORIENTATION_INTERVAL, 1)
-            burst_rate = self.value(ORIENTATION_BURST_RATE)
-            self.update(ORIENTATION_BURST_COUNT, burst_rate)
 
 
 class ConfigFileWriter:
