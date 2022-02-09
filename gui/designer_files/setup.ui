@@ -498,6 +498,11 @@
          <widget class="QComboBox" name="comboBox_accel_mag_burst">
           <item>
            <property name="text">
+            <string>Single Sample</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
             <string>Burst (seconds)</string>
            </property>
           </item>
