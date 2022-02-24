@@ -9,8 +9,8 @@ import mat.sensor
 
 TYPE_INT = ('BMN', 'BMR', 'ORI', 'TRI', 'PRR', 'PRN')
 TYPE_BOOL = ('ACL', 'LED', 'MGN', 'TMP', 'PRS', 'PHD')
-WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'MGN', 'TRI', 'ORI', 'BMR', 'BMN',
-               'PRR', 'PRN', 'STM', 'ETM', 'LED']
+WRITE_ORDER = ['DFN', 'TMP', 'ACL', 'PRS', 'MGN', 'TRI', 'ORI',
+               'BMR', 'BMN', 'PRR', 'PRN', 'STM', 'ETM', 'LED']
 INTERVALS = array([1, 2, 5, 10, 15, 20, 30, 60,
                    120, 300, 600, 900, 1800, 3600])
 INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
