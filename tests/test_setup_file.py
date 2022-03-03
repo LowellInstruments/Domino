@@ -109,13 +109,6 @@ def test_invalid_burst_rate(setup):
         setup.set_orient_burst_rate(15)
 
 
-def test_too_large_orient_burst_count(setup):
-    setup.set_interval(ORIENTATION_INTERVAL, 1)
-    setup.set_orient_burst_rate(16)
-    with pytest.raises(ValueError):
-        setup.set_orient_burst_count(17)
-
-
 def test_enable_led(setup):
     setup.set_channel_enabled(LED_ENABLED, False)
     assert setup.value(LED_ENABLED) is False
@@ -143,13 +136,13 @@ def test_wrong_date_format(setup):
 
 def test_major_interval_bytes(setup):
     bytes = setup.major_interval_bytes()
-    assert bytes == 1922
+    assert bytes == 1924
 
 
 def test_major_interval_bytes_no_mag(setup):
     setup.set_channel_enabled(MAGNETOMETER_ENABLED, False)
     bytes = setup.major_interval_bytes()
-    assert bytes == 962
+    assert bytes == 964
 
 
 def test_orient_enabled(setup):
@@ -158,22 +151,6 @@ def test_orient_enabled(setup):
     assert setup.orient_enabled() is True
     setup.set_channel_enabled(ACCELEROMETER_ENABLED, False)
     assert setup.orient_enabled() is False
-
-
-def test_set_continuous(setup):
-    assert setup.is_continuous is False
-    burst = setup.value(ORIENTATION_BURST_RATE)
-    setup.set_continuous(True)
-    assert setup.is_continuous is True
-    assert setup.value(ORIENTATION_INTERVAL) == 1
-    assert setup.value(ORIENTATION_BURST_RATE) == burst
-    assert setup.value(ORIENTATION_BURST_COUNT) == burst
-
-
-def test_change_ori_in_continuous(setup):
-    setup.set_continuous(True)
-    with pytest.raises(ValueError):
-        setup.set_interval(ORIENTATION_INTERVAL, 2)
 
 
 def test_temperature_interval_override(setup):
@@ -186,28 +163,11 @@ def test_temperature_interval_override(setup):
     assert setup.value(ORIENTATION_INTERVAL) == 120
 
 
-def test_bmn_changes_with_burst_rate_in_continuous(setup):
-    setup.set_continuous(True)
-    assert setup.value(ORIENTATION_BURST_COUNT) == \
-           setup.value(ORIENTATION_BURST_RATE)
-    setup.set_orient_burst_rate(64)
-    assert setup.value(ORIENTATION_BURST_COUNT) == \
-           setup.value(ORIENTATION_BURST_RATE)
-
-def test_change_bmn_in_continuous(setup):
-    setup.set_continuous(True)
-    assert setup.is_continuous
-    assert setup.value(ORIENTATION_BURST_COUNT) == \
-           setup.value(ORIENTATION_BURST_RATE)
-    with pytest.raises(ValueError):
-        setup.set_orient_burst_count(4)
-
-
 def test_save_and_load_round_trip(setup, tmp_path):
     path = tmp_path / 'MAT.cfg'
     # change from default
     setup.set_interval(ORIENTATION_INTERVAL, 1)
-    setup.set_orient_burst_rate(64)
+    setup.set_orient_burst_rate(4)
     setup.write_file(path)
     new_file = load_setup_file(path)
     assert setup._setup_dict == new_file._setup_dict
