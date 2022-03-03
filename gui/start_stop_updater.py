@@ -30,6 +30,7 @@ SENSORS = OrderedDict(
      ('my', int_format),
      ('mz', int_format),
      ('temp', thousands_format),
+     ('pressure', thousands_format),
      ('batt', hundredths_format)]
 )
 
@@ -143,7 +144,9 @@ class SensorUpdate(Update):
     ASSOCIATED_CHANNELS = {
         'ACL': ['ax', 'ay', 'az'],
         'MGN': ['mx', 'my', 'mz'],
-        'TMP': ['temp']}
+        'TMP': ['temp'],
+        'PRS': ['pressure']
+    }
 
     def __init__(self, gui):
         super().__init__(gui)

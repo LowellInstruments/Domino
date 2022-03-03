@@ -50,7 +50,8 @@ class Container(Ui_MainWindow):
         self.window.setMinimumSize(self.frame_setup_file.sizeHint())
         self.start_stop_frame = StartStopFrame()
         self.start_stop_frame.setupUi(self.frame_start_stop)
-        self.window.setWindowTitle('Lowell Instruments - Domino')
+        self.window.setWindowTitle('Lowell Instruments - Domino (Pressure Version) Beta')
+        self.window.setStyleSheet('QMainWindow { background-color: #ADD8E6; }')
         self.show_about_button()
         self.old_resize = self.window.resizeEvent
         self.window.resizeEvent = self.resizeEvent

@@ -49,7 +49,7 @@ def load_presets():
     with open('factory_presets.json') as f:
         presets = json.load(f)
     try:
-        with open(Path(appdata_directory(), 'user_presets.json')) as f:
+        with open(Path(appdata_directory(), 'user_presets_pressure.json')) as f:
             user_presets = json.load(f)
     except FileNotFoundError:
         user_presets = []
@@ -81,7 +81,7 @@ def save_presets(presets):
     to_save = [x for x in presets if not x['factory']]
     to_save = [x for x in to_save if x['name'] != 'New Preset']
     to_save = fix_data_types(to_save)
-    with open(Path(appdata_directory(), 'user_presets.json'), 'w') as f:
+    with open(Path(appdata_directory(), 'user_presets_pressure.json'), 'w') as f:
         json.dump(to_save, f, indent=4)
 
 
@@ -143,10 +143,6 @@ class SetupFrame(Ui_Frame):
             lambda: self.sensor_enabled_slot('accelerometer'))
         self.checkBox_pressure.stateChanged.connect(
             lambda: self.sensor_enabled_slot('pressure'))
-        self.comboBox_pressure_burst.activated.connect(
-            lambda: self.burst_mode_changed('pressure'))
-        self.comboBox_accel_mag_burst.activated.connect(
-            lambda: self.burst_mode_changed('accel_mag'))
         self.checkBox_led.stateChanged.connect(
             lambda: self.sensor_enabled_slot('led'))
         self.lineEdit_burst_duration.editingFinished.connect(
@@ -240,7 +236,6 @@ class SetupFrame(Ui_Frame):
         set_enabled(burst_widgets, burst_widget_state)
 
         accel_mag_widgets = [
-            self.comboBox_accel_mag_burst,
             self.lineEdit_burst_duration]
         accel_mag_state = (
                 self.setup_file.value(ACCELEROMETER_ENABLED) or
@@ -248,7 +243,6 @@ class SetupFrame(Ui_Frame):
         set_enabled(accel_mag_widgets, accel_mag_state)
 
         pressure_widgets = [
-            self.comboBox_pressure_burst,
             self.lineEdit_pressure_burst]
         set_enabled(pressure_widgets, self.setup_file.value(PRESSURE_ENABLED))
 
@@ -259,23 +253,16 @@ class SetupFrame(Ui_Frame):
     def redraw_burst_duration(self):
         rate = self.setup_file.value(ORIENTATION_BURST_RATE)
         mapping = [
-            (self.lineEdit_burst_duration, self.comboBox_accel_mag_burst,
-             ORIENTATION_BURST_COUNT),
-            (self.lineEdit_pressure_burst, self.comboBox_pressure_burst,
-             PRESSURE_BURST_COUNT)
+            (self.lineEdit_burst_duration, ORIENTATION_BURST_COUNT),
+            (self.lineEdit_pressure_burst, PRESSURE_BURST_COUNT)
         ]
-        for line_edit, combobox, value_field in mapping:
+        for line_edit, value_field in mapping:
             count = self.setup_file.value(value_field)
             seconds = count // rate
-            if count == 1:
-                line_edit.setText('-')
-                line_edit.setEnabled(False)
-            else:
-                line_edit.setText(str(seconds))
-                line_edit.setEnabled(True)
 
-            ind = 0 if self.setup_file.value(value_field) == 1 else 1
-            combobox.setCurrentIndex(ind)
+            current_state = line_edit.isEnabled()
+            line_edit.setText(str(seconds))
+            line_edit.setEnabled(current_state)
 
     def redraw_interval_combo_boxes(self):
         for sensor in ['temperature', 'orientation']:
@@ -390,23 +377,17 @@ class SetupFrame(Ui_Frame):
     def burst_mode_changed(self, sensor):
         mapping = {
             'accel_mag': (
-                self.comboBox_accel_mag_burst,
                 self.lineEdit_burst_duration,
                 ORIENTATION_BURST_COUNT),
             'pressure': (
-                self.comboBox_pressure_burst,
                 self.lineEdit_pressure_burst,
                 PRESSURE_BURST_COUNT)
         }
-        combobox, line_edit, value_field = mapping.get(sensor)
+        line_edit, value_field = mapping.get(sensor)
 
-        if combobox.currentText() == 'Single Sample':
-            line_edit.setEnabled(False)
-            self.setup_file.set_burst_count(value_field, 1)
-        else:
-            line_edit.setEnabled(True)
-            burst = self.setup_file.value(ORIENTATION_BURST_RATE)
-            self.setup_file.set_burst_count(value_field, burst)
+        line_edit.setEnabled(True)
+        burst = self.setup_file.value(ORIENTATION_BURST_RATE)
+        self.setup_file.set_burst_count(value_field, burst)
         self.redraw()
 
     def preset_changed(self, index):

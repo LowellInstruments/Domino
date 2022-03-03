@@ -178,6 +178,7 @@ class LoggerQueryThread(QThread):
         self.is_active = False
         self.is_connected = False
         self.time = time.monotonic()
+        self.checked_model = False
 
     def run(self):
         self.is_active = True
@@ -214,6 +215,16 @@ class LoggerQueryThread(QThread):
 
             elif next_command is not None:
                 result = self._send_command(controller, next_command)
+
+            if next_command == 'logger_info':
+                if not self.checked_model:
+                    self.checked_model = True
+                    model = result.get('MN', '')
+                    if model != 'MATP-1':
+                        self.error_message.emit(
+                            'Incompatible hardware',
+                            'This version of Domino is only intended to be used '
+                            'with the MATP-1 pressure logger.')
 
             if next_command == 'load_calibration':
                 if controller.calibration.coefficients == DEFAULT_COEFFICIENTS:

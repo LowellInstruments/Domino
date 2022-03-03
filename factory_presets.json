@@ -1,24 +1,7 @@
 [
     {
-        "name": "Current Meter - Typical",
-        "description": "Suitable for most environments, high temporal resolution with moderate filtering. 12+ month typical battery life.",
-        "factory": true,
-        "settings": {
-            "TMP": true,
-            "ACL": true,
-            "MGN": true,
-            "PRS": true,
-            "ORI": 60,
-            "TRI": 60,
-            "BMR": 8,
-            "BMN": 160,
-            "STM": "ON_INT_MIN",
-            "ETM": "2096-01-01 00:00:00"
-        }
-    },
-    {
-        "name": "Current Meter - Swells",
-        "description": "Recommended for locations with swells with a period of up to 10 seconds. 12+ month typical battery life.",
+        "name": "Current and Water Level - Typical",
+        "description": "Two-minute recording interval of currents and water level. 12+ month typical battery life.",
         "factory": true,
         "settings": {
             "TMP": true,
@@ -28,7 +11,28 @@
             "ORI": 120,
             "TRI": 120,
             "BMR": 8,
-            "BMN": 360,
+            "BMN": 160,
+            "PRR": 8,
+            "PRN": 8,
+            "STM": "ON_INT_MIN",
+            "ETM": "2096-01-01 00:00:00"
+        }
+    },
+    {
+        "name": "Currents and Waves - Typical",
+        "description": "Two-minute recording interval of currents and waves. 4 month typical battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "PRS": true,
+            "ORI": 120,
+            "TRI": 120,
+            "BMR": 8,
+            "BMN": 240,
+            "PRR": 8,
+            "PRN": 8,
             "STM": "ON_INT_MIN",
             "ETM": "2096-01-01 00:00:00"
         }
