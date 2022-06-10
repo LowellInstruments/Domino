@@ -279,6 +279,9 @@ class SetupFrame(Ui_Frame):
             self.comboBox_orient_interval.setEnabled(False)
             self.lineEdit_burst_duration.setText('1')
             self.comboBox_orient_burst_rate.model().item(0).setEnabled(False)
+            rate = self.setup_file.value(ORIENTATION_BURST_RATE)
+            index = list(BURST_FREQUENCY).index(rate)
+            self.comboBox_orient_burst_rate.setCurrentIndex(index + 1)
         else:
             self.checkBox_continuous.setChecked(False)
             self.comboBox_orient_burst_rate.model().item(0).setEnabled(True)
