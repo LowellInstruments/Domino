@@ -12,3 +12,4 @@ PyQt5
 git+https://github.com/LowellInstruments/lowell-mat.git
 pytest-qt
 pytest-mock
+wmi
