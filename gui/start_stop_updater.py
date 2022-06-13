@@ -62,6 +62,7 @@ class Commands:
             FileSizeUpdate,
             SerialNumberUpdate,
             SimpleUpdate,
+            StuckSensor
         ]
         # (Command, repeat interval)
         self.COMMANDS = [
@@ -79,6 +80,7 @@ class Commands:
 
     def reset(self):
         self.make_schedule()
+        self.command_handlers = []
         for klass in self.HANDLER_CLASSES:
             self.command_handlers.append(klass(self.gui))
         self.gls_set = False
@@ -339,3 +341,31 @@ class ConnectionStatus:
         else:
             self.gui.pushButton_connected.setIcon(self.connected_icon)
             self.gui.label_connected.setText('Connected on USB')
+
+
+class StuckSensor(Update):
+    def __init__(self, gui):
+        super().__init__(gui)
+        self.warned = False
+        self.last_data = None
+
+    def applicable_commands(self):
+        return ['get_sensor_readings']
+
+    def check_zeros(self, data):
+        if not self.last_data or self.warned:
+            return
+
+        mag_keys = ['mx_raw', 'my_raw', 'mz_raw']
+        if all([data[x] == 0 for x in mag_keys]) \
+                and all([self.last_data[x] == 0 for x in mag_keys]):
+            self.warned = True
+            self.gui.show_warning(
+                'Magnetometer error',
+                'The magnetometer on your device is not responding. '
+                'It is recommended that you reset your device.')
+
+    def update(self, query_results):
+        command, data = query_results
+        self.check_zeros(data)
+        self.last_data = data
