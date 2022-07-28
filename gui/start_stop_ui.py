@@ -281,6 +281,7 @@ class Ui_Frame(object):
         self.gridLayout = QtWidgets.QGridLayout(self.groupBox)
         self.gridLayout.setObjectName("gridLayout")
         self.labelLoggerSettings = QtWidgets.QLabel(self.groupBox)
+        self.labelLoggerSettings.setText("")
         self.labelLoggerSettings.setWordWrap(True)
         self.labelLoggerSettings.setObjectName("labelLoggerSettings")
         self.gridLayout.addWidget(self.labelLoggerSettings, 0, 0, 1, 1)
@@ -355,7 +356,6 @@ class Ui_Frame(object):
         item.setText(_translate("Frame", "Battery (V)"))
         self.tableWidget.setSortingEnabled(__sortingEnabled)
         self.groupBox.setTitle(_translate("Frame", "Current Logger Settings"))
-        self.labelLoggerSettings.setText(_translate("Frame", "Sample temperature every 60 seconds. Sample Accelerometer and Magnetomer at 16 Hz for 10 seconds every 60 seconds. "))
 from . import icons_rc
 
 
