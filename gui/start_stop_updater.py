@@ -360,10 +360,13 @@ class StuckSensor(Update):
         if all([data[x] == 0 for x in mag_keys]) \
                 and all([self.last_data[x] == 0 for x in mag_keys]):
             self.warned = True
-            self.gui.show_warning(
+            reply = QtWidgets.QMessageBox.question(
+                self.gui.frame,
                 'Magnetometer error',
                 'The magnetometer on your device is not responding. '
-                'It is recommended that you reset your device.')
+                'Would you like to reset your device.')
+            if reply == QtWidgets.QMessageBox.Yes:
+                self.gui.queue.put('RST')
 
     def update(self, query_results):
         command, data = query_results
