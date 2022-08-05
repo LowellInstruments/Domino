@@ -100,6 +100,9 @@ class Ui_Dialog(object):
         self.pushButton_browse.setGeometry(QtCore.QRect(280, 80, 25, 23))
         self.pushButton_browse.setMaximumSize(QtCore.QSize(25, 16777215))
         self.pushButton_browse.setObjectName("pushButton_browse")
+        self.checkBox_voltage_output = QtWidgets.QCheckBox(self.tab_4)
+        self.checkBox_voltage_output.setGeometry(QtCore.QRect(20, 120, 281, 18))
+        self.checkBox_voltage_output.setObjectName("checkBox_voltage_output")
         self.tabWidget.addTab(self.tab_4, "")
         self.verticalLayout.addWidget(self.tabWidget)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -115,7 +118,7 @@ class Ui_Dialog(object):
         self.verticalLayout.addLayout(self.horizontalLayout)
 
         self.retranslateUi(Dialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -141,7 +144,8 @@ class Ui_Dialog(object):
         self.radioButton_factory_cal.setText(_translate("Dialog", "Use Factory Calibration Values (Recommended)"))
         self.radioButton_custom_cal.setText(_translate("Dialog", "Use Custom Calibration File (Danger Zone)"))
         self.pushButton_browse.setText(_translate("Dialog", "..."))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Calibration Coefficients (advanced)"))
+        self.checkBox_voltage_output.setText(_translate("Dialog", "Output Voltage Values to File"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("Dialog", "Advanced"))
         self.pushButton_cancel.setText(_translate("Dialog", "Cancel"))
         self.pushButton_save.setText(_translate("Dialog", "Save"))
 from . import icons_rc

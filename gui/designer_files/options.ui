@@ -32,7 +32,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -231,7 +231,7 @@
      </widget>
      <widget class="QWidget" name="tab_4">
       <attribute name="title">
-       <string>Calibration Coefficients (advanced)</string>
+       <string>Advanced</string>
       </attribute>
       <widget class="QRadioButton" name="radioButton_factory_cal">
        <property name="geometry">
@@ -306,6 +306,19 @@
         <string>...</string>
        </property>
       </widget>
+      <widget class="QCheckBox" name="checkBox_voltage_output">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>120</y>
+         <width>281</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Output Voltage Values to File</string>
+       </property>
+      </widget>
      </widget>
     </widget>
    </item>
@@ -348,7 +361,7 @@
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_calibration"/>
   <buttongroup name="buttonGroup_output_format"/>
+  <buttongroup name="buttonGroup_calibration"/>
  </buttongroups>
 </ui>
