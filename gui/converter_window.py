@@ -216,6 +216,7 @@ class ConverterFrame(Ui_Frame):
         parameters['output_directory'] = self._get_output_directory()
         parameters['time_format'] = app_data.get('time_format', 'iso8601')
         parameters['average'] = app_data.get('average_bursts', True)
+        parameters['voltage'] = app_data.get('voltage', False)
         custom_cal_path = app_data.get('custom_cal', None)
         if custom_cal_path:
             try:
