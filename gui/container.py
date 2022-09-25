@@ -22,6 +22,9 @@ from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
 import gui
 import platform
+from Socket_Singleton import Socket_Singleton, MultipleSingletonsError
+from gui import dialogs
+import sys
 from time_checker import TimeChecker
 from PyQt5.QtWidgets import QMessageBox, QCheckBox
 from gui.gui_utils import hhmmss
@@ -34,8 +37,13 @@ class Container(Ui_MainWindow):
     def __init__(self, window):
         self.version = __version__
         self.window = window
+        gui.mw = self.window
         self.setupUi(window)
-
+        try:
+            Socket_Singleton(address="127.0.0.1", strict=False, port=19818)
+        except MultipleSingletonsError:
+            dialogs.inform('Warning', 'Domino is already running')
+            sys.exit()
         # remove icons from tabs on Mac
         if platform.system() == 'Darwin':
             self.window.resize(900, 650)
@@ -46,7 +54,6 @@ class Container(Ui_MainWindow):
 
         self.window.setStyleSheet('font-size: 13px;')
         self.window.closeEvent = self.closeEvent
-        gui.mw = self.window
         self.converter_frame = ConverterFrame()
         self.converter_frame.setupUi(self.frame_convert)
         self.setup_frame = SetupFrame()
