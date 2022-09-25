@@ -10,7 +10,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import (
     QRect,
-    QSize
+    QSize,
+    QSettings
 )
 from gui.container_ui import Ui_MainWindow
 from gui.start_stop import StartStopFrame
@@ -21,6 +22,9 @@ from PyQt5.QtCore import pyqtSignal
 from mat.version_check import VersionChecker
 import gui
 import platform
+from time_checker import TimeChecker
+from PyQt5.QtWidgets import QMessageBox, QCheckBox
+from gui.gui_utils import hhmmss
 
 
 RICH_TEXT = 1
@@ -56,6 +60,10 @@ class Container(Ui_MainWindow):
         self.window.resizeEvent = self.resizeEvent
         self.check_for_updates()
 
+        self.app_data = QSettings().value('output_options', {}, type=dict)
+        if QSettings().value('show_time_error', True, type=bool):
+            self.check_time()
+
     def show_about_button(self):
         self.pushButton1 = QPushButton(self.centralwidget)
         x_pos = self.window.width() - 60
@@ -68,6 +76,12 @@ class Container(Ui_MainWindow):
         self.pushButton1.setFlat(True)
         self.pushButton1.setObjectName('about')
         self.pushButton1.clicked.connect(self.about)
+
+    def check_time(self):
+        print('start check time')
+        self.time_checker = TimeChecker()
+        self.time_checker.time_diff.connect(self.time_check_slot)
+        self.time_checker.start()
 
     def check_for_updates(self):
         self.version_check = VersionCheckerThread(self.window, self.version)
@@ -122,6 +136,18 @@ class Container(Ui_MainWindow):
         message.setText(text)
         message.exec_()
 
+    def time_check_slot(self, offset):
+        if offset > 5:
+            msg = QMessageBox(parent=self.window)
+            msg.setWindowTitle('Time Warning')
+            offset_str = hhmmss(round(offset, 1))
+            msg.setText(f'The time on your computer differs from internet time by {offset_str}')
+            msg.setIconPixmap(QPixmap(":/icons/icons/icons8-info-48.png"))
+            checkbox = QCheckBox('Do not show this dialog again')
+            msg.setCheckBox(checkbox)
+            msg.exec_()
+            if checkbox.isChecked():
+                QSettings().setValue('show_time_error', False)
 
 class VersionCheckerThread(QThread):
     new_version_signal = pyqtSignal()
