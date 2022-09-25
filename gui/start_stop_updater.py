@@ -164,8 +164,11 @@ class SensorUpdate(Update):
             self.redraw_table(query_results[1])
 
     def update_settings_description(self):
-        setup_file = SetupFile(self.logger_settings)
-        description = DescriptionGenerator(setup_file).sample_description()
+        if self.logger_settings:
+            setup_file = SetupFile(self.logger_settings)
+            description = DescriptionGenerator(setup_file).sample_description()
+        else:
+            description = 'No MAT.cfg settings file found on device memory card.'
         self.gui.labelLoggerSettings.setText(description)
 
     def redraw_table(self, data):
