@@ -1,1 +1,1 @@
-__version__ = 'Domino 1.1.0'
+__version__ = 'Domino 1.2.0 RC1'
