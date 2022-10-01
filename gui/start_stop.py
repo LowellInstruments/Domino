@@ -151,7 +151,7 @@ class StartStopFrame(Ui_Frame):
 
     def old_firmware(self):
         self.labelLoggerSettings.setText(
-            'The connected device does not support this feature')
+            'The connected device does not support this feature.')
 
 
 class TimeUpdater(QThread):
