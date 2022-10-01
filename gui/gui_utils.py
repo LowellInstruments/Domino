@@ -36,28 +36,3 @@ def is_float(string):
         return True
     except ValueError:
         return False
-
-
-def hhmmss(seconds):
-    hours = seconds // 3600
-    seconds = round(seconds % 3600, 1)
-    minutes = seconds // 60
-    seconds = round(seconds % 60, 1)
-    output = ''
-
-    if hours > 1:
-        output += f'{int(hours)} hours, '
-    elif hours == 1:
-        output += f'{int(hours)} hour, '
-
-    if minutes > 1:
-        output += f'{int(minutes)} minutes, '
-    elif minutes == 1:
-        output += f'{int(minutes)} minute'
-
-    if seconds == 0 or seconds > 1:
-        output += f'{seconds} seconds'
-    elif seconds == 1:
-        output += f'{seconds} second'
-
-    return output

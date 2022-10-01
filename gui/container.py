@@ -27,7 +27,7 @@ from gui import dialogs
 import sys
 from time_checker import TimeChecker
 from PyQt5.QtWidgets import QMessageBox, QCheckBox
-from gui.gui_utils import hhmmss
+import humanize
 
 
 RICH_TEXT = 1
@@ -146,9 +146,9 @@ class Container(Ui_MainWindow):
     def time_check_slot(self, offset):
         if offset > 5:
             msg = QMessageBox(parent=self.window)
-            msg.setWindowTitle('Time Warning')
-            offset_str = hhmmss(round(offset, 1))
-            msg.setText(f'The time on your computer differs from internet time by {offset_str}')
+            msg.setWindowTitle('Time Alert')
+            offset_str = humanize.precisedelta(offset)
+            msg.setText(f'Alert: The time on your computer differs from internet time by {offset_str}.')
             msg.setIconPixmap(QPixmap(":/icons/icons/icons8-info-48.png"))
             checkbox = QCheckBox('Do not show this dialog again')
             msg.setCheckBox(checkbox)
