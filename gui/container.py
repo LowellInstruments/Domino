@@ -68,6 +68,7 @@ class Container(Ui_MainWindow):
         self.check_for_updates()
 
         self.app_data = QSettings().value('output_options', {}, type=dict)
+        self.time_checker = TimeChecker()
         if QSettings().value('show_time_error', True, type=bool):
             self.check_time()
 
@@ -85,8 +86,6 @@ class Container(Ui_MainWindow):
         self.pushButton1.clicked.connect(self.about)
 
     def check_time(self):
-        print('start check time')
-        self.time_checker = TimeChecker()
         self.time_checker.time_diff.connect(self.time_check_slot)
         self.time_checker.start()
 
@@ -144,11 +143,13 @@ class Container(Ui_MainWindow):
         message.exec_()
 
     def time_check_slot(self, offset):
-        if offset > 5:
+        if abs(offset) > 5:
             msg = QMessageBox(parent=self.window)
             msg.setWindowTitle('Time Alert')
             offset_str = humanize.precisedelta(offset)
-            msg.setText(f'Alert: The time on your computer differs from internet time by {offset_str}.')
+            msg.setText(f'Alert: The time on your computer differs from internet time by '
+                        f'{offset_str}. We recommend synchronizing your computer clock to the '
+                        f'internet to avoid time errors in the future.')
             msg.setIconPixmap(QPixmap(":/icons/icons/icons8-info-48.png"))
             checkbox = QCheckBox('Do not show this dialog again')
             msg.setCheckBox(checkbox)
