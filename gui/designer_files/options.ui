@@ -134,6 +134,11 @@
        </item>
        <item>
         <property name="text">
+         <string>5 MB</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>10 MB</string>
         </property>
        </item>
@@ -360,8 +365,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_output_format"/>
+  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_calibration"/>
  </buttongroups>
 </ui>

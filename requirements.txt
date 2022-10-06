@@ -16,3 +16,4 @@ pytest-mock
 ntplib
 Socket_Singleton
 humanize
+wmi

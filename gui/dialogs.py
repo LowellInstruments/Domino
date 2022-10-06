@@ -221,3 +221,13 @@ def inform(title, message):
     msg.setIconPixmap(QPixmap(":/icons/icons/icons8-info-48.png"))
     msg.exec_()
     # QMessageBox.about(gui.mw, title, message)
+
+
+def confirm_convert_from_sd():
+    reply = QMessageBox.question(
+            gui.mw,
+            'Confirm Conversion',
+            'It is highly recommended you copy your data files to your hard '
+            'drive before conversion. Not doing so may lead to unexpected behavior. '
+            'Proceed anyway?')
+    return reply == QMessageBox.Yes
