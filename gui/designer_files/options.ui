@@ -321,7 +321,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Output Voltage Values to File</string>
+        <string>Output Voltage Values to File (ISO 8601 Time)</string>
        </property>
       </widget>
      </widget>
