@@ -1,8 +1,7 @@
-//Model: TCM-1
+//Model: TCM-1, Inverted
 //Number of Ballast Washers Installed: 3
 //Water Type: Salt
-// February 28, 2016
-//Preliminary
+// October 21, 2022
 MOD TCM-1
 BAL 3
 SAL Salt
@@ -33,5 +32,5 @@ CAL
 67.60,70
 69.85,80
 72.04,90
-85.00,100
-90.00,120
+85.00,170
+90.00,220

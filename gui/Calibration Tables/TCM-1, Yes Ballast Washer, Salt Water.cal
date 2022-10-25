@@ -1,4 +1,6 @@
-//November 3, 2014
+//Tilt Current Meter 300 meter depth rating
+//TCM-1 with 1 ballast washer in Salt Water
+//October 21, 2022
 MOD TCM-1
 BAL 1
 SAL Salt
@@ -29,6 +31,6 @@ CAL
 68,38.49
 72,46.26
 76,55.00
-80,60.00
-85,65.00
-90,70.00
+80,64.00
+85,78.00
+90,95.00
