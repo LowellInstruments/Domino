@@ -70,7 +70,8 @@ def test_save(new_ui, mocked_set_userdata, mocker, qtbot):
         'average_bursts': False,
         'output_format': 'csv',
         'split': 'Do not split output files',
-        'custom_cal': None
+        'custom_cal': None,
+        'voltage': False
     }
     assert [mocker.call('output_options', expected)] == \
            mocked_set_userdata.call_args_list

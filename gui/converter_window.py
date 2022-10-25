@@ -20,6 +20,7 @@ from queue import Queue
 from pathlib import Path
 from gui.tilt_curve_model import TiltCurveModel
 from gui.gui_utils import show_error
+from gui.drive_letter import get_li_drive
 
 
 OUTPUT_TYPE = {'Current': 'current',
@@ -109,7 +110,12 @@ class ConverterFrame(Ui_Frame):
         file_paths = dialogs.open_lid_file(directory)
         if not file_paths[0]:
             return
+        logger_drive = get_li_drive()
+        if logger_drive is not None and file_paths[0][0].startswith(logger_drive):
+            if not dialogs.confirm_convert_from_sd():
+                return
         directory = Path(file_paths[0][0]).parent
+
         self.settings.setValue('last_directory', str(directory))
         self.file_queue.put(file_paths[0])
         self.file_loader.run()
@@ -216,6 +222,7 @@ class ConverterFrame(Ui_Frame):
         parameters['output_directory'] = self._get_output_directory()
         parameters['time_format'] = app_data.get('time_format', 'iso8601')
         parameters['average'] = app_data.get('average_bursts', True)
+        parameters['voltage'] = app_data.get('voltage', False)
         custom_cal_path = app_data.get('custom_cal', None)
         if custom_cal_path:
             try:

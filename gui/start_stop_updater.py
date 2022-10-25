@@ -62,6 +62,7 @@ class Commands:
             FileSizeUpdate,
             SerialNumberUpdate,
             SimpleUpdate,
+            StuckSensor
         ]
         # (Command, repeat interval)
         self.COMMANDS = [
@@ -79,6 +80,7 @@ class Commands:
 
     def reset(self):
         self.make_schedule()
+        self.command_handlers = []
         for klass in self.HANDLER_CLASSES:
             self.command_handlers.append(klass(self.gui))
         self.gls_set = False
@@ -162,8 +164,11 @@ class SensorUpdate(Update):
             self.redraw_table(query_results[1])
 
     def update_settings_description(self):
-        setup_file = SetupFile(self.logger_settings)
-        description = DescriptionGenerator(setup_file).sample_description()
+        if self.logger_settings:
+            setup_file = SetupFile(self.logger_settings)
+            description = DescriptionGenerator(setup_file).sample_description()
+        else:
+            description = 'No MAT.cfg settings file found on device memory card.'
         self.gui.labelLoggerSettings.setText(description)
 
     def redraw_table(self, data):
@@ -339,3 +344,34 @@ class ConnectionStatus:
         else:
             self.gui.pushButton_connected.setIcon(self.connected_icon)
             self.gui.label_connected.setText('Connected on USB')
+
+
+class StuckSensor(Update):
+    def __init__(self, gui):
+        super().__init__(gui)
+        self.warned = False
+        self.last_data = None
+
+    def applicable_commands(self):
+        return ['get_sensor_readings']
+
+    def check_zeros(self, data):
+        if not self.last_data or self.warned:
+            return
+
+        mag_keys = ['mx_raw', 'my_raw', 'mz_raw']
+        if all([data[x] == 0 for x in mag_keys]) \
+                and all([self.last_data[x] == 0 for x in mag_keys]):
+            self.warned = True
+            reply = QtWidgets.QMessageBox.question(
+                self.gui.frame,
+                'Magnetometer error',
+                'The magnetometer on your device is not responding. '
+                'Would you like to reset your device.')
+            if reply == QtWidgets.QMessageBox.Yes:
+                self.gui.queue.put('RST')
+
+    def update(self, query_results):
+        command, data = query_results
+        self.check_zeros(data)
+        self.last_data = data

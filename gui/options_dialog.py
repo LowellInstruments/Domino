@@ -83,6 +83,8 @@ class OptionsDialog(QDialog):
         getattr(self.ui, output_format_button).setChecked(True)
         split_size = app_data.get('split', 'Do not split output files')
         self.ui.comboBox_split.setCurrentText(split_size)
+        voltage = app_data.get('voltage', False)
+        self.ui.checkBox_voltage_output.setChecked(voltage)
         calibration = app_data.get('custom_cal', None)
         if calibration:
             self.ui.radioButton_custom_cal.setChecked(True)
@@ -101,7 +103,8 @@ class OptionsDialog(QDialog):
             'average_bursts': self.ui.checkBox_average_bursts.isChecked(),
             'output_format': self.button_mapping[output_button],
             'split': self.ui.comboBox_split.currentText(),
-            'custom_cal': custom_cal
+            'custom_cal': custom_cal,
+            'voltage': self.ui.checkBox_voltage_output.isChecked()
         }
         QSettings().setValue('output_options', app_data)
         self.hide()
