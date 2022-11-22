@@ -147,8 +147,6 @@ class SetupFrame(Ui_Frame):
             lambda: self.sensor_enabled_slot('led'))
         self.lineEdit_burst_duration.editingFinished.connect(
             lambda: self.duration_changed('orientation'))
-        self.lineEdit_pressure_burst.editingFinished.connect(
-            lambda: self.duration_changed('pressure'))
         self.comboBox_orient_burst_rate.activated.connect(
             self.burst_rate_changed)
         self.comboBox_start_time.activated.connect(
@@ -228,23 +226,13 @@ class SetupFrame(Ui_Frame):
     def redraw_orient_group(self):
         burst_widgets = [
             self.comboBox_orient_interval,
-            self.comboBox_orient_burst_rate]
+            self.comboBox_orient_burst_rate,
+            self.lineEdit_burst_duration]
         burst_widget_state = (
                 self.setup_file.value(ACCELEROMETER_ENABLED) or
                 self.setup_file.value(MAGNETOMETER_ENABLED) or
                 self.setup_file.value(PRESSURE_ENABLED))
         set_enabled(burst_widgets, burst_widget_state)
-
-        accel_mag_widgets = [
-            self.lineEdit_burst_duration]
-        accel_mag_state = (
-                self.setup_file.value(ACCELEROMETER_ENABLED) or
-                self.setup_file.value(MAGNETOMETER_ENABLED))
-        set_enabled(accel_mag_widgets, accel_mag_state)
-
-        pressure_widgets = [
-            self.lineEdit_pressure_burst]
-        set_enabled(pressure_widgets, self.setup_file.value(PRESSURE_ENABLED))
 
         rate = self.setup_file.value(ORIENTATION_BURST_RATE)
         index = list(BURST_FREQUENCY).index(rate)
@@ -253,8 +241,7 @@ class SetupFrame(Ui_Frame):
     def redraw_burst_duration(self):
         rate = self.setup_file.value(ORIENTATION_BURST_RATE)
         mapping = [
-            (self.lineEdit_burst_duration, ORIENTATION_BURST_COUNT),
-            (self.lineEdit_pressure_burst, PRESSURE_BURST_COUNT)
+            (self.lineEdit_burst_duration, ORIENTATION_BURST_COUNT)
         ]
         for line_edit, value_field in mapping:
             count = self.setup_file.value(value_field)
@@ -378,10 +365,7 @@ class SetupFrame(Ui_Frame):
         mapping = {
             'accel_mag': (
                 self.lineEdit_burst_duration,
-                ORIENTATION_BURST_COUNT),
-            'pressure': (
-                self.lineEdit_pressure_burst,
-                PRESSURE_BURST_COUNT)
+                ORIENTATION_BURST_COUNT)
         }
         line_edit, value_field = mapping.get(sensor)
 
@@ -496,14 +480,8 @@ class SetupFrame(Ui_Frame):
         self.redraw()
 
     def duration_changed(self, sensor):
-        burst_count = {
-            'orientation': ORIENTATION_BURST_COUNT,
-            'pressure': PRESSURE_BURST_COUNT
-        }.get(sensor)
-        line_edit = {
-            'orientation': self.lineEdit_burst_duration,
-            'pressure': self.lineEdit_pressure_burst
-        }.get(sensor)
+        burst_count = {'orientation': ORIENTATION_BURST_COUNT}.get(sensor)
+        line_edit = {'orientation': self.lineEdit_burst_duration}.get(sensor)
         seconds = line_edit.text()
         rate = self.setup_file.value(ORIENTATION_BURST_RATE)
         try:
@@ -517,7 +495,7 @@ class SetupFrame(Ui_Frame):
             dialogs.error_message('Invalid duration', message)
             line_edit.blockSignals(False)
         finally:
-           self.redraw()
+            self.redraw()
 
     def save_file(self):
         self.redraw()

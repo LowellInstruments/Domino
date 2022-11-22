@@ -18,8 +18,8 @@ INTERVAL_STRING = array(['1 second', '2 seconds', '5 seconds', '10 seconds',
                          '1 minute', '2 minutes', '5 minutes', '10 minutes',
                          '15 minutes', '30 minutes', '1 hour'],
                         dtype=object)
-BURST_FREQUENCY = array([2, 4, 8])
-DEFAULT_SETUP = {'DFN': 'Test.lid', 'TMP': True, 'ACL': True,
+BURST_FREQUENCY = array([8])
+DEFAULT_SETUP = {'DFN': 'Default.lid', 'TMP': True, 'ACL': True,
                  'MGN': True, 'PRS': True,
                  'TRI': 60, 'ORI': 60, 'BMR': 8, 'BMN': 160,
                  'PRR': 8, 'PRN': 1,
@@ -149,8 +149,6 @@ class SetupFile:
         max_burst_count = value * self.value(ORIENTATION_BURST_RATE)
         if self.value(ORIENTATION_BURST_COUNT) > max_burst_count:
             self.set_burst_count(ORIENTATION_BURST_COUNT, max_burst_count)
-        if self.value(PRESSURE_BURST_COUNT) > max_burst_count:
-            self.set_burst_count(PRESSURE_BURST_COUNT, max_burst_count)
         if self.value(ORIENTATION_INTERVAL) > self.value(TEMPERATURE_INTERVAL):
             self.set_interval(TEMPERATURE_INTERVAL, value)
 
@@ -158,12 +156,11 @@ class SetupFile:
         if value not in BURST_FREQUENCY:
             raise ValueError('Invalid burst rate')
         self.update(ORIENTATION_BURST_RATE, value)
-        self.update(PRESSURE_BURST_RATE, value)
 
     def set_burst_count(self, sensor, value):
         max_burst_count = (self.value(ORIENTATION_INTERVAL) *
                            self.value(ORIENTATION_BURST_RATE))
-        if 0 <= value > max_burst_count:
+        if 0 > value > max_burst_count:
             raise ValueError('Burst count must be > 0 and <= orient interval '
                              'multiplied by orient burst rate.')
         self.update(sensor, value)
@@ -201,6 +198,8 @@ class ConfigFileWriter:
         self.path = path
         # make a copy because we may change values in the fix function
         self.setup_dict = dict(setup_dict)
+        self.setup_dict[PRESSURE_BURST_RATE] = setup_dict[ORIENTATION_BURST_RATE]
+        self.setup_dict[PRESSURE_BURST_COUNT] = setup_dict[ORIENTATION_BURST_COUNT]
         self._fix_ori_tri()
         self.preset = preset
 

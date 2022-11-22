@@ -1,24 +1,5 @@
 [
     {
-        "name": "Current and Water Level - Typical",
-        "description": "Two-minute recording interval of currents and water level. 12+ month typical battery life.",
-        "factory": true,
-        "settings": {
-            "TMP": true,
-            "ACL": true,
-            "MGN": true,
-            "PRS": true,
-            "ORI": 120,
-            "TRI": 120,
-            "BMR": 8,
-            "BMN": 160,
-            "PRR": 8,
-            "PRN": 8,
-            "STM": "ON_INT_MIN",
-            "ETM": "2096-01-01 00:00:00"
-        }
-    },
-    {
         "name": "Currents and Waves - Typical",
         "description": "Two-minute recording interval of currents and waves. 4 month typical battery life.",
         "factory": true,
@@ -32,9 +13,50 @@
             "BMR": 8,
             "BMN": 240,
             "PRR": 8,
+            "PRN": 240,
+            "STM": "ON_INT_MIN",
+            "ETM": "2096-01-01 00:00:00",
+ 	        "LED": true
+        }
+    },
+    {
+        "name": "Currents and Waves - Continuous",
+        "description": "Continuous recording of magnetometer, accelerometer and pressure at 8 Hz, 6 week battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "PRS": true,
+            "TRI": 60,
+            "ORI": 60,
+            "BMR": 8,
+            "BMN": 480,
+            "PRR": 8,
+            "PRN": 480,
+            "STM": "ON_INT_MIN",
+            "ETM": "2096-01-01 00:00:00",
+            "LED": true
+        }
+    },
+    {
+        "name": "General Logging - All Channels",
+        "description": "One second per minute on all channels, 12+ month battery life.",
+        "factory": true,
+        "settings": {
+            "TMP": true,
+            "ACL": true,
+            "MGN": true,
+            "PRS": true,
+            "TRI": 60,
+            "ORI": 60,
+            "BMR": 8,
+            "BMN": 8,
+            "PRR": 8,
             "PRN": 8,
             "STM": "ON_INT_MIN",
-            "ETM": "2096-01-01 00:00:00"
+            "ETM": "2096-01-01 00:00:00",
+            "LED": true
         }
     }
 ]
