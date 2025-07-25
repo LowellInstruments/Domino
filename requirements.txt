@@ -5,9 +5,9 @@ pytest-cov
 pytest-xvfb
 pyinstaller
 numpy
-PyQt5
-#git+https://github.com/LowellInstruments/lowell-mat.git
-git+https://github.com/LowellInstruments/lowell-mat.git
+PyQt5-sip==12.11.0
+PyQt5==5.15.9
+git+https://github.com/LowellInstruments/mat.git
 pytest-qt
 pytest-mock
 ntplib
